@@ -1,6 +1,6 @@
 // ===== Domain Model: Hedef → Aksiyon (2 seviye) =====
 
-export type EntityStatus = "On Track" | "Achieved" | "Behind" | "At Risk" | "Not Started";
+export type EntityStatus = "On Track" | "Achieved" | "Behind" | "At Risk" | "Not Started" | "Cancelled" | "On Hold";
 export type Source = "Türkiye" | "Kurumsal" | "International";
 export type ProjectStatus = "active" | "planned" | "completed" | "delayed";
 export type Priority = "critical" | "high" | "medium" | "low";

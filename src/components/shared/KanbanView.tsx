@@ -19,6 +19,8 @@ export const statusColumns: KanbanColumn[] = [
   { key: "Behind", label: "Gecikmiş", color: "bg-tyro-danger" },
   { key: "Not Started", label: "Başlanmadı", color: "bg-tyro-text-muted" },
   { key: "Achieved", label: "Tamamlandı", color: "bg-tyro-navy" },
+  { key: "On Hold", label: "Askıda", color: "bg-violet-500" },
+  { key: "Cancelled", label: "İptal", color: "bg-gray-400" },
 ];
 
 export default function KanbanView<T>({

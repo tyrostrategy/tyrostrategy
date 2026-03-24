@@ -29,7 +29,9 @@
     "achieved": "Tamamlandı",
     "behind": "Gecikmeli",
     "atRisk": "Risk Altında",
-    "notStarted": "Başlanmadı"
+    "notStarted": "Başlanmadı",
+    "cancelled": "İptal",
+    "onHold": "Askıda"
   },
   "common": {
     "search": "Ara...",

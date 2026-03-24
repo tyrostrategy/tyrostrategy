@@ -29,7 +29,9 @@
     "achieved": "Achieved",
     "behind": "Behind",
     "atRisk": "At Risk",
-    "notStarted": "Not Started"
+    "notStarted": "Not Started",
+    "cancelled": "Cancelled",
+    "onHold": "On Hold"
   },
   "common": {
     "search": "Search...",

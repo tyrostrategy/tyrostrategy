@@ -29,6 +29,16 @@ const statusConfig: Record<EntityStatus, { bg: string; text: string; dot: string
     text: "text-tyro-text-muted",
     dot: "bg-slate-400",
   },
+  Cancelled: {
+    bg: "bg-gray-100",
+    text: "text-gray-500",
+    dot: "bg-gray-400",
+  },
+  "On Hold": {
+    bg: "bg-violet-50",
+    text: "text-violet-600",
+    dot: "bg-violet-500",
+  },
 };
 
 const statusTooltips: Record<EntityStatus, { tr: string; en: string }> = {
@@ -51,6 +61,14 @@ const statusTooltips: Record<EntityStatus, { tr: string; en: string }> = {
   Achieved: {
     tr: "İlerleme %100 — tamamlandı",
     en: "Progress 100% — completed",
+  },
+  Cancelled: {
+    tr: "Bu kayıt iptal edildi",
+    en: "This item has been cancelled",
+  },
+  "On Hold": {
+    tr: "Bu kayıt askıya alındı — beklemede",
+    en: "This item is on hold — waiting",
   },
 };
 

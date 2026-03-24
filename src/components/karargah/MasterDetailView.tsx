@@ -25,10 +25,12 @@ import type { Hedef, Aksiyon, EntityStatus, Source } from "@/types";
 // ===== STATUS BAR COLORS =====
 const STATUS_BAR: Record<EntityStatus, string> = {
   "Not Started": "#94a3b8",
-  "On Track": "#10b981",   // emerald — StatusBadge ile tutarlı
+  "On Track": "#10b981",
   "At Risk": "#f59e0b",
   "Behind": "#ef4444",
-  "Achieved": "#3b82f6",   // blue — StatusBadge ile tutarlı
+  "Achieved": "#3b82f6",
+  "Cancelled": "#9ca3af",
+  "On Hold": "#8b5cf6",
 };
 
 // ===== QUICK PROGRESS STEPS =====
@@ -249,7 +251,7 @@ function DetailPanel({
     }
     onUpdateAksiyon(aksiyonId, { progress, status });
     const aksName = aksiyon?.name ?? "";
-    const statusLabel = status === "Not Started" ? "Başlanmadı" : status === "Achieved" ? "Tamamlandı" : status === "Behind" ? "Gecikmeli" : status === "At Risk" ? "Risk Altında" : "Yolunda";
+    const statusLabel = getStatusLabel(status, t);
     toast.success(t("karargah.actionUpdated"), {
       message: aksName,
       details: [
@@ -684,6 +686,8 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
           <option value="Behind">{t("status.behind")}</option>
           <option value="Not Started">{t("status.notStarted")}</option>
           <option value="Achieved">{t("status.achieved")}</option>
+          <option value="On Hold">{t("status.onHold")}</option>
+          <option value="Cancelled">{t("status.cancelled")}</option>
         </select>
         <select
           value={sourceFilter}

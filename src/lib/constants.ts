@@ -20,6 +20,8 @@ export const STATUS_LABEL: Record<EntityStatus, string> = {
   "Behind": "Gecikmeli",
   "At Risk": "Risk Altında",
   "Not Started": "Başlanmadı",
+  "Cancelled": "İptal",
+  "On Hold": "Askıda",
 };
 
 /** Status key → i18n key mapping */
@@ -29,6 +31,8 @@ const STATUS_I18N_KEY: Record<EntityStatus, string> = {
   "Behind": "status.behind",
   "At Risk": "status.atRisk",
   "Not Started": "status.notStarted",
+  "Cancelled": "status.cancelled",
+  "On Hold": "status.onHold",
 };
 
 /** Get a translated status label */
@@ -44,6 +48,8 @@ export function getStatusOptions(t: TFunction): { key: EntityStatus; label: stri
     { key: "Behind", label: t("status.behind") },
     { key: "Achieved", label: t("status.achieved") },
     { key: "Not Started", label: t("status.notStarted") },
+    { key: "On Hold", label: t("status.onHold") },
+    { key: "Cancelled", label: t("status.cancelled") },
   ];
 }
 
@@ -63,6 +69,8 @@ export const STATUS_DOT_COLOR: Record<EntityStatus, string> = {
   "Behind": "bg-red-500",
   "At Risk": "bg-amber-500",
   "Not Started": "bg-slate-400",
+  "Cancelled": "bg-gray-400",
+  "On Hold": "bg-violet-500",
 };
 
 /** Form select'leri için status seçenekleri (static fallback) */
@@ -72,6 +80,8 @@ export const STATUS_OPTIONS: { key: EntityStatus; label: string }[] = [
   { key: "Behind", label: "Gecikmeli" },
   { key: "Achieved", label: "Tamamlandı" },
   { key: "Not Started", label: "Başlanmadı" },
+  { key: "On Hold", label: "Askıda" },
+  { key: "Cancelled", label: "İptal" },
 ];
 
 /** Form select'leri için kaynak seçenekleri (static fallback) */
