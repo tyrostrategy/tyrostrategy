@@ -42,22 +42,23 @@ export default function SourceChart() {
   }, [hedefler, aksiyonlar]);
 
   return (
-    <GlassCard className="p-6 flex-1 flex flex-col">
-      <h3 className="text-sm font-semibold text-tyro-text-secondary mb-1">
+    <GlassCard className="p-5 flex-1 flex flex-col">
+      <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">
         {t("dashboard.sourceDistribution")}
       </h3>
-      <p className="text-xs text-tyro-text-muted mb-4">
+      <p className="text-[11px] text-tyro-text-secondary mb-3">
         {t("dashboard.sourceSubtitle")}
       </p>
       <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={chartData} barGap={4} barSize={20}>
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={chartData} barGap={3} barSize={18}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--tyro-border)" vertical={false} />
             <XAxis
               dataKey="source"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: "var(--tyro-text-muted)" }}
+              tick={{ fontSize: 11, fill: "var(--tyro-text-secondary)" }}
+              padding={{ left: 5, right: 5 }}
             />
             <YAxis
               axisLine={false}
@@ -75,9 +76,9 @@ export default function SourceChart() {
               }}
             />
             <Legend
-              wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+              wrapperStyle={{ fontSize: 10, paddingTop: 4 }}
               iconType="circle"
-              iconSize={8}
+              iconSize={7}
             />
             <Bar
               dataKey="tamamlanan"
