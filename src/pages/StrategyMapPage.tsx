@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { ZoomIn, ZoomOut, RotateCcw, Eye, EyeOff, Target, ListChecks, ChevronDown, ChevronUp } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, Eye, EyeOff, Target, ListChecks, ChevronDown, ChevronUp, Search } from "lucide-react";
 import { TyroLogo } from "@/components/ui/TyroLogo";
 import { Button } from "@heroui/react";
 import { useDataStore } from "@/stores/dataStore";
@@ -250,6 +250,7 @@ export default function StrategyMapPage() {
   const [expandedHedefIds, setExpandedHedefIds] = useState<Set<string>>(new Set());
   const [showAllActions, setShowAllActions] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [mapSearch, setMapSearch] = useState("");
   const [selectedHedef, setSelectedHedef] = useState<Hedef | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelType, setPanelType] = useState<"hedef" | "aksiyon">("hedef");
@@ -264,6 +265,18 @@ export default function StrategyMapPage() {
     });
   };
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Arama eşleşen hedef ID'leri
+  const matchedHedefIds = useMemo(() => {
+    if (!mapSearch.trim()) return null; // null = hepsi eşleşir
+    const q = mapSearch.toLocaleLowerCase("tr");
+    const ids = new Set<string>();
+    for (const h of hedefler) {
+      const str = [h.name, h.description, h.owner, h.department, h.source, h.status, ...(h.tags ?? [])].filter(Boolean).join(" ").toLocaleLowerCase("tr");
+      if (str.includes(q)) ids.add(h.id);
+    }
+    return ids;
+  }, [hedefler, mapSearch]);
 
   // Source'a göre grupla
   const themeGroups = useMemo(() => {
@@ -315,6 +328,17 @@ export default function StrategyMapPage() {
 
       {/* Toolbar */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
+        {/* Search */}
+        <div className="relative min-w-[200px] max-w-[280px]">
+          <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-tyro-text-muted" />
+          <input
+            type="text"
+            value={mapSearch}
+            onChange={(e) => setMapSearch(e.target.value)}
+            placeholder={t("common.search", "Ara...")}
+            className="w-full h-8 pl-8 pr-3 text-[12px] rounded-xl border border-tyro-border bg-tyro-surface text-tyro-text-primary placeholder:text-tyro-text-muted focus:outline-none focus:ring-2 focus:ring-tyro-gold/30"
+          />
+        </div>
         <Button
           size="sm"
           variant={showAllActions ? "solid" : "bordered"}
@@ -423,8 +447,9 @@ export default function StrategyMapPage() {
                     {[...list].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime()).map((hedef) => {
                       const isExpanded = expandedHedefIds.has(hedef.id);
                       const hedefActions = hedefAksiyonlar.get(hedef.id) ?? [];
+                      const isSearchMatch = matchedHedefIds === null || matchedHedefIds.has(hedef.id);
                       return (
-                        <div key={hedef.id} className="flex flex-col items-center">
+                        <div key={hedef.id} className="flex flex-col items-center transition-opacity duration-200" style={{ opacity: isSearchMatch ? 1 : 0.25 }}>
                           <ObjectiveNode
                             hedef={hedef}
                             onClick={() => openDetail(hedef)}

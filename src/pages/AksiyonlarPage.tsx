@@ -104,9 +104,9 @@ export default function AksiyonlarPage() {
       result = result.filter((a) => a.status === statusFilter);
     }
     if (search.trim()) {
-      const q = search.toLowerCase();
+      const q = search.toLocaleLowerCase("tr");
       result = result.filter((a) => {
-        const searchStr = [a.name, hedefNameMap.get(a.hedefId) ?? "", `%${a.progress}`, a.status, formatDate(a.startDate), formatDate(a.endDate)].join(" ").toLowerCase();
+        const searchStr = [a.name, a.description, a.owner, hedefNameMap.get(a.hedefId) ?? "", `%${a.progress}`, a.status, formatDate(a.startDate), formatDate(a.endDate)].join(" ").toLocaleLowerCase("tr");
         return searchStr.includes(q);
       });
     }

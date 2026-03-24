@@ -102,9 +102,9 @@ export default function HedeflerPage() {
   const filtered = useMemo(() => {
     let result = filterHedefler(hedefler ?? []);
     if (search.trim()) {
-      const q = search.toLowerCase();
+      const q = search.toLocaleLowerCase("tr");
       result = result.filter((h) => {
-        const searchStr = [h.name, h.source, h.status, h.owner, formatDate(h.startDate), formatDate(h.endDate), ...(h.tags ?? []), String(aksiyonCountMap.get(h.id) ?? 0)].join(" ").toLowerCase();
+        const searchStr = [h.name, h.description, h.source, h.status, h.owner, h.department, formatDate(h.startDate), formatDate(h.endDate), ...(h.tags ?? []), ...(h.participants ?? []), String(aksiyonCountMap.get(h.id) ?? 0)].join(" ").toLocaleLowerCase("tr");
         return searchStr.includes(q);
       });
     }

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { clsx } from "clsx";
+import { Search } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import { useDataStore } from "@/stores/dataStore";
 import i18n from "@/lib/i18n";
@@ -46,6 +47,7 @@ export default function GanttPage() {
   const [selectedQuarter, setSelectedQuarter] = useState(
     Math.ceil((new Date().getMonth() + 1) / 3)
   );
+  const [ganttSearch, setGanttSearch] = useState("");
 
   // Visible date range
   const { rangeStart, rangeEnd } = useMemo(() => {
@@ -63,7 +65,14 @@ export default function GanttPage() {
     return { rangeStart: null, rangeEnd: null };
   }, [zoom, selectedYear, selectedQuarter]);
 
-  // Filter aksiyonlar that overlap with range
+  // Hedef name lookup
+  const hedefNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const h of hedefler) map.set(h.id, h.name);
+    return map;
+  }, [hedefler]);
+
+  // Filter aksiyonlar that overlap with range + text search
   const tasks = useMemo(() => {
     let filtered = aksiyonlar.filter((a) => a.startDate && a.endDate);
     if (rangeStart && rangeEnd) {
@@ -73,10 +82,16 @@ export default function GanttPage() {
         return s <= rangeEnd && e >= rangeStart;
       });
     }
+    if (ganttSearch.trim()) {
+      const q = ganttSearch.toLocaleLowerCase("tr");
+      filtered = filtered.filter((a) => {
+        return [a.name, a.description, a.owner, hedefNameMap.get(a.hedefId) ?? "", a.status].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q);
+      });
+    }
     return filtered.sort(
       (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
     );
-  }, [aksiyonlar, rangeStart, rangeEnd]);
+  }, [aksiyonlar, rangeStart, rangeEnd, ganttSearch, hedefNameMap]);
 
   // Timeline min/max
   const { tlMin, tlMax, tlDays } = useMemo(() => {
@@ -153,6 +168,17 @@ export default function GanttPage() {
 
       {/* Controls */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
+        {/* Search */}
+        <div className="relative min-w-[200px] max-w-[280px]">
+          <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-tyro-text-muted" />
+          <input
+            type="text"
+            value={ganttSearch}
+            onChange={(e) => setGanttSearch(e.target.value)}
+            placeholder={t("common.search", "Ara...")}
+            className="w-full h-8 pl-8 pr-3 text-[12px] rounded-xl border border-tyro-border bg-tyro-surface text-tyro-text-primary placeholder:text-tyro-text-muted focus:outline-none focus:ring-2 focus:ring-tyro-gold/30"
+          />
+        </div>
         <div className="flex bg-tyro-bg rounded-button p-0.5 gap-0.5">
           {(["quarter", "year", "all"] as ZoomLevel[]).map((z) => (
             <button

@@ -230,11 +230,12 @@ function TabloView({
   const filtered = useMemo(() => {
     let result = hedefler;
     if (search.trim()) {
-      const q = search.toLowerCase();
+      const q = search.toLocaleLowerCase("tr");
       result = result.filter((h) => {
-        if (h.name.toLowerCase().includes(q) || h.owner.toLowerCase().includes(q)) return true;
+        const hedefStr = [h.name, h.description, h.owner, h.department, h.source, h.status, h.startDate, h.endDate, ...(h.tags ?? [])].filter(Boolean).join(" ").toLocaleLowerCase("tr");
+        if (hedefStr.includes(q)) return true;
         const childActions = aksiyonlar.filter((a) => a.hedefId === h.id);
-        return childActions.some((a) => a.name.toLowerCase().includes(q));
+        return childActions.some((a) => [a.name, a.description, a.owner].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q));
       });
     }
     if (statusFilter !== "all") {
@@ -493,6 +494,16 @@ function KanbanView({
   const { t } = useTranslation();
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<EntityStatus | null>(null);
+  const [kanbanSearch, setKanbanSearch] = useState("");
+
+  const filteredAksiyonlar = useMemo(() => {
+    if (!kanbanSearch.trim()) return aksiyonlar;
+    const q = kanbanSearch.toLocaleLowerCase("tr");
+    return aksiyonlar.filter((a) => {
+      const hedefName = hedefler.find((h) => h.id === a.hedefId)?.name ?? "";
+      return [a.name, a.description, a.owner, hedefName, a.status].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q);
+    });
+  }, [aksiyonlar, hedefler, kanbanSearch]);
 
   const columns = useMemo(() => {
     const map: Record<EntityStatus, Aksiyon[]> = {
@@ -502,11 +513,11 @@ function KanbanView({
       Behind: [],
       Achieved: [],
     };
-    aksiyonlar.forEach((a) => {
+    filteredAksiyonlar.forEach((a) => {
       if (map[a.status]) map[a.status].push(a);
     });
     return map;
-  }, [aksiyonlar]);
+  }, [filteredAksiyonlar]);
 
   const getHedefName = (hedefId: string) =>
     hedefler.find((h) => h.id === hedefId)?.name || "";
@@ -546,6 +557,19 @@ function KanbanView({
   };
 
   return (
+    <div>
+      <div className="mb-4 max-w-[320px]">
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-tyro-text-muted" />
+          <input
+            type="text"
+            value={kanbanSearch}
+            onChange={(e) => setKanbanSearch(e.target.value)}
+            placeholder={t("common.search", "Ara...")}
+            className="w-full h-9 pl-9 pr-3 text-[12px] rounded-xl border border-tyro-border bg-tyro-surface text-tyro-text-primary placeholder:text-tyro-text-muted focus:outline-none focus:ring-2 focus:ring-tyro-gold/30"
+          />
+        </div>
+      </div>
     <div className="flex gap-3 overflow-x-auto pb-4">
       {KANBAN_STATUSES.map((status) => {
         const items = columns[status];
@@ -624,6 +648,7 @@ function KanbanView({
           </div>
         );
       })}
+    </div>
     </div>
   );
 }
