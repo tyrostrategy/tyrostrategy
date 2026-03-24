@@ -18,7 +18,7 @@ import HedefDetail from "@/components/hedefler/HedefDetail";
 import AksiyonDetail from "@/components/aksiyonlar/AksiyonDetail";
 import { useDataStore } from "@/stores/dataStore";
 const HedefAksiyonWizard = lazy(() => import("@/components/wizard/HedefAksiyonWizard"));
-const WizardHeader = lazy(() => import("@/components/wizard/WizardHeader"));
+import WizardHeader from "@/components/wizard/WizardHeader";
 import MasterDetailView from "@/components/karargah/MasterDetailView";
 import { getStatusLabel } from "@/lib/constants";
 import { formatDate } from "@/lib/dateUtils";
