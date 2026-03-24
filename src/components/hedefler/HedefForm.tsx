@@ -27,7 +27,7 @@ const createHedefSchema = (t: TFunction) =>
     participants: z.array(z.string()).default([]),
     department: z.string().default(""),
     source: z.enum(["T\u00fcrkiye", "Kurumsal", "International"]),
-    status: z.enum(["On Track", "At Risk", "Behind", "Achieved", "Not Started"]),
+    status: z.enum(["On Track", "At Risk", "Behind", "Achieved", "Not Started", "Cancelled", "On Hold"]),
     tags: z.array(z.string()).default([]),
     parentObjectiveId: z.string().optional(),
     startDate: z.string().min(1, t("validation.startDateRequired")),

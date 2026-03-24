@@ -25,7 +25,7 @@ const createAksiyonSchema = (t: TFunction) =>
     owner: z.string().min(1, t("validation.ownerRequired")),
     hedefId: z.string().min(1, t("validation.objectiveRequired")),
     progress: z.number().min(0).max(100),
-    status: z.enum(["On Track", "At Risk", "Behind", "Achieved", "Not Started"]),
+    status: z.enum(["On Track", "At Risk", "Behind", "Achieved", "Not Started", "Cancelled", "On Hold"]),
     startDate: z.string().min(1, t("validation.startDateRequired")),
     endDate: z.string().min(1, t("validation.endDateRequired")),
   });
