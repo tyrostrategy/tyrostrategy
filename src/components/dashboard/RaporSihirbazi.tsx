@@ -5,7 +5,8 @@ import {
   Check, AlertTriangle, Clock, PauseCircle, Ban, Minus,
   ChevronDown, ChevronUp, Eye, EyeOff,
   CheckSquare, Square, PieChart, CalendarRange,
-  FileText, FileSpreadsheet, Presentation, FileCode, Printer,
+  FileText, FileSpreadsheet, FileCode, Printer,
+  TrendingDown, TrendingUp, Trophy, BarChart3, CircleAlert, Target,
 } from "lucide-react";
 import { useDataStore } from "@/stores/dataStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -993,15 +994,15 @@ ${clone.innerHTML}
             const bestDept = deptBreakdown.length > 0 ? deptBreakdown.reduce((best, [, d]) => d.avgProg > best.avgProg ? d : best, deptBreakdown[0][1]) : null;
             const bestDeptName = deptBreakdown.find(([, d]) => d === bestDept)?.[0] || "";
 
-            const insights: { icon: string; text: string; type: "success" | "warning" | "info" }[] = [];
-            if (avgProgress >= 70) insights.push({ icon: "✅", text: `Genel ilerleme %${avgProgress} ile hedef doğrultusunda ilerliyor.`, type: "success" });
-            else if (avgProgress >= 40) insights.push({ icon: "⚠️", text: `Genel ilerleme %${avgProgress} seviyesinde — ivme kazanılması gerekiyor.`, type: "warning" });
-            else insights.push({ icon: "🔴", text: `Genel ilerleme %${avgProgress} ile kritik seviyede düşük. Acil aksiyon gerekli.`, type: "warning" });
+            const insights: { Icon: typeof Check; color: string; text: string; type: "success" | "warning" | "info" }[] = [];
+            if (avgProgress >= 70) insights.push({ Icon: TrendingUp, color: "#10b981", text: `Genel ilerleme %${avgProgress} ile hedef doğrultusunda ilerliyor.`, type: "success" });
+            else if (avgProgress >= 40) insights.push({ Icon: CircleAlert, color: "#f59e0b", text: `Genel ilerleme %${avgProgress} seviyesinde — ivme kazanılması gerekiyor.`, type: "warning" });
+            else insights.push({ Icon: CircleAlert, color: "#ef4444", text: `Genel ilerleme %${avgProgress} ile kritik seviyede düşük. Acil aksiyon gerekli.`, type: "warning" });
 
-            if (riskCount > 0) insights.push({ icon: "⚠️", text: `${riskCount} hedef risk altında veya gecikmeli durumda — dikkat gerektiriyor.`, type: "warning" });
-            if (completionRate > 0) insights.push({ icon: "📊", text: `Hedef tamamlanma oranı %${completionRate}. ${statusSummary["Achieved"] || 0} hedef başarıyla tamamlanmış.`, type: "info" });
-            if (worstDept && worstDept.avgProg < avgProgress) insights.push({ icon: "📉", text: `${worstDeptName} departmanı %${worstDept.avgProg} ortalama ilerleme ile en düşük performansı sergiliyor.`, type: "warning" });
-            if (bestDept && bestDept.avgProg > avgProgress) insights.push({ icon: "🏆", text: `${bestDeptName} departmanı %${bestDept.avgProg} ile en yüksek performansı gösteriyor.`, type: "success" });
+            if (riskCount > 0) insights.push({ Icon: AlertTriangle, color: "#f59e0b", text: `${riskCount} hedef risk altında veya gecikmeli durumda — dikkat gerektiriyor.`, type: "warning" });
+            if (completionRate > 0) insights.push({ Icon: BarChart3, color: "#3b82f6", text: `Hedef tamamlanma oranı %${completionRate}. ${statusSummary["Achieved"] || 0} hedef başarıyla tamamlanmış.`, type: "info" });
+            if (worstDept && worstDept.avgProg < avgProgress) insights.push({ Icon: TrendingDown, color: "#ef4444", text: `${worstDeptName} departmanı %${worstDept.avgProg} ortalama ilerleme ile en düşük performansı sergiliyor.`, type: "warning" });
+            if (bestDept && bestDept.avgProg > avgProgress) insights.push({ Icon: Trophy, color: "#c8922a", text: `${bestDeptName} departmanı %${bestDept.avgProg} ile en yüksek performansı gösteriyor.`, type: "success" });
 
             // Circular progress SVG
             const circR = 60;
@@ -1013,10 +1014,12 @@ ${clone.innerHTML}
                 {/* AI Insights */}
                 <div className="glass-card rounded-xl p-4 mb-4">
                   <p className="text-[11px] font-bold text-tyro-text-muted uppercase tracking-wider mb-2">Yapay Zeka İçgörüleri</p>
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {insights.map((ins, i) => (
                       <div key={i} className="flex items-start gap-2.5">
-                        <span className="text-[14px] mt-0.5 shrink-0">{ins.icon}</span>
+                        <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: `${ins.color}12` }}>
+                          <ins.Icon size={14} style={{ color: ins.color }} />
+                        </div>
                         <p className={`text-[12px] leading-relaxed ${ins.type === "warning" ? "text-amber-700 dark:text-amber-400" : ins.type === "success" ? "text-emerald-700 dark:text-emerald-400" : "text-tyro-text-primary"}`}>
                           {ins.text}
                         </p>
