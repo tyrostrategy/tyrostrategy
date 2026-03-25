@@ -661,6 +661,7 @@ tr[data-hover=true]:not([data-selected=true]) {
 /* ===== Print styles for Rapor Sihirbazı ===== */
 @media print {
   @page { margin: 1.5cm; size: A4 portrait; }
+  @page :first { margin: 0; }
 
   /* Reset everything */
   body { background: white !important; color: #0f172a !important; }
@@ -716,6 +717,8 @@ tr[data-hover=true]:not([data-selected=true]) {
 
   /* Hide print:hidden elements */
   .print\:hidden { display: none !important; }
+  .print\:px-16 { padding-left: 4rem !important; padding-right: 4rem !important; }
+  .print\:py-12 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
 
   /* Hide report toolbar, tabs, page header during print */
   [data-report-toolbar],

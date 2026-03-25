@@ -20,6 +20,7 @@ const StrategyMapPage = lazy(() => import("@/pages/StrategyMapPage"));
 const TAlignmentPage = lazy(() => import("@/pages/TAlignmentPage"));
 const KullanicilarPage = lazy(() => import("@/pages/KullanicilarPage"));
 const AyarlarPage = lazy(() => import("@/pages/AyarlarPage"));
+const VeriYonetimiPage = lazy(() => import("@/pages/VeriYonetimiPage"));
 const ProfilPage = lazy(() => import("@/pages/ProfilPage"));
 const GuvenlikPage = lazy(() => import("@/pages/GuvenlikPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
@@ -66,6 +67,7 @@ export default function App() {
             <Route path="/strategy-map" element={<StrategyMapPage />} />
             <Route path="/t-alignment" element={<TAlignmentPage />} />
             <Route path="/kullanicilar" element={<ProtectedRoute pageKey="kullanicilar"><KullanicilarPage /></ProtectedRoute>} />
+            <Route path="/veri-yonetimi" element={<ProtectedRoute pageKey="ayarlar"><VeriYonetimiPage /></ProtectedRoute>} />
             <Route path="/ayarlar" element={<ProtectedRoute pageKey="ayarlar"><AyarlarPage /></ProtectedRoute>} />
             <Route path="/guvenlik" element={<ProtectedRoute pageKey="guvenlik"><GuvenlikPage /></ProtectedRoute>} />
             <Route path="/profil" element={<ProfilPage />} />

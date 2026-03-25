@@ -21,6 +21,7 @@ import {
   Check,
   Pin,
   PinOff,
+  Database,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore } from "@/stores/uiStore";
@@ -94,6 +95,7 @@ function getNavSections(t: (key: string) => string) {
       items: [
         { id: "users", label: t("nav.users"), icon: UsersRound, path: "/kullanicilar", pageKey: "kullanicilar" as const },
         { id: "guvenlik", label: t("nav.security"), icon: Shield, path: "/guvenlik", pageKey: "guvenlik" as const },
+        { id: "veri-yonetimi", label: "Veri Yönetimi", icon: Database, path: "/veri-yonetimi", pageKey: "ayarlar" as const },
         { id: "settings", label: t("nav.settings"), icon: SlidersHorizontal, path: "/ayarlar", pageKey: "ayarlar" as const },
       ],
     },

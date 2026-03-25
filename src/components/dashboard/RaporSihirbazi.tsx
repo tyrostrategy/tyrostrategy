@@ -832,7 +832,7 @@ ${clone.outerHTML}
               <div className="absolute bottom-0 left-0 w-[200px] h-[200px] rounded-full bg-blue-500/6 blur-[80px] print:hidden" />
 
               {/* Content — flex column, justify between for top/center/bottom */}
-              <div className="relative z-10 flex flex-col h-full px-10 py-8 print:h-[100vh] print:justify-between" style={{ minHeight: 520 }}>
+              <div className="relative z-10 flex flex-col h-full px-10 py-8 print:h-[100vh] print:px-16 print:py-12 print:justify-between" style={{ minHeight: 520 }}>
                 {/* Top — Logo + branding (fixed at top) */}
                 <div className="flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3">
