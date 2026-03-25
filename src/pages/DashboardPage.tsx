@@ -1,8 +1,8 @@
 import { useState, useMemo, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, ArrowRight } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowRight, BarChart3, FileText } from "lucide-react";
 import { useDataStore } from "@/stores/dataStore";
 import { useUIStore } from "@/stores/uiStore";
 import KPICard from "@/components/dashboard/KPICard";
@@ -17,6 +17,7 @@ const MultiRingWidget = lazy(() => import("@/components/dashboard/MultiRingWidge
 const ActivityFeed = lazy(() => import("@/components/dashboard/ActivityFeed"));
 const TagActivityGauge = lazy(() => import("@/components/dashboard/TagActivityGauge"));
 const AdvancedFilterPanel = lazy(() => import("@/components/dashboard/AdvancedFilterPanel"));
+const RaporSihirbazi = lazy(() => import("@/components/dashboard/RaporSihirbazi"));
 
 function getGreeting(t: (key: string) => string): string {
   const hour = new Date().getHours();
@@ -59,7 +60,9 @@ const fadeUp = {
 export default function DashboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filterOpen, setFilterOpen] = useState(false);
+  const activeTab = searchParams.get("tab") || "dashboard";
   const hedefler = useDataStore((s) => s.hedefler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const openCommandPalette = useUIStore((s) => s.openCommandPalette);
@@ -136,6 +139,49 @@ export default function DashboardPage() {
     },
   ];
 
+  const switchTab = (tab: string) => {
+    setSearchParams(tab === "dashboard" ? {} : { tab });
+  };
+
+  // ===== Rapor Sihirbazı tab =====
+  if (activeTab === "rapor") {
+    return (
+      <div className="space-y-0">
+        {/* Page header with tabs */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-1">
+          <div>
+            <h1 className="text-[18px] font-extrabold tracking-tight text-tyro-text-primary">
+              Yönetim Raporu
+            </h1>
+            <p className="text-sm text-tyro-text-secondary">TYRO Strategy — Stratejik Hedef ve Aksiyon Yönetimi</p>
+          </div>
+          <div className="flex items-center gap-1">
+            {[
+              { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+              { id: "rapor", label: "Rapor Sihirbazı", icon: FileText },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => switchTab(tab.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold transition-colors cursor-pointer ${
+                  activeTab === tab.id
+                    ? "bg-tyro-navy text-white"
+                    : "text-tyro-text-secondary hover:bg-tyro-bg"
+                }`}
+              >
+                <tab.icon size={14} />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <Suspense fallback={<div className="flex items-center justify-center py-20 text-tyro-text-muted">Yükleniyor...</div>}>
+          <RaporSihirbazi />
+        </Suspense>
+      </div>
+    );
+  }
+
   return (
     <motion.div className="space-y-5" variants={stagger} initial="hidden" animate="show">
       {/* Page Header — Greeting + Summary */}
@@ -156,6 +202,26 @@ export default function DashboardPage() {
           </div>
 
         <div className="flex items-center gap-2 shrink-0">
+            {/* Tab switcher */}
+            {[
+              { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+              { id: "rapor", label: "Rapor Sihirbazı", icon: FileText },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => switchTab(tab.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold transition-colors cursor-pointer ${
+                  activeTab === tab.id
+                    ? "bg-tyro-navy text-white"
+                    : "text-tyro-text-secondary hover:bg-tyro-bg"
+                }`}
+              >
+                <tab.icon size={14} />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={openCommandPalette}
