@@ -257,10 +257,30 @@ export default function RaporSihirbazi() {
 
   const handleExportPDF = async () => {
     if (!reportRef.current) return;
+    try {
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
     const el = reportRef.current;
-    const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+    // html2canvas doesn't support oklab() colors (Tailwind v4) — convert them in cloned DOM
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      onclone: (doc) => {
+        // Replace all oklab/oklch computed styles with fallback
+        doc.querySelectorAll("*").forEach((node) => {
+          const el = node as HTMLElement;
+          const cs = getComputedStyle(el);
+          // Force color properties to rgb
+          ["color", "backgroundColor", "borderColor", "borderLeftColor", "borderRightColor", "borderTopColor", "borderBottomColor"].forEach((prop) => {
+            const val = cs.getPropertyValue(prop.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`));
+            if (val && (val.includes("oklab") || val.includes("oklch") || val.includes("color("))) {
+              (el.style as unknown as Record<string, string>)[prop] = "transparent";
+            }
+          });
+        });
+      },
+    });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pageW = pdf.internal.pageSize.getWidth();
@@ -288,6 +308,10 @@ export default function RaporSihirbazi() {
       }
     }
     pdf.save(getFileName("pdf"));
+    } catch (err) {
+      console.warn("PDF export failed, falling back to print:", err);
+      handlePrint();
+    }
   };
 
   const handleExportHTML = () => {
