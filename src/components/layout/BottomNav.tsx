@@ -165,6 +165,17 @@ export default function BottomNav() {
   // Use layoutEffect for immediate measurement after DOM paint
   useLayoutEffect(() => {
     measureIndicator();
+    // Re-measure after fonts/layout settle
+    const t = setTimeout(measureIndicator, 100);
+    return () => clearTimeout(t);
+  }, [measureIndicator]);
+
+  // Re-measure on resize (dock magnification changes sizes)
+  useEffect(() => {
+    if (!navRef.current) return;
+    const ro = new ResizeObserver(() => measureIndicator());
+    ro.observe(navRef.current);
+    return () => ro.disconnect();
   }, [measureIndicator]);
 
   useEffect(() => {
