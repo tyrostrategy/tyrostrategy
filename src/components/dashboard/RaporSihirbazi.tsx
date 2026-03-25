@@ -912,24 +912,26 @@ ${clone.innerHTML}
             </div>
           )}
 
-          {/* Report Header — clean Apple style */}
-          <header className="mb-8 print:break-after-avoid">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-[22px] font-extrabold text-tyro-text-primary tracking-tight leading-tight">
-                  {reportTitle}
-                </h1>
-                <p className="text-[12px] text-tyro-text-secondary mt-1.5">
-                  {today} · {reportHedefler.length} hedef · {reportAksiyonlar.length} aksiyon
-                </p>
+          {/* Report Header — only show when cover page is OFF */}
+          {!sections.cover && (
+            <header className="mb-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-[22px] font-extrabold text-tyro-text-primary tracking-tight leading-tight">
+                    {reportTitle}
+                  </h1>
+                  <p className="text-[12px] text-tyro-text-secondary mt-1.5">
+                    {today} · {reportHedefler.length} hedef · {reportAksiyonlar.length} aksiyon
+                  </p>
+                </div>
+                <div className="text-right hidden sm:block">
+                  <p className="text-[12px] font-bold text-tyro-text-primary">TYRO Strategy</p>
+                  <p className="text-[11px] text-tyro-text-muted">Powered by TTECH</p>
+                </div>
               </div>
-              <div className="text-right hidden sm:block">
-                <p className="text-[12px] font-bold text-tyro-text-primary">TYRO Strategy</p>
-                <p className="text-[11px] text-tyro-text-muted">Powered by TTECH</p>
-              </div>
-            </div>
-            <div className="h-px bg-gradient-to-r from-transparent via-tyro-border to-transparent mt-4" />
-          </header>
+              <div className="h-px bg-gradient-to-r from-transparent via-tyro-border to-transparent mt-4" />
+            </header>
+          )}
 
           {/* 1. GENEL ÖZET — glass KPI cards */}
           {sections.summary && (

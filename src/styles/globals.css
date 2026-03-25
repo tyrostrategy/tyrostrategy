@@ -709,6 +709,8 @@ tr[data-hover=true]:not([data-selected=true]) {
   .print\:shadow-none { box-shadow: none !important; }
   .print\:break-inside-avoid { break-inside: avoid !important; }
   .print\:break-after-avoid { break-after: avoid !important; }
+  .print\:break-after-always { break-after: page !important; }
+  .print\:min-h-\[90vh\] { min-height: 90vh !important; }
 
   /* Glass cards in print — clean borders */
   .glass-card {
