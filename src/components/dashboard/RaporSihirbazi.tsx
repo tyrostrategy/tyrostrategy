@@ -829,55 +829,44 @@ ${clone.outerHTML}
               <div className="absolute inset-0 bg-gradient-to-br from-[#0f1d2f] via-[#1e3a5f] to-[#0f2847]" />
               <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)", backgroundSize: "28px 28px" }} />
 
-              {/* Content — table layout ensures footer stays at bottom */}
-              <div className="relative z-10 flex flex-col justify-between h-full px-10 py-8" style={{ minHeight: 480 }}>
-                {/* Top — Logo */}
-                <div className="flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-                      <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-                        <path d="M8 4L24 4L28 16L16 28L4 16L8 4Z" fill="#c8922a" opacity="0.9"/>
-                        <path d="M12 8L20 8L22 14L16 20L10 14L12 8Z" fill="white" opacity="0.3"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-[16px] font-extrabold tracking-tight"><span className="text-white/90">tyro</span><span className="text-tyro-gold">strategy</span></p>
-                      <p className="text-[10px] text-white/40">Stratejik Hedef Yönetim Platformu</p>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-white/30 uppercase tracking-wider">Gizli · Kurumsal Kullanım</p>
-                </div>
-
-                {/* Center — Title + Stats */}
-                <div className="flex-1 flex flex-col items-center justify-center text-center py-10">
-                  <p className="text-[10px] font-semibold text-tyro-gold uppercase tracking-[0.2em] mb-3">Yönetim Raporu</p>
-                  <h1 className="text-[28px] font-extrabold text-white tracking-tight leading-tight">{reportTitle}</h1>
-                  <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-tyro-gold to-tyro-gold-light mx-auto mt-4 mb-4" />
-                  <p className="text-[13px] text-white/70">{today}</p>
-                  {effectiveDateRange && (
-                    <p className="text-[11px] text-white/40 mt-1">
-                      Dönem: {new Date(effectiveDateRange.from).toLocaleDateString("tr-TR")} — {new Date(effectiveDateRange.to).toLocaleDateString("tr-TR")}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-center gap-8 mt-6">
-                    {[
-                      { label: "Hedef", value: reportHedefler.length },
-                      { label: "Aksiyon", value: reportAksiyonlar.length },
-                      { label: "Departman", value: allDepartments.length },
-                      { label: "Ort. İlerleme", value: `%${avgProgress}` },
-                    ].map((s) => (
-                      <div key={s.label} className="text-center">
-                        <p className="text-[22px] font-extrabold text-white tabular-nums">{s.value}</p>
-                        <p className="text-[9px] text-white/40 uppercase tracking-wider mt-0.5">{s.label}</p>
-                      </div>
-                    ))}
+              {/* Content — centered, no footer */}
+              <div className="relative z-10 flex flex-col items-center justify-center h-full px-10 py-8 text-center" style={{ minHeight: 480 }}>
+                {/* Logo + Branding */}
+                <div className="flex items-center gap-3 mb-2">
+                  <TyroLogo size={36} variant="sidebar" isDark />
+                  <div className="text-left">
+                    <p className="text-[16px] font-extrabold tracking-tight"><span className="text-white/90">tyro</span><span className="text-tyro-gold">strategy</span></p>
+                    <p className="text-[10px] text-white/40">Stratejik Hedef Yönetim Platformu</p>
                   </div>
                 </div>
+                <p className="text-[9px] text-white/25 mb-10">Powered by TTECH Business Solutions · © {new Date().getFullYear()} Tiryaki Agro</p>
 
-                {/* Bottom — Footer */}
-                <div className="flex items-center justify-between text-[9px] text-white/25 shrink-0">
-                  <span>Powered by TTECH Business Solutions</span>
-                  <span>© {new Date().getFullYear()} Tiryaki Agro</span>
+                <p className="text-[9px] text-white/30 uppercase tracking-wider mb-6">Gizli · Kurumsal Kullanım</p>
+
+                {/* Title */}
+                <p className="text-[10px] font-semibold text-tyro-gold uppercase tracking-[0.2em] mb-3">Yönetim Raporu</p>
+                <h1 className="text-[28px] font-extrabold text-white tracking-tight leading-tight">{reportTitle}</h1>
+                <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-tyro-gold to-tyro-gold-light mx-auto mt-4 mb-4" />
+                <p className="text-[13px] text-white/70">{today}</p>
+                {effectiveDateRange && (
+                  <p className="text-[11px] text-white/40 mt-1">
+                    Dönem: {new Date(effectiveDateRange.from).toLocaleDateString("tr-TR")} — {new Date(effectiveDateRange.to).toLocaleDateString("tr-TR")}
+                  </p>
+                )}
+
+                {/* Stats */}
+                <div className="flex items-center justify-center gap-8 mt-8">
+                  {[
+                    { label: "Hedef", value: reportHedefler.length },
+                    { label: "Aksiyon", value: reportAksiyonlar.length },
+                    { label: "Departman", value: allDepartments.length },
+                    { label: "Ort. İlerleme", value: `%${avgProgress}` },
+                  ].map((s) => (
+                    <div key={s.label} className="text-center">
+                      <p className="text-[22px] font-extrabold text-white tabular-nums">{s.value}</p>
+                      <p className="text-[9px] text-white/40 uppercase tracking-wider mt-0.5">{s.label}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
