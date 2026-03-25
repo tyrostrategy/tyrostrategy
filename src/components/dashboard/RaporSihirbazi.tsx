@@ -824,7 +824,7 @@ ${clone.outerHTML}
         <div className="max-w-[900px] mx-auto px-6 py-6 print:max-w-full print:px-10">
           {/* COVER PAGE — Corporate Executive Style */}
           {sections.cover && (
-            <div className="mb-10 print:break-after-always print:h-[100vh] print:m-0 print:rounded-none relative overflow-hidden rounded-xl" style={{ minHeight: 520 }}>
+            <div className="mb-10 print:break-after-always print:!mb-0 print:!h-[100vh] print:!max-h-[100vh] print:!overflow-hidden print:m-0 print:rounded-none relative overflow-hidden rounded-xl" style={{ minHeight: 520 }}>
               {/* Background — navy gradient with subtle pattern */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#0f1d2f] via-[#1e3a5f] to-[#0f2847] print:!bg-gradient-to-br" />
               <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)", backgroundSize: "28px 28px" }} />
@@ -832,7 +832,7 @@ ${clone.outerHTML}
               <div className="absolute bottom-0 left-0 w-[200px] h-[200px] rounded-full bg-blue-500/6 blur-[80px] print:hidden" />
 
               {/* Content — flex column, justify between for top/center/bottom */}
-              <div className="relative z-10 flex flex-col h-full px-10 py-8 print:h-[100vh] print:px-16 print:py-12 print:justify-between" style={{ minHeight: 520 }}>
+              <div className="relative z-10 flex flex-col h-full px-10 py-8 print:!h-[100vh] print:!max-h-[100vh] print:px-16 print:py-12 print:justify-between print:overflow-hidden" style={{ minHeight: 520 }}>
                 {/* Top — Logo + branding (fixed at top) */}
                 <div className="flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3">
