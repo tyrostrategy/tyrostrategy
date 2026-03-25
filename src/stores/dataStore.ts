@@ -5,6 +5,7 @@ import {
   getInitialHedefler,
   getInitialAksiyonlar,
   getInitialTagDefinitions,
+  getInitialData,
 } from "@/lib/data/mock-adapter";
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 
@@ -43,6 +44,34 @@ function uid(): string {
   return `gen-${counter}`;
 }
 
+/**
+ * Systematic ID generation: O26-0001 for hedefler, A26-0001 for aksiyonlar
+ * Prefix: O (objective) or A (action)
+ * Year: last 2 digits of year from startDate
+ * Serial: 4-digit zero-padded, auto-incremented per year
+ */
+function generateSystematicId(
+  prefix: "O" | "A",
+  startDate: string,
+  existingIds: string[]
+): string {
+  const year = startDate ? new Date(startDate).getFullYear() : new Date().getFullYear();
+  const yy = String(year).slice(-2);
+  const yearPrefix = `${prefix}${yy}-`;
+
+  // Find highest serial number for this year prefix
+  let maxSerial = 0;
+  for (const id of existingIds) {
+    if (id.startsWith(yearPrefix)) {
+      const serial = parseInt(id.slice(yearPrefix.length), 10);
+      if (!isNaN(serial) && serial > maxSerial) maxSerial = serial;
+    }
+  }
+
+  const nextSerial = String(maxSerial + 1).padStart(4, "0");
+  return `${yearPrefix}${nextSerial}`;
+}
+
 const CURRENT_USER = "Cenk Şayli";
 function now(): string {
   return new Date().toISOString();
@@ -79,13 +108,15 @@ function recalcHedefProgress(
 export const useDataStore = create<DataState>()(
   persist(
     (set, get) => ({
-      hedefler: getInitialHedefler(),
-      aksiyonlar: getInitialAksiyonlar(),
+      ...getInitialData(),
       tagDefinitions: getInitialTagDefinitions(),
 
       // Hedef CRUD
       addHedef: (h) =>
-        set((s) => ({ hedefler: [...s.hedefler, { ...h, id: uid(), createdBy: h.createdBy ?? CURRENT_USER, createdAt: h.createdAt ?? now() }] })),
+        set((s) => {
+          const id = generateSystematicId("O", h.startDate, s.hedefler.map((x) => x.id));
+          return { hedefler: [...s.hedefler, { ...h, id, createdBy: h.createdBy ?? CURRENT_USER, createdAt: h.createdAt ?? now() }] };
+        }),
       updateHedef: (id, data) =>
         set((s) => ({
           hedefler: s.hedefler.map((h) => {
@@ -109,7 +140,8 @@ export const useDataStore = create<DataState>()(
       // Aksiyon CRUD
       addAksiyon: (a) =>
         set((s) => {
-          const newAksiyon: Aksiyon = { ...a, id: uid(), createdBy: a.createdBy ?? CURRENT_USER, createdAt: a.createdAt ?? now() };
+          const id = generateSystematicId("A", a.startDate, s.aksiyonlar.map((x) => x.id));
+          const newAksiyon: Aksiyon = { ...a, id, createdBy: a.createdBy ?? CURRENT_USER, createdAt: a.createdAt ?? now() };
           const aksiyonlar = [...s.aksiyonlar, newAksiyon];
           const hedefler = recalcHedefProgress(s.hedefler, aksiyonlar, newAksiyon.hedefId);
           return { aksiyonlar, hedefler };

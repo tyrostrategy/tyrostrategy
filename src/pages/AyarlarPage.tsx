@@ -14,7 +14,7 @@ import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 
 export default function AyarlarPage() {
   const { t } = useTranslation();
-  const { locale, setLocale } = useUIStore();
+  const { locale, setLocale, companyName, setCompanyName } = useUIStore();
   const sidebarTheme = useSidebarTheme();
   const [emailNotif, setEmailNotif] = useState(true);
   const [browserNotif, setBrowserNotif] = useState(false);
@@ -107,6 +107,15 @@ export default function AyarlarPage() {
             <Input value="TYRO Strategy" isReadOnly variant="bordered" />
           </div>
           <div>
+            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Şirket Adı</label>
+            <Input
+              value={companyName}
+              onValueChange={setCompanyName}
+              variant="bordered"
+              placeholder="Şirket adını giriniz"
+            />
+          </div>
+          <div>
             <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("profile.language")}</label>
             <Select
               selectedKeys={[locale]}
@@ -120,6 +129,24 @@ export default function AyarlarPage() {
               <SelectItem key="en">{t("profile.english")}</SelectItem>
             </Select>
           </div>
+        </div>
+
+        {/* Numara Serisi Şablonu */}
+        <div className="mt-4 pt-4 border-t border-tyro-border/30">
+          <h3 className="text-[13px] font-bold text-tyro-text-primary mb-3">Numara Serisi Şablonu</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Hedef ID Formatı</label>
+              <Input value="O{YY}-{NNNN}" isReadOnly variant="bordered" description="Örn: O26-0001" />
+            </div>
+            <div>
+              <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Aksiyon ID Formatı</label>
+              <Input value="A{YY}-{NNNN}" isReadOnly variant="bordered" description="Örn: A26-0001" />
+            </div>
+          </div>
+          <p className="text-[11px] text-tyro-text-muted mt-2">
+            O = Objective (Hedef), A = Action (Aksiyon), YY = Yıl, NNNN = Sıra numarası. Kayıtlar başlangıç tarihine göre sıralanır.
+          </p>
         </div>
       </div>
 

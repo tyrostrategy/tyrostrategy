@@ -334,16 +334,18 @@ function DetailPanel({
               )}
               {/* Tags already shown in header */}
               {/* Meta */}
-              {(hedef.createdBy || hedef.updatedBy) && (
-                <div className="border-t border-tyro-border/15 px-3 py-2 flex gap-4">
-                  {hedef.createdBy && (
-                    <div>
-                      <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block">{t("common.createdBy", "Oluşturan")}</span>
-                      <span className="text-[11px] text-tyro-text-secondary">{hedef.createdBy}{hedef.createdAt ? ` · ${formatDate(hedef.createdAt)}` : ""}</span>
-                    </div>
-                  )}
+              <div className="border-t border-tyro-border/15 px-3 py-2 flex gap-4">
+                <div>
+                  <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block">ID</span>
+                  <span className="text-[11px] font-mono text-tyro-text-secondary tabular-nums">{hedef.id}</span>
                 </div>
-              )}
+                {hedef.createdBy && (
+                  <div>
+                    <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block">{t("common.createdBy", "Oluşturan")}</span>
+                    <span className="text-[11px] text-tyro-text-secondary">{hedef.createdBy}{hedef.createdAt ? ` · ${formatDate(hedef.createdAt)}` : ""}</span>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

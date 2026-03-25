@@ -171,8 +171,16 @@ export default function AksiyonDetail({
           </div>
         </div>
 
-        {currentAksiyon.createdBy && (
-          <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
+        <div className="grid grid-cols-3 divide-x divide-tyro-border/20">
+          <div className="px-3 py-2.5">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">
+              ID
+            </span>
+            <p className="text-[12px] font-mono font-medium text-tyro-text-secondary tabular-nums">
+              {currentAksiyon.id}
+            </p>
+          </div>
+          {currentAksiyon.createdBy && (
             <div className="px-3 py-2.5">
               <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">
                 {t("common.createdBy")}
@@ -181,16 +189,16 @@ export default function AksiyonDetail({
                 {currentAksiyon.createdBy}
               </p>
             </div>
-            <div className="px-3 py-2.5">
-              <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">
-                {t("common.createdAt")}
-              </span>
-              <p className="text-[12px] font-medium text-tyro-text-primary">
-                {currentAksiyon.createdAt ? formatDate(currentAksiyon.createdAt) : "-"}
-              </p>
-            </div>
+          )}
+          <div className="px-3 py-2.5">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">
+              {t("common.createdAt")}
+            </span>
+            <p className="text-[12px] font-medium text-tyro-text-primary">
+              {currentAksiyon.createdAt ? formatDate(currentAksiyon.createdAt) : "-"}
+            </p>
           </div>
-        )}
+        </div>
 
         {currentAksiyon.completedAt && (
           <div className="px-3 py-2.5">

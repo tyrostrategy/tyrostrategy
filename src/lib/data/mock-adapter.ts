@@ -151,6 +151,52 @@ const allSources: [CascadeHedef[], Source][] = [
   [internationalHedefler, "International"],
 ];
 
+/**
+ * Assign systematic IDs: O{YY}-{NNNN} for hedefler, A{YY}-{NNNN} for aksiyonlar
+ * Sorted by startDate, grouped by year
+ */
+function assignSystematicIds(hedefler: Hedef[], aksiyonlar: Aksiyon[]): { hedefler: Hedef[]; aksiyonlar: Aksiyon[] } {
+  // Build old→new ID map for hedefler
+  const sortedHedefler = [...hedefler].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const hedefIdMap = new Map<string, string>();
+  const hedefYearCounters = new Map<string, number>();
+
+  for (const h of sortedHedefler) {
+    const year = h.startDate ? new Date(h.startDate).getFullYear() : new Date().getFullYear();
+    const yy = String(year).slice(-2);
+    const count = (hedefYearCounters.get(yy) ?? 0) + 1;
+    hedefYearCounters.set(yy, count);
+    const newId = `O${yy}-${String(count).padStart(4, "0")}`;
+    hedefIdMap.set(h.id, newId);
+  }
+
+  // Remap hedef IDs and parentObjectiveId
+  const remappedHedefler = sortedHedefler.map((h) => ({
+    ...h,
+    id: hedefIdMap.get(h.id) ?? h.id,
+    parentObjectiveId: h.parentObjectiveId ? hedefIdMap.get(h.parentObjectiveId) : undefined,
+  }));
+
+  // Build old→new ID map for aksiyonlar, sorted by startDate
+  const sortedAksiyonlar = [...aksiyonlar].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const aksiyonYearCounters = new Map<string, number>();
+
+  const remappedAksiyonlar = sortedAksiyonlar.map((a) => {
+    const year = a.startDate ? new Date(a.startDate).getFullYear() : new Date().getFullYear();
+    const yy = String(year).slice(-2);
+    const count = (aksiyonYearCounters.get(yy) ?? 0) + 1;
+    aksiyonYearCounters.set(yy, count);
+    const newId = `A${yy}-${String(count).padStart(4, "0")}`;
+    return {
+      ...a,
+      id: newId,
+      hedefId: hedefIdMap.get(a.hedefId) ?? a.hedefId,
+    };
+  });
+
+  return { hedefler: remappedHedefler, aksiyonlar: remappedAksiyonlar };
+}
+
 export function getInitialHedefler(): Hedef[] {
   const all = allSources.flatMap(([h, s]) => flattenHedefler(h, s));
 
@@ -164,32 +210,32 @@ export function getInitialHedefler(): Hedef[] {
 
   for (const [, hedefler] of bySource) {
     if (hedefler.length < 4) continue;
-
-    // Create multiple parent groups per source
-    // Group 1: hedefler[0] is parent, [1],[2],[3] are children
     hedefler[1].parentObjectiveId = hedefler[0].id;
     hedefler[2].parentObjectiveId = hedefler[0].id;
     if (hedefler.length > 3) hedefler[3].parentObjectiveId = hedefler[0].id;
-
-    // Group 2: if enough hedefler, hedefler[4] is second parent, [5],[6] children
     if (hedefler.length > 6) {
       hedefler[5].parentObjectiveId = hedefler[4].id;
       hedefler[6].parentObjectiveId = hedefler[4].id;
     }
-
-    // Group 3: if many, hedefler[7] parent, [8],[9] children
     if (hedefler.length > 9) {
       hedefler[8].parentObjectiveId = hedefler[7].id;
       hedefler[9].parentObjectiveId = hedefler[7].id;
     }
-    // Remaining hedefler stay standalone (no parent)
   }
 
+  // Will be remapped in getInitialData()
   return all;
 }
 
 export function getInitialAksiyonlar(): Aksiyon[] {
   return allSources.flatMap(([h]) => flattenAksiyonlar(h));
+}
+
+/** Returns hedefler + aksiyonlar with systematic IDs assigned */
+export function getInitialData(): { hedefler: Hedef[]; aksiyonlar: Aksiyon[] } {
+  const hedefler = getInitialHedefler();
+  const aksiyonlar = getInitialAksiyonlar();
+  return assignSystematicIds(hedefler, aksiyonlar);
 }
 
 // ===== Parametrik Tag Tanımları =====

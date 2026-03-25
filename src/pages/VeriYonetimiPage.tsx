@@ -47,7 +47,7 @@ export default function VeriYonetimiPage() {
   const hedefler = useDataStore((s) => s.hedefler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const tagDefinitions = useDataStore((s) => s.tagDefinitions);
-  const rolePermissions = useRoleStore((s) => s.rolePermissions);
+  const rolePermissions = useRoleStore((s) => s.permissions);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [logs, setLogs] = useState<LogEntry[]>([]);

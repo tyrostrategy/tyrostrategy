@@ -92,6 +92,7 @@ export default function RaporSihirbazi() {
   const hedefler = useDataStore((s) => s.hedefler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const sidebarThemeId = useUIStore((s) => s.sidebarTheme);
+  const companyName = useUIStore((s) => s.companyName);
   const theme = sidebarThemes[sidebarThemeId];
 
   // State
@@ -206,10 +207,8 @@ export default function RaporSihirbazi() {
   );
 
   // Title based on filters
-  const reportTitle = useMemo(() => {
-    const sourceName = sourceFilter === "all" ? "Tüm Kaynaklar" : sourceFilter;
-    return `Stratejik Hedef Durum Raporu — ${sourceName}`;
-  }, [sourceFilter]);
+  const reportTitle = "Stratejik Hedef Durum Raporu";
+  const reportSubtitle = sourceFilter === "all" ? "Tüm Kaynaklar" : sourceFilter;
 
   const today = new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
   const sourceConf = SOURCES.find((s) => s.id === sourceFilter)!;
@@ -854,8 +853,9 @@ ${clone.outerHTML}
 
                 {/* Center — Title + Stats */}
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <p className="text-[10px] font-semibold text-tyro-gold uppercase tracking-[0.2em] mb-3">Yönetim Raporu</p>
+                  <p className="text-[11px] font-bold text-tyro-gold uppercase tracking-[0.25em] mb-4">{companyName.toUpperCase()} YÖNETİM RAPORU</p>
                   <h1 className="text-[28px] font-extrabold text-white tracking-tight leading-tight">{reportTitle}</h1>
+                  <p className="text-[15px] text-white/60 mt-1">{reportSubtitle}</p>
                   <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-tyro-gold to-tyro-gold-light mx-auto mt-4 mb-4" />
                   <p className="text-[13px] text-white/70">{today}</p>
                   {effectiveDateRange && (
@@ -892,6 +892,7 @@ ${clone.outerHTML}
                   <h1 className="text-[22px] font-extrabold text-tyro-text-primary tracking-tight leading-tight">
                     {reportTitle}
                   </h1>
+                  <p className="text-[13px] text-tyro-text-secondary">{reportSubtitle}</p>
                   <p className="text-[12px] text-tyro-text-secondary mt-1.5">
                     {today} · {reportHedefler.length} hedef · {reportAksiyonlar.length} aksiyon
                   </p>

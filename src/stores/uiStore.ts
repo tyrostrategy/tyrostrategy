@@ -13,6 +13,8 @@ interface UIState {
   theme: "light" | "dark";
   sidebarTheme: SidebarThemeId;
   locale: "tr" | "en";
+  companyName: string;
+  setCompanyName: (name: string) => void;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   openCommandPalette: () => void;
@@ -39,6 +41,11 @@ export const useUIStore = create<UIState>((set) => ({
   theme: (localStorage.getItem("tyro-theme") as "light" | "dark") || "light",
   sidebarTheme: (localStorage.getItem("tyro-sidebar-theme") as SidebarThemeId) || "light",
   locale: (localStorage.getItem("tyro-locale") as "tr" | "en") || "tr",
+  companyName: localStorage.getItem("tyro-company-name") || "Tiryaki Agro",
+  setCompanyName: (name) => {
+    localStorage.setItem("tyro-company-name", name);
+    set({ companyName: name });
+  },
   toggleSidebar: () =>
     set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
