@@ -94,7 +94,7 @@ export default function MyProgressWidget() {
             <span className="text-[20px] font-extrabold tabular-nums text-tyro-text-primary leading-none">
               %{avgProgress}
             </span>
-            <span className="text-[9px] font-semibold text-tyro-text-muted mt-1 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-tyro-text-muted mt-1 uppercase tracking-wider">
               {t("workspace.overall")}
             </span>
           </div>

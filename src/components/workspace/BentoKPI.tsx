@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Crosshair, CalendarClock, TrendingUp, CheckCircle } from "lucide-react";
+import { FolderKanban, Trophy, ShieldAlert, TrendingUp } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 import { useMyWorkspace } from "@/hooks/useMyWorkspace";
 import type { EntityStatus } from "@/types";
@@ -23,6 +23,7 @@ export default function BentoKPI() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const ws = useMyWorkspace();
+
   const overdueCount = useMemo(() => {
     const now = new Date();
     const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
@@ -33,7 +34,6 @@ export default function BentoKPI() {
     }).length;
   }, [ws.myProjeler]);
 
-  // Status counts for my projects
   const statusCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const h of ws.myProjeler) counts.set(h.status, (counts.get(h.status) ?? 0) + 1);
@@ -46,34 +46,23 @@ export default function BentoKPI() {
   }, [ws.myProjeler, t]);
 
   const avgProgress = ws.overallProgress;
-
-  // Donut segments
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  let accOffset = 0;
-  const total = ws.myProjeler.length || 1;
-  const arcs = statusCounts.filter((s) => s.count > 0).map((seg) => {
-    const pct = (seg.count / total) * 100;
-    const dashLen = (pct / 100) * circumference;
-    const dashOffset = circumference - accOffset;
-    accOffset += dashLen;
-    return { ...seg, pct, dashLen, dashOffset };
-  });
+  const progColor = avgProgress >= 75 ? "#059669" : avgProgress >= 50 ? "#10b981" : avgProgress >= 25 ? "#f59e0b" : "#ef4444";
+  const r = 52;
+  const c = 2 * Math.PI * r;
+  const progressDash = (avgProgress / 100) * c;
 
   return (
     <GlassCard className="p-4 sm:p-5 flex-1">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-tyro-navy/8 flex items-center justify-center">
-            <TrendingUp size={15} className="text-tyro-navy" />
-          </div>
-          <h3 className="text-[13px] font-bold text-tyro-text-primary">Proje Özeti</h3>
+        <div className="flex items-center gap-2.5">
+          <TrendingUp size={18} className="text-tyro-navy" />
+          <h3 className="text-[14px] font-bold text-tyro-text-primary">Proje Özeti</h3>
         </div>
         <button
           type="button"
           onClick={() => navigate("/projeler")}
-          className="text-[11px] font-semibold text-tyro-navy hover:underline cursor-pointer"
+          className="text-[12px] font-semibold text-tyro-navy hover:underline cursor-pointer"
         >
           Tümünü Gör &rsaquo;
         </button>
@@ -82,68 +71,56 @@ export default function BentoKPI() {
       {/* Bento Grid */}
       <div className="grid grid-cols-12 gap-3">
         {/* Left section (9 col) */}
-        <div className="col-span-9 flex flex-col gap-2.5">
-          {/* Row 1: 3 summary cards */}
-          <div className="grid grid-cols-3 gap-2.5">
+        <div className="col-span-9 flex flex-col gap-3">
+          {/* Row 1: 3 summary KPI cards — no icon backgrounds, unique icons */}
+          <div className="grid grid-cols-3 gap-3">
             {/* Projelerim */}
             <div
               onClick={() => navigate("/projeler")}
-              className="rounded-xl bg-tyro-navy/5 p-3 cursor-pointer hover:bg-tyro-navy/8 transition-colors"
+              className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-4 cursor-pointer hover:shadow-md hover:border-tyro-navy/20 transition-all"
             >
-              <div className="flex items-center gap-1.5 mb-2">
-                <Crosshair size={13} className="text-tyro-navy" />
-                <span className="text-[10px] font-semibold text-tyro-text-muted uppercase tracking-wider">Projelerim</span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-[26px] font-extrabold text-tyro-text-primary tabular-nums leading-none">{ws.myProjeler.length}</span>
-                <span className="text-[10px] text-tyro-text-muted">/ {ws.totalProjeler}</span>
-              </div>
+              <FolderKanban size={18} className="text-tyro-navy mb-2" />
+              <span className="text-[28px] font-extrabold text-tyro-text-primary tabular-nums leading-none block">{ws.myProjeler.length}</span>
+              <span className="text-[11px] font-medium text-tyro-text-secondary mt-1 block">Projelerim <span className="text-tyro-text-muted">/ {ws.totalProjeler}</span></span>
             </div>
 
             {/* Tamamlanan */}
             <div
               onClick={() => navigate("/projeler")}
-              className="rounded-xl bg-emerald-500/5 p-3 cursor-pointer hover:bg-emerald-500/8 transition-colors"
+              className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-4 cursor-pointer hover:shadow-md hover:border-emerald-300/40 transition-all"
             >
-              <div className="flex items-center gap-1.5 mb-2">
-                <CheckCircle size={13} className="text-emerald-500" />
-                <span className="text-[10px] font-semibold text-tyro-text-muted uppercase tracking-wider">Tamamlanan</span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-[26px] font-extrabold text-tyro-text-primary tabular-nums leading-none">{ws.achievedProjeler}</span>
-                <span className="text-[10px] text-tyro-text-muted">proje</span>
-              </div>
+              <Trophy size={18} className="text-emerald-500 mb-2" />
+              <span className="text-[28px] font-extrabold text-tyro-text-primary tabular-nums leading-none block">{ws.achievedProjeler}</span>
+              <span className="text-[11px] font-medium text-tyro-text-secondary mt-1 block">Tamamlanan Proje</span>
             </div>
 
-            {/* Kontrol Tarihi */}
+            {/* Kontrol Edilmesi Gereken */}
             <div
               onClick={() => navigate("/projeler?reviewOverdue=true")}
-              className="rounded-xl bg-amber-500/5 p-3 cursor-pointer hover:bg-amber-500/8 transition-colors"
+              className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-4 cursor-pointer hover:shadow-md hover:border-amber-300/40 transition-all"
             >
-              <div className="flex items-center gap-1.5 mb-2">
-                <CalendarClock size={13} className="text-amber-500" />
-                <span className="text-[10px] font-semibold text-tyro-text-muted uppercase tracking-wider">Kontrol</span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-[26px] font-extrabold text-tyro-text-primary tabular-nums leading-none">{overdueCount}</span>
-                <span className="text-[10px] text-tyro-text-muted">güncel değil</span>
-              </div>
+              <ShieldAlert size={18} className="text-amber-500 mb-2" />
+              <span className="text-[28px] font-extrabold text-tyro-text-primary tabular-nums leading-none block">{overdueCount}</span>
+              <span className="text-[11px] font-medium text-tyro-text-secondary mt-1 block">Kontrol Bekleyen</span>
             </div>
           </div>
 
-          {/* Row 2: 6 status mini cards (Achieved excluded — shown above) */}
+          {/* Row 2: 6 status cards (Achieved excluded) — premium mini cards */}
           <div className="grid grid-cols-6 gap-2">
             {statusCounts.filter((s) => s.status !== "Achieved").map((s) => (
               <div
                 key={s.status}
                 onClick={() => navigate("/projeler")}
-                className={`rounded-xl p-2 cursor-pointer hover:brightness-95 transition-all text-center ${s.count === 0 ? "opacity-35" : ""}`}
-                style={{ backgroundColor: `${s.color}10` }}
+                className={`rounded-xl border p-2.5 cursor-pointer hover:shadow-sm transition-all text-center ${s.count === 0 ? "opacity-30" : "hover:scale-[1.03]"}`}
+                style={{
+                  backgroundColor: `${s.color}08`,
+                  borderColor: s.count > 0 ? `${s.color}25` : "transparent",
+                }}
               >
-                <span className="text-[16px] font-extrabold tabular-nums leading-none" style={{ color: s.color }}>
+                <span className="text-[18px] font-extrabold tabular-nums leading-none block" style={{ color: s.color }}>
                   {s.count}
                 </span>
-                <p className="text-[8px] font-semibold mt-1 truncate" style={{ color: s.color }}>
+                <p className="text-[11px] font-medium mt-1 truncate" style={{ color: s.count > 0 ? s.color : undefined }}>
                   {s.label}
                 </p>
               </div>
@@ -151,41 +128,35 @@ export default function BentoKPI() {
           </div>
         </div>
 
-        {/* Right: Premium Circular Progress (3 col) — shows avgProgress % */}
+        {/* Right: Premium Circular Progress (3 col) */}
         <div className="col-span-3 flex items-center justify-center">
-          {(() => {
-            const r = 54;
-            const c = 2 * Math.PI * r;
-            const progressDash = (avgProgress / 100) * c;
-            // Color based on progress
-            const progColor = avgProgress >= 75 ? "#059669" : avgProgress >= 50 ? "#10b981" : avgProgress >= 25 ? "#f59e0b" : "#ef4444";
-            return (
-              <div className="relative" style={{ width: 130, height: 130 }}>
-                <div className="absolute inset-0 rounded-full" style={{ background: `radial-gradient(circle, ${progColor}12 0%, transparent 70%)` }} />
-                <svg width={130} height={130} viewBox="0 0 130 130" className="-rotate-90">
-                  <circle cx={65} cy={65} r={r} fill="none" stroke="#e2e8f0" strokeWidth={10} opacity={0.4} />
-                  <circle
-                    cx={65} cy={65} r={r}
-                    fill="none"
-                    stroke={progColor}
-                    strokeWidth={10}
-                    strokeLinecap="round"
-                    strokeDasharray={`${progressDash} ${c - progressDash}`}
-                    strokeDashoffset={0}
-                    style={{ transition: "all 0.8s ease", filter: `drop-shadow(0 0 4px ${progColor}50)` }}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-[24px] font-extrabold tabular-nums text-tyro-text-primary leading-none">
-                    %{avgProgress}
-                  </span>
-                  <span className="text-[9px] font-semibold text-tyro-text-muted mt-1">
-                    Ort. İlerleme
-                  </span>
-                </div>
-              </div>
-            );
-          })()}
+          <div className="relative" style={{ width: 130, height: 130 }}>
+            {/* Subtle glow */}
+            <div className="absolute inset-2 rounded-full" style={{ background: `radial-gradient(circle, ${progColor}10 0%, transparent 70%)` }} />
+            <svg width={130} height={130} viewBox="0 0 130 130" className="-rotate-90">
+              {/* Track */}
+              <circle cx={65} cy={65} r={r} fill="none" stroke="#e2e8f0" strokeWidth={9} opacity={0.35} />
+              {/* Progress arc */}
+              <circle
+                cx={65} cy={65} r={r}
+                fill="none"
+                stroke={progColor}
+                strokeWidth={9}
+                strokeLinecap="round"
+                strokeDasharray={`${progressDash} ${c - progressDash}`}
+                strokeDashoffset={0}
+                style={{ transition: "all 0.8s ease", filter: `drop-shadow(0 0 6px ${progColor}40)` }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-[26px] font-extrabold tabular-nums text-tyro-text-primary leading-none">
+                %{avgProgress}
+              </span>
+              <span className="text-[11px] font-medium text-tyro-text-secondary mt-1">
+                Ort. İlerleme
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </GlassCard>
