@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@heroui/react";
-import { Pencil, Plus, ArrowLeft, ChevronRight } from "lucide-react";
+import { Pencil, Plus, ArrowLeft, ChevronRight, X } from "lucide-react";
 import TagChip from "@/components/ui/TagChip";
 import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
@@ -20,6 +20,7 @@ interface ProjeDetailProps {
   onEdit: () => void;
   onModeChange?: (mode: string) => void;
   onSelectHedef?: (proje: Proje) => void;
+  onClose?: () => void;
 }
 
 export default function ProjeDetail({
@@ -27,6 +28,7 @@ export default function ProjeDetail({
   onEdit: _onEdit,
   onModeChange,
   onSelectHedef,
+  onClose,
 }: ProjeDetailProps) {
   const { t } = useTranslation();
   const [mode, _setMode] = useState<DetailMode>("detail");
@@ -139,28 +141,60 @@ export default function ProjeDetail({
         />
 
         <div className="relative z-10">
-          {/* Row 1: Title + Düzenle */}
-          <div className="flex items-start justify-between gap-3">
-            <h3
-              className="text-[15px] font-bold leading-snug flex-1"
-              style={{ color: sidebarTheme.textPrimary ?? "#ffffff" }}
-            >
-              {currentHedef.name}
-            </h3>
-            <button
-              type="button"
-              onClick={() => setMode("editing")}
-              className="shrink-0 h-7 px-3 rounded-lg flex items-center gap-1.5 text-[11px] font-semibold transition-all cursor-pointer backdrop-blur-sm"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.15)",
-                color: sidebarTheme.textPrimary ?? "#ffffff",
-                border: "1px solid rgba(255,255,255,0.2)",
-              }}
-            >
-              <Pencil size={12} />
-              Düzenle
-            </button>
-          </div>
+          {(() => {
+            const isDark = sidebarTheme.isDark !== false;
+            const txtColor = isDark ? "#ffffff" : "#1e293b";
+            const txtMuted = isDark ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.6)";
+            const btnBg = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.06)";
+            const btnBgHover = isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.12)";
+            const btnBorder = isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.1)";
+            const btnBorderHover = isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.2)";
+            const sepColor = isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)";
+            return (
+              <>
+                {/* Row 0: ID + Buttons */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[13px] font-bold tabular-nums" style={{ color: txtMuted }}>
+                    {currentHedef.id}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMode("editing")}
+                      className="h-8 px-3.5 rounded-xl flex items-center gap-2 text-[12px] font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.03] active:scale-[0.97]"
+                      style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}
+                    >
+                      <Pencil size={13} />
+                      Düzenle
+                    </button>
+                    {onClose && (
+                      <button
+                        type="button"
+                        onClick={onClose}
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.05] active:scale-[0.95]"
+                        style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}
+                      >
+                        <X size={15} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {/* Smooth separator */}
+                <div className="h-px rounded-full mb-2" style={{ background: `linear-gradient(to right, transparent, ${sepColor} 30%, ${sepColor} 70%, transparent)` }} />
+              </>
+            );
+          })()}
+          {/* Row 1: Title */}
+          <h3
+            className="text-[15px] font-bold leading-snug"
+            style={{ color: sidebarTheme.textPrimary ?? "#ffffff" }}
+          >
+            {currentHedef.name}
+          </h3>
 
           {/* Row 2: Açıklama (varsa) */}
           {currentHedef.description && (
@@ -177,19 +211,19 @@ export default function ProjeDetail({
             <StatusBadge status={currentHedef.status} />
             {currentHedef.tags && currentHedef.tags.length > 0 && (
               <>
-                <span className="w-px h-3.5 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />
+                <span className="w-px h-3.5 rounded-full" style={{ backgroundColor: sidebarTheme.isDark !== false ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)" }} />
                 {currentHedef.tags.map((tag) => (
                   <TagChip key={tag} name={tag} size="md" showIcon />
                 ))}
               </>
             )}
-            <span className="ml-auto text-[13px] font-extrabold tabular-nums" style={{ color: sidebarTheme.textPrimary ?? "#ffffff" }}>
+            <span className="ml-auto text-[13px] font-extrabold tabular-nums" style={{ color: sidebarTheme.isDark !== false ? "#ffffff" : "#1e293b" }}>
               %{currentHedef.progress}
             </span>
           </div>
 
           {/* Row 4: İlerleme bar */}
-          <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
+          <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: sidebarTheme.isDark !== false ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)" }}>
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{

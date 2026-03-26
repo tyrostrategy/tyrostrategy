@@ -534,11 +534,13 @@ export default function ProjelerPage() {
         title={detailTitle}
         icon={<Target size={18} />}
         maxWidth={640}
+        hideHeader
       >
         {selectedProje && (
           <ProjeDetail
             proje={selectedProje}
             onEdit={() => openEdit(selectedProje)}
+            onClose={closePanel}
             onModeChange={(m) => {
               if (m === "editing") setDetailTitle(t("detail.editObjective"));
               else if (m === "addAksiyon") setDetailTitle(t("detail.addAction"));

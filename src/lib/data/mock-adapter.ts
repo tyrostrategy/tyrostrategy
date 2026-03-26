@@ -166,7 +166,7 @@ function assignSystematicIds(projeler: Proje[], aksiyonlar: Aksiyon[]): { projel
     const yy = String(year).slice(-2);
     const count = (projeYearCounters.get(yy) ?? 0) + 1;
     projeYearCounters.set(yy, count);
-    const newId = `O${yy}-${String(count).padStart(4, "0")}`;
+    const newId = `P${yy}-${String(count).padStart(4, "0")}`;
     projeIdMap.set(h.id, newId);
   }
 

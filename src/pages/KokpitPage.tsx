@@ -161,17 +161,7 @@ export default function KokpitPage() {
               </button>
             ))}
           </div>
-          {activeTab !== "master" && (
-            <motion.button
-              type="button"
-              onClick={() => setWizardOpen(true)}
-              className="btn-expandable bg-gradient-to-r from-tyro-gold to-tyro-gold-light text-white font-semibold text-[12px] shadow-sm shadow-tyro-gold/20 cursor-pointer shrink-0"
-              whileTap={{ scale: 0.95 }}
-            >
-              <Wand2 size={13} className="shrink-0" />
-              <span>Sihirbaz</span>
-            </motion.button>
-          )}
+          {/* Sihirbaz butonu toolbar'a taşındı */}
         </div>
       </div>
 
@@ -412,17 +402,21 @@ export default function KokpitPage() {
           aksiyonlar={aksiyonlar}
           onHedefClick={openHedefPanel}
           onAksiyonClick={openAksiyonPanel}
+          externalSearch={toolbarSearch}
+          externalStatusFilter={statusFilter}
+          externalSourceFilter={sourceFilter}
         />
       )}
       {/* Kanban view removed */}
       {/* Detail panel */}
-      <SlidingPanel isOpen={panelOpen} onClose={closePanel} title={panelTitle}>
+      <SlidingPanel isOpen={panelOpen} onClose={closePanel} title={panelTitle} hideHeader={!!panelHedef}>
         {panelHedef && (
           <ProjeDetail
             proje={panelHedef}
             onEdit={() => {}}
             onModeChange={() => {}}
             onSelectHedef={(p) => setPanelHedef(p)}
+            onClose={closePanel}
           />
         )}
         {panelAksiyon && (
@@ -538,16 +532,19 @@ function TabloView({
   aksiyonlar,
   onHedefClick,
   onAksiyonClick,
+  externalSearch = "",
+  externalStatusFilter = "all",
+  externalSourceFilter = "all",
 }: {
   projeler: Proje[];
   aksiyonlar: Aksiyon[];
   onHedefClick: (h: Proje) => void;
   onAksiyonClick: (a: Aksiyon) => void;
+  externalSearch?: string;
+  externalStatusFilter?: string;
+  externalSourceFilter?: string;
 }) {
   const { t } = useTranslation();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<EntityStatus | "all">("all");
-  const [sourceFilter, setSourceFilter] = useState<Source | "all">("all");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const toggleExpand = (id: string) => {
@@ -561,8 +558,8 @@ function TabloView({
 
   const filtered = useMemo(() => {
     let result = projeler;
-    if (search.trim()) {
-      const q = search.toLocaleLowerCase("tr");
+    if (externalSearch.trim()) {
+      const q = externalSearch.toLocaleLowerCase("tr");
       result = result.filter((h) => {
         const hedefStr = [h.name, h.description, h.owner, h.department, h.source, h.status, h.startDate, h.endDate, ...(h.tags ?? [])].filter(Boolean).join(" ").toLocaleLowerCase("tr");
         if (hedefStr.includes(q)) return true;
@@ -570,50 +567,18 @@ function TabloView({
         return childActions.some((a) => [a.name, a.description, a.owner].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q));
       });
     }
-    if (statusFilter !== "all") {
-      result = result.filter((h) => h.status === statusFilter);
+    if (externalStatusFilter !== "all") {
+      result = result.filter((h) => h.status === externalStatusFilter);
     }
-    if (sourceFilter !== "all") {
-      result = result.filter((h) => h.source === sourceFilter);
+    if (externalSourceFilter !== "all") {
+      result = result.filter((h) => h.source === externalSourceFilter);
     }
     return result;
-  }, [projeler, aksiyonlar, search, statusFilter, sourceFilter]);
+  }, [projeler, aksiyonlar, externalSearch, externalStatusFilter, externalSourceFilter]);
 
   return (
     <div>
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="relative flex-1 min-w-[200px] max-w-[320px]">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-tyro-text-muted" />
-          <input
-            type="text"
-            placeholder={t("common.search")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 rounded-button border-2 border-tyro-border bg-tyro-surface text-sm text-tyro-text-primary placeholder:text-tyro-text-muted focus:border-tyro-navy focus:ring-2 focus:ring-tyro-navy/10 outline-none transition-all"
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as EntityStatus | "all")}
-          className="h-10 px-3 rounded-button border-2 border-tyro-border bg-tyro-surface text-sm text-tyro-text-primary outline-none cursor-pointer"
-        >
-          <option value="all">{t("common.status")}: {t("common.all")}</option>
-          {KANBAN_STATUSES.map((s) => (
-            <option key={s} value={s}>{getStatusLabel(s, t)}</option>
-          ))}
-        </select>
-        <select
-          value={sourceFilter}
-          onChange={(e) => setSourceFilter(e.target.value as Source | "all")}
-          className="h-10 px-3 rounded-button border-2 border-tyro-border bg-tyro-surface text-sm text-tyro-text-primary outline-none cursor-pointer"
-        >
-          <option value="all">{t("common.source")}: {t("common.all")}</option>
-          <option value="Türkiye">Türkiye</option>
-          <option value="Kurumsal">Kurumsal</option>
-          <option value="International">International</option>
-        </select>
-      </div>
+      {/* Filters removed — toolbar handles filtering */}
 
       {/* Desktop table */}
       <div className="hidden sm:block glass-card overflow-hidden">

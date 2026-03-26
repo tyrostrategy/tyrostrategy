@@ -16,6 +16,8 @@ interface SlidingPanelProps {
   footer?: ReactNode;
   /** Optional custom header replacing the default title bar. Close button is still rendered. */
   headerContent?: ReactNode;
+  /** Hide the default header entirely. Useful when content provides its own header/close. */
+  hideHeader?: boolean;
 }
 
 export default function SlidingPanel({
@@ -27,6 +29,7 @@ export default function SlidingPanel({
   maxWidth = 480,
   footer,
   headerContent,
+  hideHeader,
 }: SlidingPanelProps) {
   const { t } = useTranslation();
   const handleKeyDown = useCallback(
@@ -66,7 +69,7 @@ export default function SlidingPanel({
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
             {/* Header */}
-            {headerContent ? (
+            {hideHeader ? null : headerContent ? (
               <div className="relative">
                 {headerContent}
                 <button

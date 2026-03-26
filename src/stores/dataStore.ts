@@ -51,7 +51,7 @@ function uid(): string {
  * Serial: 4-digit zero-padded, auto-incremented per year
  */
 function generateSystematicId(
-  prefix: "O" | "A",
+  prefix: "P" | "A",
   startDate: string,
   existingIds: string[]
 ): string {
@@ -223,7 +223,7 @@ export const useDataStore = create<DataState>()(
         ),
     }),
     {
-      name: "tyro-data-store-v6",
+      name: "tyro-data-store-v7",
       skipHydration: true,
     }
   )
