@@ -15,7 +15,6 @@ import {
   ArrowUpDown,
   Eye,
   CalendarCheck,
-  Sparkles,
   CircleCheckBig,
   ChevronUp,
 } from "lucide-react";
@@ -192,9 +191,9 @@ export default function KokpitPage() {
             <button
               type="button"
               onClick={() => setToolbarSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-tyro-text-muted/20 hover:bg-tyro-text-muted/40 flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer text-tyro-text-muted hover:text-tyro-text-secondary transition-colors"
             >
-              <span className="text-[10px] font-bold text-tyro-text-muted leading-none">✕</span>
+              <span className="text-[12px] leading-none">✕</span>
             </button>
           )}
         </div>
@@ -289,7 +288,7 @@ export default function KokpitPage() {
                       onClick={() => { setNewMenuOpen(false); setWizardOpen(true); }}
                       className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[12px] font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
-                      <Sparkles size={14} className="text-tyro-gold" />
+                      <Wand2 size={14} className="text-tyro-gold" />
                       Proje Sihirbazı
                     </button>
                     <div className="h-px bg-tyro-border/20 mx-3" />

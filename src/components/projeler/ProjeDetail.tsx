@@ -116,61 +116,45 @@ export default function ProjeDetail({
   }
 
   return (
-    <div className="flex flex-col gap-1 overflow-hidden">
-      {/* Header: Title + Edit Button */}
-      <div className="flex items-start justify-between gap-3 min-w-0">
-        <div className="min-w-0 flex-1 overflow-hidden">
-          <h3 className="text-[15px] font-bold text-tyro-text-primary leading-snug truncate">
-            {currentHedef.name}
-          </h3>
-          <div className="mt-1.5">
-            <StatusBadge status={currentHedef.status} />
-          </div>
-        </div>
-        <Button
-          size="sm"
-          variant="bordered"
-          onPress={() => setMode("editing")}
-          startContent={<Pencil size={13} />}
-          className="rounded-button border-tyro-border text-tyro-text-primary relative overflow-hidden group shrink-0"
+    <div className="flex flex-col gap-3 overflow-hidden">
+      {/* 1. Proje Adı + Düzenle — wrapping */}
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="text-[16px] font-bold text-tyro-text-primary leading-snug flex-1">
+          {currentHedef.name}
+        </h3>
+        <button
+          type="button"
+          onClick={() => setMode("editing")}
+          className="shrink-0 h-7 px-2.5 rounded-lg border border-tyro-border/60 flex items-center gap-1.5 text-[11px] font-medium text-tyro-text-secondary hover:bg-tyro-navy/5 hover:text-tyro-navy transition-all cursor-pointer"
         >
-          <span className="relative z-10">{t("common.edit")}</span>
-          <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
-            <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-tyro-navy/5 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
-          </span>
-        </Button>
+          <Pencil size={12} />
+          Düzenle
+        </button>
       </div>
 
-      {/* Tags */}
-      {currentHedef.tags && currentHedef.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          {currentHedef.tags.map((tag) => (
-            <TagChip key={tag} name={tag} size="md" showIcon />
-          ))}
-        </div>
-      )}
-
-      {/* Description */}
+      {/* 2. Açıklama */}
       {currentHedef.description && (
-        <p className="text-[13px] text-tyro-text-secondary leading-relaxed mt-1">
+        <p className="text-[12px] text-tyro-text-secondary leading-relaxed -mt-1">
           {currentHedef.description}
         </p>
       )}
 
-      {/* Gradient Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-tyro-border to-transparent my-3" />
+      {/* 3. Statü + Etiketler — yan yana */}
+      <div className="flex items-center flex-wrap gap-2">
+        <StatusBadge status={currentHedef.status} />
+        {currentHedef.tags && currentHedef.tags.length > 0 && (
+          <>
+            <span className="w-px h-4 bg-tyro-border/40 rounded-full" />
+            {currentHedef.tags.map((tag) => (
+              <TagChip key={tag} name={tag} size="md" showIcon />
+            ))}
+          </>
+        )}
+      </div>
 
-      {/* Progress Bar */}
-      <div className="rounded-xl bg-tyro-surface/60 border border-tyro-border/20 shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-sm overflow-hidden p-3 mb-1">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted">
-            {t("common.progress")}
-          </span>
-          <span className="text-[13px] font-bold tabular-nums" style={{ color: progressColor(currentHedef.progress) }}>
-            %{currentHedef.progress}
-          </span>
-        </div>
-        <div className="w-full h-2 rounded-full bg-tyro-bg overflow-hidden">
+      {/* 4. İlerleme çubuğu */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-2 rounded-full bg-tyro-bg overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-700"
             style={{
@@ -179,71 +163,76 @@ export default function ProjeDetail({
             }}
           />
         </div>
+        <span className="text-[13px] font-bold tabular-nums shrink-0" style={{ color: progressColor(currentHedef.progress) }}>
+          %{currentHedef.progress}
+        </span>
       </div>
 
-      {/* Info Grid */}
+      {/* 5. Bilgi Grid — tüm alanlar */}
       <div className="rounded-xl bg-tyro-surface/60 border border-tyro-border/20 shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-sm overflow-hidden divide-y divide-tyro-border/20">
+        {/* Sahip + Kaynak */}
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
-          <div className="px-3 py-2.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">
-              {t("common.owner")}
-            </span>
-            <p className="text-[12px] font-medium text-tyro-text-primary truncate">
-              {currentHedef.owner ?? "-"}
-            </p>
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.owner")}</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.owner ?? "-"}</p>
           </div>
-          <div className="px-3 py-2.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">
-              {t("common.source")}
-            </span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">
-              {currentHedef.source}
-            </p>
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.source")}</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.source}</p>
           </div>
         </div>
+        {/* Başlangıç + Bitiş */}
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
-          <div className="px-3 py-2.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">
-              {t("common.startDate")}
-            </span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">
-              {formatDate(currentHedef.startDate)}
-            </p>
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.startDate")}</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{formatDate(currentHedef.startDate)}</p>
           </div>
-          <div className="px-3 py-2.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">
-              {t("common.endDate")}
-            </span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">
-              {formatDate(currentHedef.endDate)}
-            </p>
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.endDate")}</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{formatDate(currentHedef.endDate)}</p>
           </div>
         </div>
+        {/* Kontrol Tarihi + Departman */}
+        <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Kontrol Tarihi</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.reviewDate ? formatDate(currentHedef.reviewDate) : "-"}</p>
+          </div>
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Departman</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.department || "-"}</p>
+          </div>
+        </div>
+        {/* Oluşturan + Oluşturulma */}
+        <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.createdBy")}</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.createdBy || "-"}</p>
+          </div>
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.createdAt")}</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.createdAt ? formatDate(currentHedef.createdAt) : "-"}</p>
+          </div>
+        </div>
+        {/* Katılımcılar + Proje ID */}
+        <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Katılımcılar</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.participants?.join(", ") || "-"}</p>
+          </div>
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Proje ID</span>
+            <p className="text-[12px] font-mono font-medium text-tyro-text-secondary">{currentHedef.id}</p>
+          </div>
+        </div>
+        {/* Tamamlanma (varsa) */}
+        {currentHedef.completedAt && (
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.completedAt")}</span>
+            <p className="text-[12px] font-medium text-emerald-600">{formatDate(currentHedef.completedAt)}</p>
+          </div>
+        )}
       </div>
-
-      {/* Meta */}
-      {(currentHedef.createdBy || currentHedef.createdAt || currentHedef.completedAt) && (
-        <div className="mt-3 pt-3 border-t border-tyro-border/30 flex flex-wrap gap-x-6 gap-y-1">
-          {currentHedef.createdBy && (
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-tyro-text-muted font-semibold mb-0.5">{t("common.createdBy").toUpperCase()}</p>
-              <p className="text-[13px] text-tyro-text-primary">{currentHedef.createdBy}</p>
-            </div>
-          )}
-          {currentHedef.createdAt && (
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-tyro-text-muted font-semibold mb-0.5">{t("common.createdAt").toUpperCase()}</p>
-              <p className="text-[13px] text-tyro-text-primary">{formatDate(currentHedef.createdAt)}</p>
-            </div>
-          )}
-          {currentHedef.completedAt && (
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-tyro-text-muted font-semibold mb-0.5">{t("common.completedAt").toUpperCase()}</p>
-              <p className="text-[13px] text-tyro-text-primary text-emerald-600 font-medium">{formatDate(currentHedef.completedAt)}</p>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Ana Proje (Parent Objective) */}
       {parentHedef && (
