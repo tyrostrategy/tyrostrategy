@@ -368,17 +368,10 @@ function DetailPanel({
 
       {/* Description moved to header as subtitle */}
 
-      {/* === PROGRESS — gradient bar matching AksiyonForm style === */}
+      {/* === PROGRESS — status-colored bar === */}
       {(() => {
         const p = proje.progress;
-        const barGradient = p <= 25 ? "from-red-400 to-red-500"
-          : p <= 50 ? "from-amber-400 to-amber-500"
-          : p <= 75 ? "from-yellow-400 to-emerald-400"
-          : "from-emerald-400 to-emerald-500";
-        const textColor = p <= 25 ? "text-red-500"
-          : p <= 50 ? "text-amber-500"
-          : p <= 75 ? "text-yellow-600"
-          : "text-emerald-500";
+        const statusColor = STATUS_HEX[proje.status] ?? "#94a3b8";
         return (
       <div className="rounded-2xl bg-white/70 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.04)] px-4 py-3">
         <div className="flex items-center gap-3">
@@ -387,11 +380,11 @@ function DetailPanel({
           </span>
           <div className="flex-1 h-3 rounded-full bg-tyro-border/15 overflow-hidden">
             <div
-              className={`h-full rounded-full bg-gradient-to-r ${barGradient}`}
-              style={{ width: `${p}%`, transition: "width 500ms ease, background 300ms ease" }}
+              className="h-full rounded-full"
+              style={{ width: `${p}%`, backgroundColor: statusColor, transition: "width 500ms ease" }}
             />
           </div>
-          <span className={`text-[15px] font-extrabold tabular-nums shrink-0 ${p === 0 ? "text-tyro-text-muted" : textColor}`}>
+          <span className="text-[15px] font-extrabold tabular-nums shrink-0" style={{ color: p === 0 ? undefined : statusColor }}>
             %{p}
           </span>
           <span className="text-[11px] text-tyro-text-muted shrink-0">
