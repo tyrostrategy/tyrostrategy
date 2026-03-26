@@ -9,49 +9,46 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
 import GlassCard from "@/components/ui/GlassCard";
 
 export default function SourceChart() {
-  const { t } = useTranslation();
   const projeler = useDataStore((s) => s.projeler);
-  const aksiyonlar = useDataStore((s) => s.aksiyonlar);
 
   const chartData = useMemo(() => {
-    const sources = ["T\u00fcrkiye", "Kurumsal", "International"];
+    const sources = ["Türkiye", "Kurumsal", "International"];
     return sources.map((source) => {
-      const sourceHedefler = projeler.filter((h) => h.source === source);
-      const sourceHedefIds = new Set(sourceHedefler.map((h) => h.id));
-      const sourceAksiyonlar = aksiyonlar.filter((a) => sourceHedefIds.has(a.projeId));
-      const achieved = sourceAksiyonlar.filter((a) => a.status === "Achieved").length;
-      const active = sourceAksiyonlar.filter(
-        (a) => a.status === "On Track" || a.status === "At Risk"
-      ).length;
-      const remaining = sourceAksiyonlar.length - achieved - active;
+      const sp = projeler.filter((h) => h.source === source);
+      const achieved = sp.filter((h) => h.status === "Achieved").length;
+      const onTrack = sp.filter((h) => h.status === "On Track").length;
+      const behind = sp.filter((h) => h.status === "Behind").length;
+      const atRisk = sp.filter((h) => h.status === "At Risk").length;
+      const notStarted = sp.filter((h) => h.status === "Not Started").length;
+      const other = sp.length - achieved - onTrack - behind - atRisk - notStarted;
 
       return {
         source: source === "International" ? "Intl" : source,
-        proje: sourceHedefler.length,
-        aksiyon: sourceAksiyonlar.length,
-        tamamlanan: achieved,
-        devamEden: active,
-        bekleyen: Math.max(0, remaining),
+        "Tamamlandı": achieved,
+        "Yolunda": onTrack,
+        "Gecikmeli": behind,
+        "Risk Altında": atRisk,
+        "Başlanmadı": notStarted,
+        "Diğer": Math.max(0, other),
       };
     });
-  }, [projeler, aksiyonlar]);
+  }, [projeler]);
 
   return (
     <GlassCard className="p-5 flex-1 flex flex-col">
       <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">
-        {t("dashboard.sourceDistribution")}
+        İş Grubu Bazlı Proje Dağılımı
       </h3>
       <p className="text-[11px] text-tyro-text-secondary mb-3">
-        {t("dashboard.sourceSubtitle")}
+        Türkiye, Kurumsal ve International iş grupları
       </p>
       <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={chartData} barGap={3} barSize={18}>
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={chartData} barGap={2} barSize={14}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--tyro-border)" vertical={false} />
             <XAxis
               dataKey="source"
@@ -80,32 +77,11 @@ export default function SourceChart() {
               iconType="circle"
               iconSize={7}
             />
-            <Bar
-              dataKey="tamamlanan"
-              name={t("dashboard.completed")}
-              fill="var(--tyro-success)"
-              radius={[4, 4, 0, 0]}
-              isAnimationActive={true}
-              animationDuration={1200}
-            />
-            <Bar
-              dataKey="devamEden"
-              name={t("dashboard.inProgress")}
-              fill="var(--tyro-navy)"
-              radius={[4, 4, 0, 0]}
-              isAnimationActive={true}
-              animationDuration={1200}
-              animationBegin={200}
-            />
-            <Bar
-              dataKey="bekleyen"
-              name={t("dashboard.pending")}
-              fill="var(--tyro-gold)"
-              radius={[4, 4, 0, 0]}
-              isAnimationActive={true}
-              animationDuration={1200}
-              animationBegin={400}
-            />
+            <Bar dataKey="Tamamlandı" fill="#10b981" radius={[4, 4, 0, 0]} animationDuration={1200} />
+            <Bar dataKey="Yolunda" fill="var(--tyro-navy)" radius={[4, 4, 0, 0]} animationDuration={1200} animationBegin={100} />
+            <Bar dataKey="Gecikmeli" fill="#ef4444" radius={[4, 4, 0, 0]} animationDuration={1200} animationBegin={200} />
+            <Bar dataKey="Risk Altında" fill="#f59e0b" radius={[4, 4, 0, 0]} animationDuration={1200} animationBegin={300} />
+            <Bar dataKey="Başlanmadı" fill="#94a3b8" radius={[4, 4, 0, 0]} animationDuration={1200} animationBegin={400} />
           </BarChart>
         </ResponsiveContainer>
       </div>
