@@ -145,13 +145,13 @@ export default function KokpitPage() {
           <p className="text-[12px] sm:text-[13px] text-tyro-text-muted mt-0.5">{t("pages.strategicHQ.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex bg-tyro-bg rounded-button p-0.5 gap-0.5">
+          <div className="flex bg-tyro-bg rounded-xl p-1 gap-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={clsx(
-                  "px-3.5 py-1.5 rounded-[10px] text-[11px] font-semibold transition-all cursor-pointer whitespace-nowrap",
+                  "px-5 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer whitespace-nowrap",
                   activeTab === tab.id
                     ? "bg-tyro-surface text-tyro-navy shadow-tyro-sm"
                     : "text-tyro-text-muted hover:text-tyro-text-secondary"
@@ -166,16 +166,16 @@ export default function KokpitPage() {
       </div>
 
       {/* Toolbar — search + filters left, actions right */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-3 mb-4">
         {/* Search */}
-        <div className="relative w-[200px] shrink-0">
-          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-tyro-text-muted pointer-events-none" />
+        <div className="relative w-[280px] shrink-0">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-tyro-text-muted pointer-events-none" />
           <input
             type="text"
             value={toolbarSearch}
             onChange={(e) => setToolbarSearch(e.target.value)}
             placeholder="Ara..."
-            className="w-full h-8 pl-8 pr-7 rounded-lg border border-tyro-border/60 bg-tyro-surface/80 text-[12px] text-tyro-text-primary placeholder:text-tyro-text-muted focus:outline-none focus:ring-1.5 focus:ring-tyro-navy/15 focus:border-tyro-navy/30 transition-all"
+            className="w-full h-10 pl-9 pr-8 rounded-xl border-2 border-tyro-border bg-tyro-surface text-sm text-tyro-text-primary placeholder:text-tyro-text-muted focus:outline-none focus:border-tyro-navy focus:ring-2 focus:ring-tyro-navy/10 transition-all"
           />
           {toolbarSearch && (
             <button
@@ -191,9 +191,9 @@ export default function KokpitPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-8 px-2.5 rounded-lg border border-tyro-border/60 bg-tyro-surface/80 text-[12px] font-medium text-tyro-text-secondary cursor-pointer focus:outline-none focus:ring-1.5 focus:ring-tyro-navy/15 transition-all appearance-none pr-6 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M0%200l5%206%205-6z%22%2F%3E%3C%2Fsvg%3E')] bg-[right_8px_center] bg-no-repeat"
+          className="h-10 px-3 rounded-xl border-2 border-tyro-border bg-tyro-surface text-sm font-medium text-tyro-text-secondary cursor-pointer focus:outline-none focus:border-tyro-navy focus:ring-2 focus:ring-tyro-navy/10 transition-all appearance-none pr-7 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M0%200l5%206%205-6z%22%2F%3E%3C%2Fsvg%3E')] bg-[right_10px_center] bg-no-repeat"
         >
-          <option value="all">Tüm Durumlar</option>
+          <option value="all">Durum: Tümü</option>
           <option value="On Track">Yolunda</option>
           <option value="At Risk">Risk Altında</option>
           <option value="Behind">Gecikmeli</option>
@@ -206,9 +206,9 @@ export default function KokpitPage() {
         <select
           value={sourceFilter}
           onChange={(e) => setSourceFilter(e.target.value)}
-          className="h-8 px-2.5 rounded-lg border border-tyro-border/60 bg-tyro-surface/80 text-[12px] font-medium text-tyro-text-secondary cursor-pointer focus:outline-none focus:ring-1.5 focus:ring-tyro-navy/15 transition-all appearance-none pr-6 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M0%200l5%206%205-6z%22%2F%3E%3C%2Fsvg%3E')] bg-[right_8px_center] bg-no-repeat"
+          className="h-10 px-3 rounded-xl border-2 border-tyro-border bg-tyro-surface text-sm font-medium text-tyro-text-secondary cursor-pointer focus:outline-none focus:border-tyro-navy focus:ring-2 focus:ring-tyro-navy/10 transition-all appearance-none pr-7 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M0%200l5%206%205-6z%22%2F%3E%3C%2Fsvg%3E')] bg-[right_10px_center] bg-no-repeat"
         >
-          <option value="all">Tüm Kaynaklar</option>
+          <option value="all">Kaynak: Tümü</option>
           <option value="Türkiye">Türkiye</option>
           <option value="Kurumsal">Kurumsal</option>
           <option value="International">International</option>
@@ -217,7 +217,7 @@ export default function KokpitPage() {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="h-8 px-2.5 rounded-lg border border-tyro-border/60 bg-tyro-surface/80 text-[12px] font-medium text-tyro-text-secondary cursor-pointer focus:outline-none focus:ring-1.5 focus:ring-tyro-navy/15 transition-all appearance-none pr-6 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M0%200l5%206%205-6z%22%2F%3E%3C%2Fsvg%3E')] bg-[right_8px_center] bg-no-repeat"
+          className="h-10 px-3 rounded-xl border-2 border-tyro-border bg-tyro-surface text-sm font-medium text-tyro-text-secondary cursor-pointer focus:outline-none focus:border-tyro-navy focus:ring-2 focus:ring-tyro-navy/10 transition-all appearance-none pr-7 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M0%200l5%206%205-6z%22%2F%3E%3C%2Fsvg%3E')] bg-[right_10px_center] bg-no-repeat"
         >
           <option value="name">Ada Göre</option>
           <option value="progress">İlerlemeye Göre</option>
@@ -228,10 +228,10 @@ export default function KokpitPage() {
         <button
           type="button"
           onClick={() => setSortAsc(!sortAsc)}
-          className="h-8 w-8 rounded-lg border border-tyro-border/60 bg-tyro-surface/80 flex items-center justify-center cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0"
+          className="h-10 w-10 rounded-xl border-2 border-tyro-border bg-tyro-surface flex items-center justify-center cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0"
           title={sortAsc ? "Artan" : "Azalan"}
         >
-          <ArrowUpDown size={13} className={`text-tyro-text-secondary transition-transform ${sortAsc ? "" : "rotate-180"}`} />
+          <ArrowUpDown size={15} className={`text-tyro-text-secondary transition-transform ${sortAsc ? "" : "rotate-180"}`} />
         </button>
 
         {/* Clear filters — show when any filter is active */}
@@ -239,7 +239,7 @@ export default function KokpitPage() {
           <button
             type="button"
             onClick={() => { setToolbarSearch(""); setStatusFilter("all"); setSourceFilter("all"); setSortBy("name"); setSortAsc(true); }}
-            className="h-8 px-2.5 rounded-lg text-[12px] font-medium text-red-500 hover:bg-red-50 transition-colors cursor-pointer shrink-0"
+            className="h-10 px-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors cursor-pointer shrink-0"
           >
             Temizle
           </button>
@@ -249,18 +249,18 @@ export default function KokpitPage() {
         <div className="flex-1" />
 
         {/* Action buttons — right aligned */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Yeni — dropdown */}
           <div className="relative">
             <motion.button
               type="button"
               onClick={() => { setNewMenuOpen(!newMenuOpen); setEditMenuOpen(false); }}
-              className="h-8 px-3 rounded-lg bg-tyro-navy text-white flex items-center gap-1.5 cursor-pointer text-[12px] font-semibold"
+              className="h-10 px-4 rounded-xl bg-tyro-navy text-white flex items-center gap-2 cursor-pointer text-sm font-semibold"
               whileTap={{ scale: 0.96 }}
             >
-              <Plus size={13} strokeWidth={2.5} />
+              <Plus size={15} strokeWidth={2.5} />
               Yeni
-              <ChevronDown size={11} className={`transition-transform ${newMenuOpen ? "rotate-180" : ""}`} />
+              <ChevronDown size={12} className={`transition-transform ${newMenuOpen ? "rotate-180" : ""}`} />
             </motion.button>
             <AnimatePresence>
               {newMenuOpen && (
@@ -271,23 +271,23 @@ export default function KokpitPage() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.95 }}
                     transition={{ duration: 0.12 }}
-                    className="absolute right-0 top-10 z-50 w-[200px] rounded-xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-xl overflow-hidden py-1"
+                    className="absolute right-0 top-12 z-50 w-[220px] rounded-xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-xl overflow-hidden py-1.5"
                   >
                     <button
                       type="button"
                       onClick={() => { setNewMenuOpen(false); setWizardOpen(true); }}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[12px] font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
-                      <Wand2 size={14} className="text-tyro-gold" />
+                      <Wand2 size={16} className="text-tyro-gold" />
                       Proje Sihirbazı
                     </button>
                     <div className="h-px bg-tyro-border/20 mx-3" />
                     <button
                       type="button"
                       onClick={() => { setNewMenuOpen(false); setAksiyonPanelOpen(true); }}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[12px] font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
-                      <CircleCheckBig size={14} className="text-emerald-500" />
+                      <CircleCheckBig size={16} className="text-emerald-500" />
                       Yeni Aksiyon
                     </button>
                   </motion.div>
@@ -300,16 +300,16 @@ export default function KokpitPage() {
             <motion.button
               type="button"
               onClick={() => { if (!selectedProje) return; setEditMenuOpen(!editMenuOpen); setNewMenuOpen(false); }}
-              className={`h-8 px-3 rounded-lg border flex items-center gap-1.5 text-[12px] font-semibold transition-all ${
+              className={`h-10 px-4 rounded-xl border-2 flex items-center gap-2 text-sm font-semibold transition-all ${
                 selectedProje
                   ? "border-tyro-border text-tyro-text-primary hover:bg-tyro-navy/5 cursor-pointer"
                   : "border-tyro-border/40 text-tyro-text-muted/40 cursor-default"
               }`}
               whileTap={selectedProje ? { scale: 0.96 } : {}}
             >
-              <Pencil size={12} />
+              <Pencil size={14} />
               Düzenle
-              <ChevronDown size={11} className={`transition-transform ${editMenuOpen ? "rotate-180" : ""}`} />
+              <ChevronDown size={12} className={`transition-transform ${editMenuOpen ? "rotate-180" : ""}`} />
             </motion.button>
             <AnimatePresence>
               {editMenuOpen && selectedProje && (
@@ -320,23 +320,23 @@ export default function KokpitPage() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.95 }}
                     transition={{ duration: 0.12 }}
-                    className="absolute right-0 top-10 z-50 w-[220px] rounded-xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-xl overflow-hidden py-1"
+                    className="absolute right-0 top-12 z-50 w-[240px] rounded-xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-xl overflow-hidden py-1.5"
                   >
                     <button
                       type="button"
                       onClick={() => { setEditMenuOpen(false); openHedefPanel(selectedProje); }}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[12px] font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
-                      <Eye size={14} className="text-tyro-navy" />
+                      <Eye size={16} className="text-tyro-navy" />
                       Projeyi Görüntüle
                     </button>
                     <div className="h-px bg-tyro-border/20 mx-3" />
                     <button
                       type="button"
                       onClick={() => { setEditMenuOpen(false); openHedefPanel(selectedProje); }}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[12px] font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
-                      <Pencil size={14} className="text-amber-500" />
+                      <Pencil size={16} className="text-amber-500" />
                       Projeyi Düzenle
                     </button>
                     <div className="h-px bg-tyro-border/20 mx-3" />
@@ -347,9 +347,9 @@ export default function KokpitPage() {
                         setReviewDateDraft(selectedProje.reviewDate || new Date().toISOString().slice(0, 10));
                         setReviewPopoverOpen(true);
                       }}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[12px] font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
-                      <CalendarCheck size={14} className="text-teal-500" />
+                      <CalendarCheck size={16} className="text-teal-500" />
                       Kontrol Tarihini Güncelle
                     </button>
                   </motion.div>
@@ -364,12 +364,15 @@ export default function KokpitPage() {
               if (!selectedProje) return;
               const reason = getProjeDeleteReason(selectedProje.id);
               if (reason) {
-                toast.error("Silinemez", { field: reason });
+                toast.error("Proje Silinemez", {
+                  record: `"${selectedProje.name}"`,
+                  field: reason,
+                });
                 return;
               }
               setConfirmOpen(true);
             }}
-            className={`h-8 px-3 rounded-lg border flex items-center gap-1.5 text-[12px] font-semibold transition-all ${
+            className={`h-10 px-4 rounded-xl border-2 flex items-center gap-2 text-sm font-semibold transition-all ${
               selectedProje
                 ? "border-red-200 text-red-500 hover:bg-red-50 cursor-pointer"
                 : "border-tyro-border/40 text-tyro-text-muted/40 cursor-default"
@@ -377,7 +380,7 @@ export default function KokpitPage() {
             whileHover={selectedProje ? { scale: 1.04 } : {}}
             whileTap={selectedProje ? { scale: 0.96 } : {}}
           >
-            <Trash2 size={12} />
+            <Trash2 size={14} />
             Sil
           </motion.button>
         </div>
