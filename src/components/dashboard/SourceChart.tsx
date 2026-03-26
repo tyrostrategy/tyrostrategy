@@ -12,6 +12,39 @@ import {
 import { useDataStore } from "@/stores/dataStore";
 import GlassCard from "@/components/ui/GlassCard";
 
+const STATUS_COLORS: Record<string, string> = {
+  "Yolunda": "#10b981",
+  "Risk Altında": "#f59e0b",
+  "Gecikmeli": "#ef4444",
+  "Tamamlandı": "#06b6d4",
+  "Başlanmadı": "#94a3b8",
+  "Askıda": "#8b5cf6",
+  "İptal": "#6b7280",
+};
+
+function CustomTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  const total = payload.reduce((s: number, p: any) => s + (p.value || 0), 0);
+  return (
+    <div className="bg-white/95 dark:bg-tyro-surface/95 backdrop-blur-xl border border-tyro-border/30 rounded-xl shadow-[0_8px_32px_rgba(30,58,95,0.15)] p-3 min-w-[160px]">
+      <p className="text-[12px] font-bold text-tyro-text-primary mb-2 pb-1.5 border-b border-tyro-border/20">
+        {label} <span className="text-tyro-text-muted font-normal">· {total} proje</span>
+      </p>
+      <div className="space-y-1.5">
+        {payload.filter((p: any) => p.value > 0).map((p: any) => (
+          <div key={p.dataKey} className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.fill || p.color }} />
+              <span className="text-[11px] text-tyro-text-secondary">{p.dataKey}</span>
+            </div>
+            <span className="text-[11px] font-bold text-tyro-text-primary tabular-nums">{p.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function SourceChart() {
   const projeler = useDataStore((s) => s.projeler);
 
@@ -58,16 +91,7 @@ export default function SourceChart() {
               tickLine={false}
               tick={{ fontSize: 11, fill: "var(--tyro-text-muted)" }}
             />
-            <Tooltip
-              contentStyle={{
-                background: "rgba(255,255,255,0.92)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid var(--tyro-border)",
-                borderRadius: 12,
-                boxShadow: "0 8px 32px rgba(30,58,95,0.12)",
-                fontSize: 12,
-              }}
-            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(30,58,95,0.04)", radius: 6 }} />
             <Legend
               wrapperStyle={{ fontSize: 10, paddingTop: 4 }}
               iconType="circle"
