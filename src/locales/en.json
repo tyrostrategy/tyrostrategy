@@ -432,7 +432,8 @@
     "successActions": "{{count}} actions added",
     "goToWorkspace": "Back to Workspace",
     "goToDetail": "View Detail",
-    "reviewHedef": "Goal Summary",
+    "reviewHedef": "Project Summary",
+    "reviewProje": "Project Summary",
     "reviewAksiyonlar": "Actions Summary",
     "actionNumber": "Action {{number}}"
   }

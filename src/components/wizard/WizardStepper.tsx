@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Check, Target, Users, ListChecks, ClipboardCheck } from "lucide-react";
+import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 
 interface WizardStepperProps {
   steps: string[];
@@ -15,6 +16,8 @@ const STEP_COLORS = [
 ];
 
 export default function WizardStepper({ steps, currentStep }: WizardStepperProps) {
+  const sidebarTheme = useSidebarTheme();
+  const accent = sidebarTheme.accentColor ?? "#c8922a";
   return (
     <div className="flex items-center justify-between mb-8">
       {steps.map((label, i) => {
@@ -31,7 +34,8 @@ export default function WizardStepper({ steps, currentStep }: WizardStepperProps
                 {/* Pulse ring on active */}
                 {isActive && (
                   <motion.div
-                    className={`absolute -inset-2 rounded-full border-2 ${color.glow}`}
+                    className="absolute -inset-2 rounded-full border-2"
+                    style={{ borderColor: `${accent}40` }}
                     animate={{ scale: [1, 1.2, 1], opacity: [0.6, 0, 0.6] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   />
@@ -39,11 +43,18 @@ export default function WizardStepper({ steps, currentStep }: WizardStepperProps
                 <motion.div
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-sm ${
                     isCompleted
-                      ? "bg-gradient-to-br from-tyro-gold to-tyro-gold-light text-white shadow-tyro-gold/20"
+                      ? "text-white"
                       : isActive
-                        ? `${color.bg} text-white shadow-lg`
+                        ? "text-white shadow-lg"
                         : "border-2 border-tyro-border text-tyro-text-muted bg-tyro-surface"
                   }`}
+                  style={
+                    isCompleted
+                      ? { backgroundColor: accent }
+                      : isActive
+                        ? { backgroundColor: accent }
+                        : undefined
+                  }
                   initial={false}
                   animate={
                     isCompleted
@@ -77,7 +88,8 @@ export default function WizardStepper({ steps, currentStep }: WizardStepperProps
             {i < steps.length - 1 && (
               <div className="flex-1 h-[2px] mx-2 sm:mx-3 rounded-full bg-tyro-border/50 relative overflow-hidden mt-[-18px] sm:mt-[-20px]">
                 <motion.div
-                  className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-tyro-gold to-tyro-gold-light"
+                  className="absolute inset-y-0 left-0 rounded-full"
+                  style={{ backgroundColor: accent }}
                   initial={false}
                   animate={{ width: isCompleted ? "100%" : "0%" }}
                   transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}

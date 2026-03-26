@@ -2,6 +2,7 @@ import { useWatch, type Control } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Target, User, Calendar, Users, MapPin, FolderTree } from "lucide-react";
 import { useDataStore } from "@/stores/dataStore";
+import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 interface Props {
   control: Control<any>;
 }
@@ -15,6 +16,7 @@ function formatDate(d: string): string {
 
 export default function StepReview({ control }: Props) {
   const { t } = useTranslation();
+  const sidebarTheme = useSidebarTheme();
   const data = useWatch({ control });
   const projeler = useDataStore((s) => s.projeler);
   const parentName = data.parentObjectiveId
@@ -25,9 +27,9 @@ export default function StepReview({ control }: Props) {
     <div className="flex flex-col gap-5">
       {/* Proje Summary */}
       <div className="rounded-2xl border border-tyro-border overflow-hidden">
-        <div className="bg-tyro-navy px-4 py-2.5">
-          <span className="text-[11px] font-bold text-white/70 uppercase tracking-wide">
-            {t("wizard.reviewHedef")}
+        <div className="px-4 py-2.5 rounded-t-2xl" style={{ backgroundColor: sidebarTheme.accentColor ?? "#c8922a" }}>
+          <span className="text-[11px] font-bold text-white/80 uppercase tracking-wide">
+            {t("wizard.reviewProje", "Proje Özeti")}
           </span>
         </div>
         <div className="p-4 space-y-3">

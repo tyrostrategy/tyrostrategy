@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { useDataStore } from "@/stores/dataStore";
 import { toast } from "@/stores/toastStore";
+import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import WizardStepper from "./WizardStepper";
 import WizardSuccess from "./WizardSuccess";
 import StepProjeBasics from "./steps/StepProjeBasics";
@@ -90,6 +91,8 @@ interface Props {
 
 export default function ProjeAksiyonWizard({ onClose }: Props) {
   const { t } = useTranslation();
+  const sidebarTheme = useSidebarTheme();
+  const accentColor = sidebarTheme.accentColor ?? "#c8922a";
   const addProje = useDataStore((s) => s.addProje);
   const addAksiyon = useDataStore((s) => s.addAksiyon);
 
@@ -296,10 +299,10 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
 
             {isLastStep ? (
               <Button
-                color="secondary"
                 onPress={() => handleSubmit(onSubmit)()}
                 startContent={<Wand2 size={14} />}
-                className="rounded-button font-semibold relative overflow-hidden group"
+                className="rounded-button font-semibold relative overflow-hidden group text-white"
+                style={{ backgroundColor: accentColor }}
               >
                 <span className="relative z-10">{t("wizard.submit")}</span>
                 <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
@@ -308,10 +311,10 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
               </Button>
             ) : (
               <Button
-                color="primary"
                 onPress={goNext}
                 endContent={<ArrowRight size={14} />}
-                className="rounded-button font-semibold"
+                className="rounded-button font-semibold text-white"
+                style={{ backgroundColor: accentColor }}
               >
                 {t("wizard.next")}
               </Button>
