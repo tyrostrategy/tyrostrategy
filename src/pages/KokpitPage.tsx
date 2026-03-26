@@ -81,6 +81,7 @@ export default function KokpitPage() {
   const { t } = useTranslation();
   const sidebarTheme = useSidebarTheme();
   const accentColor = sidebarTheme.accentColor ?? "#c8922a";
+  const brandColor = sidebarTheme.brandStrategy ?? accentColor;
   const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const updateAksiyon = useDataStore((s) => s.updateAksiyon);
@@ -259,7 +260,7 @@ export default function KokpitPage() {
               type="button"
               onClick={() => { setNewMenuOpen(!newMenuOpen); setEditMenuOpen(false); }}
               className="h-10 px-4 rounded-xl text-white flex items-center gap-2 cursor-pointer text-sm font-semibold shadow-sm"
-              style={{ backgroundColor: accentColor }}
+              style={{ backgroundColor: brandColor }}
               whileTap={{ scale: 0.96 }}
             >
               <Plus size={15} strokeWidth={2.5} />

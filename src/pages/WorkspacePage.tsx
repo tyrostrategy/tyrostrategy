@@ -40,7 +40,8 @@ export default function WorkspacePage() {
   const { name, department, initials } = useCurrentUser();
   const openCommandPalette = useUIStore((s) => s.openCommandPalette);
   const ws = useMyWorkspace();
-  const accentColor = useSidebarTheme().accentColor ?? "#c8922a";
+  const sidebarTheme = useSidebarTheme();
+  const brandColor = sidebarTheme.brandStrategy ?? sidebarTheme.accentColor ?? "#c8922a";
   const [wizardOpen, setWizardOpen] = useState(false);
 
   const projeler = useDataStore((s) => s.projeler);
@@ -79,7 +80,7 @@ export default function WorkspacePage() {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ backgroundColor: accentColor }}>
+              <div className="w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ backgroundColor: brandColor }}>
                 {initials}
               </div>
               <div>

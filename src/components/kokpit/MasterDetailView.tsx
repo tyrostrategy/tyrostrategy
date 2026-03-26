@@ -935,7 +935,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
           type="button"
           onClick={() => { setFabOpen((v) => !v); setActionsFabOpen(false); }}
           className="h-12 rounded-full text-white flex items-center justify-center shadow-lg cursor-pointer z-40 relative w-12 lg:w-auto lg:h-11 lg:px-4 lg:gap-2 lg:rounded-xl"
-          style={{ backgroundColor: sidebarTheme.accentColor ?? "#c8922a" }}
+          style={{ backgroundColor: sidebarTheme.brandStrategy ?? sidebarTheme.accentColor ?? "#c8922a" }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
