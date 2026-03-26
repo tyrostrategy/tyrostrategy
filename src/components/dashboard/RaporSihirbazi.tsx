@@ -185,7 +185,7 @@ export default function RaporSihirbazi() {
 
   const attentionItems = useMemo(
     () => reportProjeler.filter((h) =>
-      h.status === "Behind" || h.status === "At Risk" || (h.tags && h.tags.includes("Uygulama"))
+      (h.status === "Behind" || h.status === "At Risk") && h.tags?.includes("Uygulama")
     ),
     [reportProjeler]
   );
