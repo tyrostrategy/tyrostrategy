@@ -426,29 +426,7 @@ function DetailPanel({
         </div>
       </div>
 
-      {/* Footer — Action Buttons */}
-      <div className="flex items-center justify-end gap-2 pt-3 pb-1 shrink-0">
-        <motion.button
-          type="button"
-          onClick={() => onEditHedef?.()}
-          className="h-10 px-4 rounded-xl bg-tyro-navy text-white flex items-center gap-2 shadow-sm cursor-pointer text-[12px] font-semibold"
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          <Pencil size={14} />
-          Düzenle
-        </motion.button>
-        <motion.button
-          type="button"
-          onClick={() => onAddAksiyon?.()}
-          className="h-10 px-4 rounded-xl bg-tyro-gold text-white flex items-center gap-2 shadow-sm cursor-pointer text-[12px] font-semibold"
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          <Plus size={14} />
-          Yeni
-        </motion.button>
-      </div>
+      {/* Footer meta moved to expandable info card */}
     </motion.div>
   );
 }
@@ -805,17 +783,42 @@ export default function MasterDetailView({ projeler, onOpenWizard }: MasterDetai
       </div>
 
       {selectedProje ? (
-        <DetailPanel
-          proje={selectedProje}
-          aksiyonlar={selectedAksiyonlar}
-          onUpdateAksiyon={updateAksiyon}
-          onAddAksiyon={() => setAksiyonPanelOpen(true)}
-          onEditHedef={() => setHedefPanelOpen(true)}
-          onClickAksiyon={(a) => { setViewingAksiyon(a); }}
-          onEditAksiyon={(a) => { setEditingAksiyon(a); }}
-          onUpdateHedef={(data) => selectedProje && updateProje(selectedProje.id, data)}
-          parentHedefName={selectedProje.parentObjectiveId ? projeler.find((h) => h.id === selectedProje.parentObjectiveId)?.name : undefined}
-        />
+        <>
+          <DetailPanel
+            proje={selectedProje}
+            aksiyonlar={selectedAksiyonlar}
+            onUpdateAksiyon={updateAksiyon}
+            onAddAksiyon={() => setAksiyonPanelOpen(true)}
+            onEditHedef={() => setHedefPanelOpen(true)}
+            onClickAksiyon={(a) => { setViewingAksiyon(a); }}
+            onEditAksiyon={(a) => { setEditingAksiyon(a); }}
+            onUpdateHedef={(data) => selectedProje && updateProje(selectedProje.id, data)}
+            parentHedefName={selectedProje.parentObjectiveId ? projeler.find((h) => h.id === selectedProje.parentObjectiveId)?.name : undefined}
+          />
+          {/* Inline action buttons — below detail, inside container */}
+          <div className="hidden lg:flex items-center justify-end gap-3 px-5 py-3 shrink-0 border-t border-tyro-border/15">
+            <motion.button
+              type="button"
+              onClick={() => setHedefPanelOpen(true)}
+              className="h-9 px-4 rounded-xl bg-tyro-navy text-white flex items-center gap-2 shadow-sm cursor-pointer text-[12px] font-semibold"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Pencil size={14} />
+              Düzenle
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={() => setAksiyonPanelOpen(true)}
+              className="h-9 px-4 rounded-xl bg-tyro-gold text-white flex items-center gap-2 shadow-sm cursor-pointer text-[12px] font-semibold"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Plus size={14} />
+              Yeni
+            </motion.button>
+          </div>
+        </>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-6">
           <div className="w-16 h-16 rounded-full bg-tyro-bg flex items-center justify-center">
@@ -966,7 +969,7 @@ export default function MasterDetailView({ projeler, onOpenWizard }: MasterDetai
       </div>
       )}
 
-      {/* ===== CREATE FAB — Oluşturma ===== */}
+      {/* ===== CREATE FAB — Oluşturma (mobile only) ===== */}
       <div className="fixed bottom-24 right-6 z-40 lg:hidden">
         <AnimatePresence>
           {fabOpen && (
