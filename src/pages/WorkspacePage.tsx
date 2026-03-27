@@ -2,7 +2,7 @@ import { useState, useMemo, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Search, Sparkles, Wand2 } from "lucide-react";
+import { Search, Sparkles, Wand2, RefreshCw } from "lucide-react";
 import { useMyWorkspace } from "@/hooks/useMyWorkspace";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useUIStore } from "@/stores/uiStore";
@@ -43,6 +43,32 @@ export default function WorkspacePage() {
   const sidebarTheme = useSidebarTheme();
   const brandColor = sidebarTheme.brandStrategy ?? sidebarTheme.accentColor ?? "#c8922a";
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Dynamic import to avoid bundling supabaseAdapter in mock mode
+      const isSupabase = import.meta.env.VITE_DATA_PROVIDER === "supabase";
+      if (isSupabase) {
+        const { supabaseAdapter } = await import("@/lib/data/supabaseAdapter");
+        const [projeler, aksiyonlar, tags] = await Promise.all([
+          supabaseAdapter.fetchProjeler(),
+          supabaseAdapter.fetchAksiyonlar(),
+          supabaseAdapter.fetchTagDefinitions(),
+        ]);
+        useDataStore.setState({ projeler, aksiyonlar, tagDefinitions: tags });
+      } else {
+        // Mock mode: reload from initial data
+        const { getInitialData, getInitialTagDefinitions } = await import("@/lib/data/mock-adapter");
+        useDataStore.setState({ ...getInitialData(), tagDefinitions: getInitialTagDefinitions() });
+      }
+    } catch (err) {
+      console.error("[Refresh] Failed:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
@@ -117,6 +143,18 @@ export default function WorkspacePage() {
                 ⌘K
               </kbd>
             </button>
+
+            {/* Refresh button */}
+            <motion.button
+              type="button"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="h-10 w-10 rounded-xl border border-tyro-border bg-tyro-surface flex items-center justify-center cursor-pointer hover:bg-tyro-bg transition-colors shrink-0 disabled:opacity-50"
+              whileTap={{ scale: 0.93 }}
+              title="Verileri yenile"
+            >
+              <RefreshCw size={16} className={`text-tyro-text-secondary ${refreshing ? "animate-spin" : ""}`} />
+            </motion.button>
 
             {/* Wizard trigger button — right of search */}
             <motion.button
