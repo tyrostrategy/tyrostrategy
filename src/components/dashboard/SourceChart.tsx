@@ -49,21 +49,22 @@ export default function SourceChart() {
   const projeler = useDataStore((s) => s.projeler);
 
   const chartData = useMemo(() => {
-    const sources = ["Türkiye", "Kurumsal", "International"];
+    // Single pass — accumulate counts per source × status
+    const acc: Record<string, Record<string, number>> = {};
+    for (const h of projeler) {
+      const src = h.source === "International" ? "Intl" : h.source;
+      if (!acc[src]) acc[src] = {};
+      acc[src][h.status] = (acc[src][h.status] ?? 0) + 1;
+    }
+    const sources = ["Türkiye", "Kurumsal", "Intl"];
+    const statusMap: [string, string][] = [
+      ["On Track", "Yolunda"], ["At Risk", "Risk Altında"], ["Behind", "Gecikmeli"],
+      ["Achieved", "Tamamlandı"], ["Not Started", "Başlanmadı"], ["On Hold", "Askıda"], ["Cancelled", "İptal"],
+    ];
     return sources.map((source) => {
-      const sp = projeler.filter((h) => h.source === source);
-      const count = (s: string) => sp.filter((h) => h.status === s).length;
-
-      return {
-        source: source === "International" ? "Intl" : source,
-        "Yolunda": count("On Track"),
-        "Risk Altında": count("At Risk"),
-        "Gecikmeli": count("Behind"),
-        "Tamamlandı": count("Achieved"),
-        "Başlanmadı": count("Not Started"),
-        "Askıda": count("On Hold"),
-        "İptal": count("Cancelled"),
-      };
+      const entry: Record<string, string | number> = { source };
+      for (const [key, label] of statusMap) entry[label] = acc[source]?.[key] ?? 0;
+      return entry;
     });
   }, [projeler]);
 

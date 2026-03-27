@@ -84,18 +84,25 @@ export default function DashboardPage() {
   const projeProgress =
     projeler.length > 0 ? Math.round((hedefTamamlanan.length / projeler.length) * 100) : 0;
 
-  // KPI 2: Aktif Projeler — On Track veya At Risk
+  // Single-pass status counts + avg progress
+  const { statusCounts, avgProgress } = useMemo(() => {
+    const counts: Record<string, number> = {};
+    let totalProgress = 0;
+    for (const h of projeler) {
+      counts[h.status] = (counts[h.status] ?? 0) + 1;
+      totalProgress += h.progress;
+    }
+    return {
+      statusCounts: counts,
+      avgProgress: projeler.length > 0 ? Math.round(totalProgress / projeler.length) : 0,
+    };
+  }, [projeler]);
+
+  const onTrackCount = statusCounts["On Track"] ?? 0;
+  const behindCount = statusCounts["Behind"] ?? 0;
+  const atRiskCount = statusCounts["At Risk"] ?? 0;
   const aktivProjeler = projeler.filter((h) => h.status === "On Track" || h.status === "At Risk");
-  const onTrackCount = projeler.filter((h) => h.status === "On Track").length;
-
-  // KPI 3: Gecikmeli / Riskli Projeler
   const gecikenProjeler = projeler.filter((h) => h.status === "Behind" || h.status === "At Risk");
-  const behindCount = projeler.filter((h) => h.status === "Behind").length;
-  const atRiskCount = projeler.filter((h) => h.status === "At Risk").length;
-
-  // KPI 4: Ortalama İlerleme
-  const avgProgress = projeler.length > 0
-    ? Math.round(projeler.reduce((s, h) => s + h.progress, 0) / projeler.length) : 0;
 
   const kpiCards = [
     {

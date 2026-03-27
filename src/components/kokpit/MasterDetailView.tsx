@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Input, Button, Tooltip, Popover, PopoverTrigger, PopoverContent } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -60,7 +60,7 @@ interface MasterDetailViewProps {
 // ========================================
 // MASTER LIST CARD
 // ========================================
-function MasterListCard({
+const MasterListCard = memo(function MasterListCard({
   proje,
   aksiyonCount,
   isSelected,
@@ -138,7 +138,7 @@ function MasterListCard({
       </div>
     </div>
   );
-}
+});
 
 // ========================================
 // QUICK PROGRESS BUTTONS
