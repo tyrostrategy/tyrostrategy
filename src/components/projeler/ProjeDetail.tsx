@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@heroui/react";
-import { Pencil, Plus, ArrowLeft, ChevronRight, X } from "lucide-react";
+import { Pencil, Plus, ArrowLeft, ChevronRight, ChevronDown, X, GitBranch } from "lucide-react";
 import TagChip from "@/components/ui/TagChip";
 import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
@@ -35,6 +35,7 @@ export default function ProjeDetail({
   const { t } = useTranslation();
   const [mode, _setMode] = useState<DetailMode>(initialMode);
   const [selectedAksiyon, setSelectedAksiyon] = useState<Aksiyon | null>(null);
+  const [relationsOpen, setRelationsOpen] = useState(false);
   const setMode = (m: DetailMode) => {
     _setMode(m);
     onModeChange?.(m);
@@ -239,15 +240,26 @@ export default function ProjeDetail({
 
       {/* 5. Bilgi Grid — tüm alanlar */}
       <div className="rounded-xl bg-tyro-surface/60 border border-tyro-border/20 shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-sm overflow-hidden divide-y divide-tyro-border/20">
-        {/* Sahip + Kaynak */}
+        {/* Sahip + Katılımcılar */}
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.owner")}</span>
             <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.owner ?? "-"}</p>
           </div>
           <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Katılımcılar</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.participants?.join(", ") || "-"}</p>
+          </div>
+        </div>
+        {/* Kaynak + Departman */}
+        <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
+          <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.source")}</span>
             <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.source}</p>
+          </div>
+          <div className="px-3 py-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Departman</span>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.department || "-"}</p>
           </div>
         </div>
         {/* Başlangıç + Bitiş */}
@@ -261,16 +273,13 @@ export default function ProjeDetail({
             <p className="text-[12px] font-medium text-tyro-text-primary">{formatDate(currentHedef.endDate)}</p>
           </div>
         </div>
-        {/* Kontrol Tarihi + Departman */}
+        {/* Kontrol Tarihi */}
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Kontrol Tarihi</span>
             <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.reviewDate ? formatDate(currentHedef.reviewDate) : "-"}</p>
           </div>
-          <div className="px-3 py-2">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Departman</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.department || "-"}</p>
-          </div>
+          <div className="px-3 py-2" />
         </div>
         {/* Oluşturan + Oluşturulma */}
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
@@ -283,17 +292,6 @@ export default function ProjeDetail({
             <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.createdAt ? formatDate(currentHedef.createdAt) : "-"}</p>
           </div>
         </div>
-        {/* Katılımcılar + Proje ID */}
-        <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
-          <div className="px-3 py-2">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Katılımcılar</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.participants?.join(", ") || "-"}</p>
-          </div>
-          <div className="px-3 py-2">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Proje ID</span>
-            <p className="text-[12px] font-mono font-medium text-tyro-text-secondary">{currentHedef.id}</p>
-          </div>
-        </div>
         {/* Tamamlanma (varsa) */}
         {currentHedef.completedAt && (
           <div className="px-3 py-2">
@@ -303,83 +301,89 @@ export default function ProjeDetail({
         )}
       </div>
 
-      {/* Ana Proje (Parent Objective) */}
-      {parentHedef && (
+      {/* Proje İlişkileri — Collapsible */}
+      {(parentHedef || relatedHedefler.length > 0) && (
         <>
           <div className="h-px bg-gradient-to-r from-transparent via-tyro-border to-transparent my-3" />
-          <div>
-            <h4 className="text-[13px] font-bold text-tyro-text-primary mb-2">
-              {t("detail.parentObjective")}
-            </h4>
-            <div
-              onClick={() => onSelectHedef?.(parentHedef)}
-              className={`px-3 py-2.5 rounded-lg border border-tyro-border/20 bg-tyro-surface/60 ${onSelectHedef ? "cursor-pointer hover:bg-tyro-bg/60" : ""} transition-colors`}
+          <div className="rounded-xl bg-white/70 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.04)] overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setRelationsOpen(!relationsOpen)}
+              className="w-full flex items-center gap-2.5 px-4 py-3 cursor-pointer hover:bg-tyro-bg/30 transition-colors"
             >
-              <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[13px] font-medium text-tyro-text-primary leading-snug truncate flex-1">
-                  {parentHedef.name}
-                </p>
-                {onSelectHedef && <ChevronRight size={14} className="text-tyro-text-muted shrink-0 ml-2" />}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-tyro-bg text-tyro-text-secondary">
-                  {parentHedef.source}
-                </span>
-                <div className="flex-1 h-1.5 rounded-full bg-tyro-bg overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${parentHedef.progress}%`, backgroundColor: statusColor(parentHedef.status) }}
-                  />
-                </div>
-                <span className="text-[11px] font-medium text-tyro-text-secondary tabular-nums shrink-0">
-                  %{parentHedef.progress}
-                </span>
-                <StatusBadge status={parentHedef.status} />
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+              <GitBranch size={15} className="text-tyro-text-muted shrink-0" />
+              <span className="text-[13px] font-bold text-tyro-text-primary flex-1 text-left">
+                Proje İlişkileri
+                {(parentHedef ? 1 : 0) + relatedHedefler.length > 0 && (
+                  <span className="ml-1.5 text-[11px] font-medium text-tyro-text-muted">
+                    ({(parentHedef ? 1 : 0) + relatedHedefler.length})
+                  </span>
+                )}
+              </span>
+              <ChevronDown size={14} className={`text-tyro-text-muted transition-transform duration-200 ${relationsOpen ? "rotate-180" : ""}`} />
+            </button>
 
-      {/* Related Objectives (Siblings) */}
-      {relatedHedefler.length > 0 && (
-        <>
-          <div className="h-px bg-gradient-to-r from-transparent via-tyro-border to-transparent my-3" />
-          <div>
-            <h4 className="text-[13px] font-bold text-tyro-text-primary mb-2">
-              {t("detail.relatedObjectives")} ({relatedHedefler.length})
-            </h4>
-            <div className="flex flex-col gap-1">
-              {relatedHedefler.map((rh) => (
-                <div
-                  key={rh.id}
-                  onClick={() => onSelectHedef?.(rh)}
-                  className={`px-3 py-2 rounded-lg border border-tyro-border/20 bg-tyro-surface/60 ${onSelectHedef ? "cursor-pointer hover:bg-tyro-bg/60" : ""} transition-colors`}
-                >
-                  <p className="text-[13px] font-medium text-tyro-text-primary leading-snug mb-1.5 truncate">
-                    {rh.name}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-tyro-bg text-tyro-text-secondary">
-                      {rh.source}
+            {relationsOpen && (
+              <div className="px-4 pb-3 space-y-3">
+                {/* Ana Proje */}
+                {parentHedef && (
+                  <div>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-tyro-text-muted/70 block mb-1.5">
+                      {t("detail.parentObjective")}
                     </span>
-                    <div className="flex-1 h-1.5 rounded-full bg-tyro-bg overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${rh.progress}%`,
-                          background: statusColor(rh.status),
-                        }}
-                      />
+                    <div
+                      onClick={() => onSelectHedef?.(parentHedef)}
+                      className={`px-3 py-2.5 rounded-lg border border-tyro-border/15 bg-tyro-bg/40 ${onSelectHedef ? "cursor-pointer hover:bg-tyro-bg/70" : ""} transition-colors`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <p className="text-[13px] font-medium text-tyro-text-primary leading-snug truncate flex-1">
+                          {parentHedef.name}
+                        </p>
+                        {onSelectHedef && <ChevronRight size={14} className="text-tyro-text-muted shrink-0 ml-2" />}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={parentHedef.status} />
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-tyro-bg text-tyro-text-secondary">
+                          {parentHedef.source}
+                        </span>
+                        <div className="flex-1 h-1.5 rounded-full bg-tyro-border/30 overflow-hidden">
+                          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${parentHedef.progress}%`, backgroundColor: statusColor(parentHedef.status) }} />
+                        </div>
+                        <span className="text-[11px] font-medium text-tyro-text-secondary tabular-nums shrink-0">%{parentHedef.progress}</span>
+                      </div>
                     </div>
-                    <span className="text-[11px] font-medium text-tyro-text-secondary tabular-nums shrink-0">
-                      %{rh.progress}
-                    </span>
-                    <StatusBadge status={rh.status} />
                   </div>
-                </div>
-              ))}
-            </div>
+                )}
+
+                {/* İlişkili Projeler */}
+                {relatedHedefler.length > 0 && (
+                  <div>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-tyro-text-muted/70 block mb-1.5">
+                      {t("detail.relatedObjectives")} ({relatedHedefler.length})
+                    </span>
+                    <div className="flex flex-col gap-1.5">
+                      {relatedHedefler.map((rh) => (
+                        <div
+                          key={rh.id}
+                          onClick={() => onSelectHedef?.(rh)}
+                          className={`px-3 py-2 rounded-lg border border-tyro-border/15 bg-tyro-bg/40 ${onSelectHedef ? "cursor-pointer hover:bg-tyro-bg/70" : ""} transition-colors`}
+                        >
+                          <p className="text-[13px] font-medium text-tyro-text-primary leading-snug mb-1.5 truncate">{rh.name}</p>
+                          <div className="flex items-center gap-2">
+                            <StatusBadge status={rh.status} />
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-tyro-bg text-tyro-text-secondary">{rh.source}</span>
+                            <div className="flex-1 h-1.5 rounded-full bg-tyro-border/30 overflow-hidden">
+                              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${rh.progress}%`, background: statusColor(rh.status) }} />
+                            </div>
+                            <span className="text-[11px] font-medium text-tyro-text-secondary tabular-nums shrink-0">%{rh.progress}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}

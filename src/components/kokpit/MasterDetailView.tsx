@@ -91,7 +91,7 @@ const MasterListCard = memo(function MasterListCard({
       className={`w-full text-left rounded-xl transition-all duration-200 cursor-pointer group relative ${
         isSelected
           ? "moving-border shadow-[0_4px_16px_rgba(30,58,95,0.12)] scale-[1.01]"
-          : "border border-transparent bg-tyro-bg/40 hover:bg-tyro-surface hover:border-tyro-border/30 hover:shadow-sm"
+          : "border border-tyro-border/30 bg-tyro-surface shadow-sm hover:shadow-md hover:border-tyro-border/50"
       }`}
       style={isSelected ? { "--status-color": statusColor } as React.CSSProperties : undefined}
     >
@@ -152,24 +152,20 @@ const MasterListCard = memo(function MasterListCard({
 // QUICK PROGRESS BUTTONS
 // ========================================
 // Chip color matching AksiyonForm gradient palette
-function chipBg(_v: number, selected: boolean): string {
-  if (!selected) return "bg-tyro-bg text-tyro-text-muted hover:bg-tyro-border/20";
-  return "bg-slate-600 text-white shadow-sm";
-}
-
 function QuickProgressButtons({
   current,
   onChange,
+  statusColor = "#94a3b8",
 }: {
   current: number;
   onChange: (val: number) => void;
+  statusColor?: string;
 }) {
   return (
     <div className="flex items-center gap-[3px]">
       {PROGRESS_STEPS.map((step) => {
         const isExact = current === step || (step === 100 && current >= 100);
-        const isPassed = current > step; // geçilmiş adımlar
-        const isActive = current >= step && step > 0;
+        const isPassed = current > step;
         return (
           <button
             key={step}
@@ -177,13 +173,14 @@ function QuickProgressButtons({
             onClick={(e) => { e.stopPropagation(); onChange(step); }}
             className={`relative min-w-[28px] h-[22px] rounded-md text-[11px] font-bold tabular-nums cursor-pointer transition-all ${
               isExact
-                ? chipBg(step, true) + " scale-110"
+                ? "text-white shadow-sm scale-110"
                 : isPassed
-                ? chipBg(step, true).replace("shadow-md", "").replace("text-white", "text-white/80") + " opacity-50"
-                : chipBg(step, false)
+                  ? "text-white/70"
+                  : "bg-tyro-bg text-tyro-text-muted hover:bg-tyro-border/20"
             }`}
+            style={isExact || isPassed ? { backgroundColor: isExact ? statusColor : `${statusColor}60` } : undefined}
           >
-            <span className={isPassed && !isExact ? "line-through decoration-[1.5px]" : ""}>{step}%</span>
+            {step}%
           </button>
         );
       })}
@@ -466,8 +463,15 @@ function AksiyonRow({
   onClick?: () => void;
 }) {
   const { t } = useTranslation();
+  const stColor = STATUS_HEX[aksiyon.status] ?? "#94a3b8";
   return (
-    <div className="glass-card rounded-xl p-3 hover:shadow-md transition-all group/row cursor-pointer relative hover:border-l-[3px] hover:border-l-tyro-navy/30" onClick={onClick}>
+    <div
+      className="glass-card rounded-xl p-3 hover:shadow-md transition-all group/row cursor-pointer relative border-l-[3px] border-l-transparent"
+      style={{ ["--hover-border" as string]: stColor }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderLeftColor = stColor; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderLeftColor = "transparent"; }}
+      onClick={onClick}
+    >
       {/* Top row: index + name + edit + status badge */}
       <div className="flex items-start gap-2">
         <span className="text-[11px] font-bold text-tyro-text-muted w-5 shrink-0 mt-0.5">{index}</span>
@@ -502,7 +506,7 @@ function AksiyonRow({
         const statusColor = STATUS_HEX[aksiyon.status] ?? "#94a3b8";
         return (
           <div className="flex items-center gap-3 ml-7">
-            {canEdit && <QuickProgressButtons current={p} onChange={onQuickProgress} />}
+            {canEdit && <QuickProgressButtons current={p} onChange={onQuickProgress} statusColor={statusColor} />}
             <div className="flex-1 h-2 rounded-full bg-tyro-border/15 overflow-hidden">
               <div
                 className="h-full rounded-full"
