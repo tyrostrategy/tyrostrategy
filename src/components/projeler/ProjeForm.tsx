@@ -154,6 +154,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
 
       {/* Scrollable form body */}
       <div className={`form-scroll-wrapper flex-1 min-h-0 ${scrollState.top ? "has-scroll-top" : ""} ${scrollState.bottom ? "has-scroll-bottom" : ""}`}>
+        <span className="form-scroll-chevron text-[10px] text-tyro-text-muted flex items-center gap-1">↓ Diğer alanlar</span>
         <div ref={scrollRef} className="form-scroll-body h-full px-0.5 py-1 space-y-3" onScroll={updateScroll}>
 
       {/* Section: Temel Bilgiler */}

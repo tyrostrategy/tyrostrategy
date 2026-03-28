@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Textarea, Select, SelectItem, DatePicker } from "@heroui/react";
-import { Check, X } from "lucide-react";
+import { Check, X, ArrowLeft } from "lucide-react";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
@@ -202,6 +202,15 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
+                {onClose && (
+                  <button type="button" onClick={onClose}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.05] active:scale-[0.95]"
+                    style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}` }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; }}>
+                    <ArrowLeft size={14} />
+                  </button>
+                )}
                 <span className="text-[13px] font-bold tabular-nums" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.6)" }}>{aksiyon.id}</span>
                 <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(30,41,59,0.4)" }}>Aksiyon Düzenleme</span>
               </div>
@@ -254,6 +263,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
 
       {/* Scrollable form body */}
       <div className={`form-scroll-wrapper flex-1 min-h-0 ${scrollState.top ? "has-scroll-top" : ""} ${scrollState.bottom ? "has-scroll-bottom" : ""}`}>
+        <span className="form-scroll-chevron text-[10px] text-tyro-text-muted flex items-center gap-1">↓ Diğer alanlar</span>
         <div ref={scrollRef} className="form-scroll-body h-full px-0.5 py-1 space-y-3" onScroll={updateScroll}>
 
       {/* Section: Temel Bilgiler */}
