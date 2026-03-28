@@ -280,7 +280,7 @@ function DetailPanel({
       {(() => {
         const p = proje.progress;
         const stColor = STATUS_HEX[proje.status] ?? "#94a3b8";
-        const r = 22; const c = 2 * Math.PI * r;
+        const r = 32; const c = 2 * Math.PI * r;
         const dash = (p / 100) * c;
         return (
       <div className="flex items-start gap-4">
@@ -290,7 +290,7 @@ function DetailPanel({
             {proje.name}
           </h2>
           <div className="flex items-center gap-1.5 mt-1">
-            <span className="text-[11px] font-mono font-semibold text-tyro-text-muted tabular-nums">{proje.id}</span>
+            <span className="text-[12px] text-tyro-text-muted tabular-nums">{proje.id}</span>
             {proje.description && (
               <>
                 <span className="text-tyro-text-muted">·</span>
@@ -312,18 +312,18 @@ function DetailPanel({
         </div>
         {/* Sağ: circular progress */}
         <div className="flex flex-col items-center shrink-0">
-          <div className="relative" style={{ width: 56, height: 56 }}>
-            <svg width={56} height={56} viewBox="0 0 56 56" className="-rotate-90">
-              <circle cx={28} cy={28} r={r} fill="none" stroke="#e2e8f0" strokeWidth={5} opacity={0.3} />
-              <circle cx={28} cy={28} r={r} fill="none" stroke={stColor} strokeWidth={5} strokeLinecap="round"
+          <div className="relative" style={{ width: 80, height: 80 }}>
+            <svg width={80} height={80} viewBox="0 0 80 80" className="-rotate-90">
+              <circle cx={40} cy={40} r={r} fill="none" stroke="#e2e8f0" strokeWidth={5} opacity={0.3} />
+              <circle cx={40} cy={40} r={r} fill="none" stroke={stColor} strokeWidth={5} strokeLinecap="round"
                 strokeDasharray={`${dash} ${c - dash}`} strokeDashoffset={0}
                 style={{ transition: "all 0.8s ease", filter: `drop-shadow(0 0 4px ${stColor}40)` }} />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[14px] font-extrabold tabular-nums text-tyro-text-primary">%{p}</span>
+              <span className="text-[16px] font-extrabold tabular-nums text-tyro-text-primary">%{p}</span>
             </div>
           </div>
-          <span className="text-[11px] font-semibold text-tyro-text-muted mt-1 tabular-nums">{completedCount}/{totalCount}</span>
+          <span className="text-[13px] font-bold text-tyro-text-muted mt-1 tabular-nums">{completedCount}/{totalCount}</span>
         </div>
       </div>
         );
@@ -546,7 +546,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
     if (combinedSearch) {
       const q = combinedSearch.toLocaleLowerCase("tr");
       list = list.filter((h) => {
-        const fields = [h.name, h.owner, h.department, h.source, h.status, h.description, ...(h.tags ?? [])];
+        const fields = [h.id, h.name, h.owner, h.department, h.source, h.status, h.description, ...(h.tags ?? [])];
         return fields.filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q);
       });
     }

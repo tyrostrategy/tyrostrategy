@@ -676,7 +676,7 @@ function TabloView({
     if (externalSearch.trim()) {
       const q = externalSearch.toLocaleLowerCase("tr");
       result = result.filter((h) => {
-        const hedefStr = [h.name, h.description, h.owner, h.department, h.source, h.status, h.startDate, h.endDate, ...(h.tags ?? [])].filter(Boolean).join(" ").toLocaleLowerCase("tr");
+        const hedefStr = [h.id, h.name, h.description, h.owner, h.department, h.source, h.status, h.startDate, h.endDate, ...(h.tags ?? [])].filter(Boolean).join(" ").toLocaleLowerCase("tr");
         if (hedefStr.includes(q)) return true;
         const childActions = aksiyonlar.filter((a) => a.projeId === h.id);
         return childActions.some((a) => [a.name, a.description, a.owner].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q));

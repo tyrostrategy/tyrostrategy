@@ -102,7 +102,7 @@ export default function CommandPalette() {
     // Data search results (only when query is not empty)
     if (q) {
       projeler
-        .filter((h) => h.name.toLowerCase().includes(q))
+        .filter((h) => `${h.id} ${h.name}`.toLowerCase().includes(q))
         .slice(0, 5)
         .forEach((h) =>
           out.push({ id: h.id, name: h.name, category: "objectives" })
