@@ -29,7 +29,7 @@ const ROLE_COLORS: Record<string, { accent: string; accentDark: string }> = {
 const FALLBACK_USERS: DemoUser[] = [
   { name: "Cenk Şayli", department: "IT", role: "Admin", accent: "#c8922a", accentDark: "#96700f" },
   { name: "Kemal Yıldız", department: "Uluslararası Operasyonlar", role: "Proje Lideri", accent: "#3b82f6", accentDark: "#1d4ed8" },
-  { name: "Burcu Gözen", department: "Finans", role: "Kullanıcı", accent: "#64748b", accentDark: "#475569" },
+  { name: "Burcu Gözen", department: "Finans", role: "Kullanıcı", accent: "#64748b", accentDark: "#475569", locale: "tr" },
 ];
 
 export default function LoginPage() {
