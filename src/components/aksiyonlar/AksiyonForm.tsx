@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -154,8 +154,20 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
 
   const statusOptions = getStatusOptions(t);
 
+  // Scroll state for fade indicators
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollState, setScrollState] = useState({ top: false, bottom: true });
+  const updateScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setScrollState({
+      top: el.scrollTop > 8,
+      bottom: el.scrollTop + el.clientHeight < el.scrollHeight - 8,
+    });
+  }, []);
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full max-h-full overflow-hidden">
       {/* Themed Header — create mode */}
       {!aksiyon && (
         <div className="relative rounded-xl overflow-hidden px-4 py-3" style={{ background: sidebarTheme.bg }}>
@@ -222,26 +234,27 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
 
       {/* Parent Project Card (brandStrategy color) */}
       {proje && (
-        <div className="relative rounded-xl overflow-hidden px-4 py-3" style={{ background: sidebarTheme.brandStrategy ?? sidebarTheme.accentColor ?? "#c8922a" }}>
+        <div className="relative rounded-xl overflow-hidden px-4 py-3 mt-1" style={{ background: sidebarTheme.brandStrategy ?? sidebarTheme.accentColor ?? "#c8922a" }}>
           <div className="absolute inset-0 opacity-[0.08]" style={{
             backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.5) 1px, transparent 0)`,
             backgroundSize: "16px 16px",
           }} />
           <div className="relative z-10">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60 block mb-1.5">Bağlı Proje</span>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[11px] font-bold tabular-nums text-white/70">{proje.id}</span>
-              <span className="ml-auto text-[12px] font-bold tabular-nums text-white/80">%{proje.progress}</span>
-            </div>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60 block mb-1.5">Bağlı Proje: <span className="text-white/80 tabular-nums">{proje.id}</span></span>
             <p className="text-[13px] font-semibold text-white leading-snug">{proje.name}</p>
             <div className="flex items-center gap-2 flex-wrap mt-1.5">
               <StatusBadge status={proje.status} />
               <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-white/15 text-white/80">{proje.source}</span>
               <span className="text-[11px] text-white/70">{proje.owner}</span>
+              <span className="ml-auto text-[12px] font-bold tabular-nums text-white/80">%{proje.progress}</span>
             </div>
           </div>
         </div>
       )}
+
+      {/* Scrollable form body */}
+      <div className={`form-scroll-wrapper flex-1 min-h-0 ${scrollState.top ? "has-scroll-top" : ""} ${scrollState.bottom ? "has-scroll-bottom" : ""}`}>
+        <div ref={scrollRef} className="form-scroll-body h-full px-0.5 py-1 space-y-3" onScroll={updateScroll}>
 
       {/* Section: Temel Bilgiler */}
       <FormSection title="Temel Bilgiler">
@@ -470,18 +483,24 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
         </div>
       )}
 
-      <Button
-        type="submit"
-        isLoading={isLoading}
-        startContent={<Check size={14} />}
-        className="mt-2 rounded-button font-semibold relative overflow-hidden group text-white"
-        style={{ backgroundColor: accentColor }}
-      >
+        </div>
+      </div>
+
+      {/* Sticky footer */}
+      <div className="shrink-0 pt-3 pb-1 border-t border-tyro-border/20 bg-tyro-surface/80 backdrop-blur-sm">
+        <Button
+          type="submit"
+          isLoading={isLoading}
+          startContent={<Check size={14} />}
+          className="w-full rounded-button font-semibold relative overflow-hidden group text-white"
+          style={{ backgroundColor: accentColor }}
+        >
         <span className="relative z-10">{aksiyon ? t("common.save") : t("common.create")}</span>
         <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
           <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
         </span>
-      </Button>
+        </Button>
+      </div>
     </form>
   );
 }

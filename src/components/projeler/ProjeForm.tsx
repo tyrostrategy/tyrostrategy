@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -126,8 +126,20 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
   const statusOptions = getStatusOptions(t);
   const sourceOptions = getSourceOptions(t);
 
+  // Scroll state for fade indicators
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollState, setScrollState] = useState({ top: false, bottom: true });
+  const updateScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setScrollState({
+      top: el.scrollTop > 8,
+      bottom: el.scrollTop + el.clientHeight < el.scrollHeight - 8,
+    });
+  }, []);
+
   return (
-    <form onSubmit={handleSubmit(onSubmit) as any} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit(onSubmit) as any} className="flex flex-col h-full max-h-full overflow-hidden">
       {/* Entity Header — edit mode only */}
       {proje && (
         <EntityHeader
@@ -139,6 +151,10 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
           tags={watch("tags")}
         />
       )}
+
+      {/* Scrollable form body */}
+      <div className={`form-scroll-wrapper flex-1 min-h-0 ${scrollState.top ? "has-scroll-top" : ""} ${scrollState.bottom ? "has-scroll-bottom" : ""}`}>
+        <div ref={scrollRef} className="form-scroll-body h-full px-0.5 py-1 space-y-3" onScroll={updateScroll}>
 
       {/* Section: Temel Bilgiler */}
       <FormSection title="Temel Bilgiler">
@@ -501,18 +517,24 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
       />
       </FormSection>
 
-      <Button
-        type="submit"
-        isLoading={isLoading}
-        startContent={<Check size={14} />}
-        className="mt-2 rounded-button font-semibold relative overflow-hidden group text-white"
-        style={{ backgroundColor: accentColor }}
-      >
-        <span className="relative z-10">{proje ? t("common.save") : t("common.create")}</span>
-        <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
-          <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
-        </span>
-      </Button>
+        </div>
+      </div>
+
+      {/* Sticky footer */}
+      <div className="shrink-0 pt-3 pb-1 border-t border-tyro-border/20 bg-tyro-surface/80 backdrop-blur-sm">
+        <Button
+          type="submit"
+          isLoading={isLoading}
+          startContent={<Check size={14} />}
+          className="w-full rounded-button font-semibold relative overflow-hidden group text-white"
+          style={{ backgroundColor: accentColor }}
+        >
+          <span className="relative z-10">{proje ? t("common.save") : t("common.create")}</span>
+          <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
+            <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
+          </span>
+        </Button>
+      </div>
     </form>
   );
 }

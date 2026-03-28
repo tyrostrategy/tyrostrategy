@@ -68,15 +68,7 @@ export default function ProjeDetail({
 
   if (mode === "editing") {
     return (
-      <div className="flex flex-col gap-4">
-        <button
-          type="button"
-          onClick={() => setMode("detail")}
-          className="flex items-center gap-1.5 text-[13px] font-medium text-tyro-text-secondary hover:text-tyro-navy transition-colors cursor-pointer self-start"
-        >
-          <ArrowLeft size={14} />
-          {t("detail.backToObjective")}
-        </button>
+      <div className="flex flex-col h-full max-h-full overflow-hidden">
         <ProjeForm
           proje={currentHedef}
           onSuccess={() => setMode("detail")}

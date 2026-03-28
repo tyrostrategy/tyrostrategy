@@ -73,23 +73,86 @@ body {
 }
 
 /* ===== DatePicker: Bugünü vurgula ===== */
-[data-slot="cell"] td[data-today="true"] > span,
-td[data-today="true"] > span,
-[data-today="true"] {
+span[data-today="true"] {
   position: relative;
+  font-weight: 700 !important;
 }
-td[data-today="true"]::after,
-[data-slot="cell"][data-today="true"]::after {
+span[data-today="true"]::after {
   content: "";
   position: absolute;
-  bottom: 2px;
+  bottom: 1px;
   left: 50%;
   transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background-color: var(--tyro-navy);
+  pointer-events: none;
 }
+span[data-today="true"][data-selected="true"]::after {
+  background-color: white;
+}
+/* DatePicker: Gün harflerini okunabilir yap */
+[data-slot="grid-header"] th,
+table[aria-label] thead th {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--tyro-text-primary, #1e293b) !important;
+}
+/* DatePicker: Ay-Yıl başlığını okunabilir yap */
+[data-slot="header"] .text-default-500,
+[data-slot="header"] span.text-small {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: var(--tyro-text-primary, #1e293b) !important;
+}
+
+/* ===== Scrollable form body — fade edges + thin scrollbar ===== */
+.form-scroll-body {
+  position: relative;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+.form-scroll-body::-webkit-scrollbar {
+  width: 5px;
+}
+.form-scroll-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.form-scroll-body::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+}
+.form-scroll-body::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.5);
+}
+/* Fade gradient masks for scroll indication */
+.form-scroll-wrapper {
+  position: relative;
+}
+.form-scroll-wrapper::before,
+.form-scroll-wrapper::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 5px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.form-scroll-wrapper::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--tyro-surface, #ffffff) 0%, transparent 100%);
+}
+.form-scroll-wrapper::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--tyro-surface, #ffffff) 0%, transparent 100%);
+}
+.form-scroll-wrapper.has-scroll-top::before { opacity: 1; }
+.form-scroll-wrapper.has-scroll-bottom::after { opacity: 1; }
 
 /* ===== Glassmorphism ===== */
 @layer components {

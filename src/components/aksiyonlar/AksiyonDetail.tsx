@@ -43,13 +43,8 @@ export default function AksiyonDetail({
 
   if (mode === "editing") {
     return (
-      <div className="flex flex-col gap-4">
-        <button type="button" onClick={() => setMode("detail")}
-          className="flex items-center gap-1.5 text-[13px] font-medium text-tyro-text-secondary hover:text-tyro-navy transition-colors cursor-pointer self-start">
-          <ArrowLeft size={14} />
-          {t("detail.actionDetail")}
-        </button>
-        <AksiyonForm aksiyon={currentAksiyon} defaultProjeId={currentAksiyon.projeId} onSuccess={() => setMode("detail")} />
+      <div className="flex flex-col h-full max-h-full overflow-hidden">
+        <AksiyonForm aksiyon={currentAksiyon} defaultProjeId={currentAksiyon.projeId} onSuccess={() => setMode("detail")} onClose={() => setMode("detail")} />
       </div>
     );
   }
@@ -159,16 +154,13 @@ export default function AksiyonDetail({
             backgroundSize: "16px 16px",
           }} />
           <div className="relative z-10">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60 block mb-1.5">Bağlı Proje</span>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[11px] font-bold tabular-nums text-white/70">{proje.id}</span>
-              <span className="ml-auto text-[12px] font-bold tabular-nums text-white/80">%{proje.progress}</span>
-            </div>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60 block mb-1.5">Bağlı Proje: <span className="text-white/80 tabular-nums">{proje.id}</span></span>
             <p className="text-[13px] font-semibold text-white leading-snug">{proje.name}</p>
             <div className="flex items-center gap-2 flex-wrap mt-1.5">
               <StatusBadge status={proje.status} />
               <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-white/15 text-white/80">{proje.source}</span>
               <span className="text-[11px] text-white/70">{proje.owner}</span>
+              <span className="ml-auto text-[12px] font-bold tabular-nums text-white/80">%{proje.progress}</span>
             </div>
           </div>
         </div>
