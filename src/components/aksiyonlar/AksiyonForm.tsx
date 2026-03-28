@@ -251,8 +251,8 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
           }} />
           <button type="button" onClick={() => setProjeCardOpen(!projeCardOpen)}
             className="relative z-10 w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-white/5 transition-colors">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">Bağlı Proje: <span className="text-white/80 tabular-nums">{proje.id}</span></span>
-            <ChevronDown size={14} className={`text-white/50 transition-transform duration-200 ${projeCardOpen ? "rotate-180" : ""}`} />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-white/80">Bağlı Proje: <span className="text-white tabular-nums">{proje.id}</span></span>
+            <ChevronDown size={14} className={`text-white/80 transition-transform duration-200 ${projeCardOpen ? "rotate-180" : ""}`} />
           </button>
           {projeCardOpen && (
             <div className="relative z-10 px-4 pb-3">

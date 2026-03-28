@@ -202,7 +202,7 @@ function DetailPanel({
   onClickAksiyon,
   onUpdateHedef,
   onDeleteHedef,
-  parentHedefName,
+  parentHedef,
 }: {
   proje: Proje;
   aksiyonlar: Aksiyon[];
@@ -213,7 +213,7 @@ function DetailPanel({
   onClickAksiyon?: (aksiyon: Aksiyon) => void;
   onUpdateHedef?: (data: Partial<Proje>) => void;
   onDeleteHedef?: () => void;
-  parentHedefName?: string;
+  parentHedef?: Proje;
 }) {
   const { t } = useTranslation();
   const [reviewPopoverOpen, setReviewPopoverOpen] = useState(false);
@@ -276,41 +276,69 @@ function DetailPanel({
       transition={{ duration: 0.25, ease: "easeOut" }}
       className="flex flex-col gap-3 h-full px-5 py-4 overflow-hidden"
     >
-      {/* === HERO SECTION === */}
-      <div>
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="text-[20px] font-bold text-tyro-text-primary leading-snug flex-1">
+      {/* === HERO SECTION — sol: bilgi, sağ: circular progress === */}
+      {(() => {
+        const p = proje.progress;
+        const stColor = STATUS_HEX[proje.status] ?? "#94a3b8";
+        const r = 22; const c = 2 * Math.PI * r;
+        const dash = (p / 100) * c;
+        return (
+      <div className="flex items-start gap-4">
+        {/* Sol: proje bilgileri */}
+        <div className="flex-1 min-w-0">
+          <h2 className="text-[20px] font-bold text-tyro-text-primary leading-snug">
             {proje.name}
           </h2>
-          {/* Actions moved to FAB */}
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="text-[11px] font-mono font-semibold text-tyro-text-muted tabular-nums">{proje.id}</span>
+            {proje.description && (
+              <>
+                <span className="text-tyro-text-muted">·</span>
+                <p className="text-[12px] text-tyro-text-muted leading-relaxed truncate">{proje.description}</p>
+              </>
+            )}
+          </div>
+          <div className="flex items-center flex-wrap gap-2 mt-1.5">
+            <StatusBadge status={proje.status} />
+            {proje.tags && proje.tags.length > 0 && (
+              <>
+                <span className="w-px h-4 bg-tyro-border/40 rounded-full" />
+                {proje.tags.map((tag) => (
+                  <TagChip key={tag} name={tag} size="sm" />
+                ))}
+              </>
+            )}
+          </div>
         </div>
-        {proje.description && (
-          <p className="text-[12px] text-tyro-text-muted leading-relaxed mt-1 line-clamp-2">
-            {proje.description}
-          </p>
-        )}
-        <div className="flex items-center flex-wrap gap-2 mt-1.5">
-          <StatusBadge status={proje.status} />
-          {proje.tags && proje.tags.length > 0 && (
-            <>
-              <span className="w-px h-4 bg-tyro-border/40 rounded-full" />
-              {proje.tags.map((tag) => (
-                <TagChip key={tag} name={tag} size="sm" />
-              ))}
-            </>
-          )}
+        {/* Sağ: circular progress */}
+        <div className="flex flex-col items-center shrink-0">
+          <div className="relative" style={{ width: 56, height: 56 }}>
+            <svg width={56} height={56} viewBox="0 0 56 56" className="-rotate-90">
+              <circle cx={28} cy={28} r={r} fill="none" stroke="#e2e8f0" strokeWidth={5} opacity={0.3} />
+              <circle cx={28} cy={28} r={r} fill="none" stroke={stColor} strokeWidth={5} strokeLinecap="round"
+                strokeDasharray={`${dash} ${c - dash}`} strokeDashoffset={0}
+                style={{ transition: "all 0.8s ease", filter: `drop-shadow(0 0 4px ${stColor}40)` }} />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-[14px] font-extrabold tabular-nums text-tyro-text-primary">%{p}</span>
+            </div>
+          </div>
+          <span className="text-[11px] font-semibold text-tyro-text-muted mt-1 tabular-nums">{completedCount}/{totalCount}</span>
         </div>
       </div>
+        );
+      })()}
 
-      {/* === OBJECTIVE INFO — expandable glass card === */}
+      {/* === INFO GRID — 4 column expandable === */}
       <div className="rounded-2xl bg-white/70 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.04)]">
-        {/* Always visible: dates + review date */}
-        <div className="grid grid-cols-3 divide-x divide-tyro-border/40">
+        {/* Always visible: 4 dates */}
+        <div className="grid grid-cols-4 divide-x divide-tyro-border/40">
           <InfoCell icon={<Calendar size={12} />} label={t("common.startDate")} value={formatDate(proje.startDate)} />
           <InfoCell icon={<Calendar size={12} />} label={t("common.endDate")} value={formatDate(proje.endDate)} />
-          <InfoCell icon={<Clock size={12} />} label={t("forms.objective.reviewDate", "Kontrol")} value={proje.reviewDate ? formatDate(proje.reviewDate) : "—"} />
+          <InfoCell icon={<Clock size={12} />} label="Kontrol" value={proje.reviewDate ? formatDate(proje.reviewDate) : "—"} />
+          <InfoCell icon={<Calendar size={12} />} label="Oluşturulma" value={proje.createdAt ? formatDate(proje.createdAt) : "—"} />
         </div>
-        {/* Expandable: owner, dept, source, participants */}
+        {/* Expandable rows */}
         <AnimatePresence>
           {infoExpanded && (
             <motion.div
@@ -320,43 +348,31 @@ function DetailPanel({
               transition={{ duration: 0.2, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="border-t border-tyro-border/15 grid grid-cols-3 divide-x divide-tyro-border/40">
-                <InfoCell icon={<Users size={12} />} label={t("common.owner")} value={proje.owner} />
-                <InfoCell icon={<Building2 size={12} />} label={t("common.department", "Departman")} value={proje.department} />
+              {/* Row 2: kaynak, departman, sahip, katılımcılar */}
+              <div className="border-t border-tyro-border/15 grid grid-cols-4 divide-x divide-tyro-border/40">
                 <InfoCell icon={<Globe size={12} />} label={t("common.source")} value={proje.source} />
+                <InfoCell icon={<Building2 size={12} />} label="Departman" value={proje.department} />
+                <InfoCell icon={<Users size={12} />} label={t("common.owner")} value={proje.owner} />
+                <InfoCell label="Katılımcılar" value={proje.participants?.join(", ") || "—"} />
               </div>
-              {/* Parent Objective */}
-              {parentHedefName && (
-                <div className="border-t border-tyro-border/15 px-3 py-2">
-                  <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("forms.objective.parentObjective", "Ana Proje")}</span>
-                  <p className="text-[11px] text-tyro-text-primary font-medium">{parentHedefName}</p>
-                </div>
-              )}
-              {/* Participants */}
-              {proje.participants && proje.participants.length > 0 && (
-                <div className="border-t border-tyro-border/15 px-3 py-2">
-                  <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block mb-1">{t("forms.objective.participants", "Katılımcılar")}</span>
-                  <p className="text-[11px] text-tyro-text-secondary">{proje.participants.join(", ")}</p>
-                </div>
-              )}
-              {/* Tags already shown in header */}
-              {/* Meta */}
-              <div className="border-t border-tyro-border/15 px-3 py-2 flex gap-4">
-                <div>
-                  <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block">ID</span>
-                  <span className="text-[11px] font-mono text-tyro-text-secondary tabular-nums">{proje.id}</span>
-                </div>
-                {proje.createdBy && (
-                  <div>
-                    <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block">{t("common.createdBy", "Oluşturan")}</span>
-                    <span className="text-[11px] text-tyro-text-secondary">{proje.createdBy}{proje.createdAt ? ` · ${formatDate(proje.createdAt)}` : ""}</span>
+              {/* Row 3: Ana proje (sadece varsa) */}
+              {parentHedef && (
+                <div className="border-t border-tyro-border/15 grid grid-cols-4 divide-x divide-tyro-border/40">
+                  <InfoCell label="Ana Proje ID" value={parentHedef.id} />
+                  <div className="col-span-2 px-3 py-2">
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Ana Proje Adı</span>
+                    <p className="text-[11px] font-medium text-tyro-text-primary truncate">{parentHedef.name}</p>
                   </div>
-                )}
-              </div>
+                  <div className="px-3 py-2">
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Statü</span>
+                    <StatusBadge status={parentHedef.status} />
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
-        {/* Toggle button — visible and clear */}
+        {/* Toggle */}
         <button
           type="button"
           onClick={() => setInfoExpanded((v) => !v)}
@@ -366,35 +382,6 @@ function DetailPanel({
           <ChevronDown size={13} className={`transition-transform duration-200 ${infoExpanded ? "rotate-180" : ""}`} />
         </button>
       </div>
-
-      {/* Description moved to header as subtitle */}
-
-      {/* === PROGRESS — status-colored bar === */}
-      {(() => {
-        const p = proje.progress;
-        const statusColor = STATUS_HEX[proje.status] ?? "#94a3b8";
-        return (
-      <div className="rounded-2xl bg-white/70 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.04)] px-4 py-3">
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-tyro-text-muted shrink-0">
-            {t("common.progress", "İlerleme")}
-          </span>
-          <div className="flex-1 h-3 rounded-full bg-tyro-border/15 overflow-hidden">
-            <div
-              className="h-full rounded-full"
-              style={{ width: `${p}%`, backgroundColor: statusColor, transition: "width 500ms ease" }}
-            />
-          </div>
-          <span className="text-[15px] font-extrabold tabular-nums shrink-0" style={{ color: p === 0 ? undefined : statusColor }}>
-            %{p}
-          </span>
-          <span className="text-[11px] text-tyro-text-muted shrink-0">
-            {completedCount}/{totalCount}
-          </span>
-        </div>
-      </div>
-        );
-      })()}
 
       {/* === ACTIONS LIST === scrollable */}
       <div className="flex-1 overflow-y-auto min-h-0">
@@ -750,7 +737,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
           onClickAksiyon={(a) => { setViewingAksiyon(a); }}
           onEditAksiyon={(a) => { setEditingAksiyon(a); }}
           onUpdateHedef={(data) => selectedProje && updateProje(selectedProje.id, data)}
-          parentHedefName={selectedProje.parentObjectiveId ? projeler.find((h) => h.id === selectedProje.parentObjectiveId)?.name : undefined}
+          parentHedef={selectedProje.parentObjectiveId ? projeler.find((h) => h.id === selectedProje.parentObjectiveId) : undefined}
         />
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-6">
