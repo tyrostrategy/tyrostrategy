@@ -39,16 +39,15 @@ export default function LoginPage() {
   const { locale, setLocale } = useUIStore();
   const dbUsers = useDataStore((s) => s.users);
 
-  // Use DB users if available, otherwise fallback to hardcoded
+  // Pick 1 per role from DB: Admin, Proje Lideri, Kullanıcı
   const demoUsers: DemoUser[] = useMemo(() => {
     if (dbUsers.length > 0) {
-      return dbUsers.map((u) => ({
-        name: u.displayName,
-        department: u.department,
-        role: u.role,
-        locale: u.locale,
-        ...(ROLE_COLORS[u.role] ?? ROLE_COLORS.Kullanıcı),
-      }));
+      const picks: DemoUser[] = [];
+      for (const role of ["Admin", "Proje Lideri", "Kullanıcı"] as const) {
+        const u = dbUsers.find((u) => u.role === role);
+        if (u) picks.push({ name: u.displayName, department: u.department, role: u.role, locale: u.locale, ...(ROLE_COLORS[u.role] ?? ROLE_COLORS.Kullanıcı) });
+      }
+      if (picks.length > 0) return picks;
     }
     return FALLBACK_USERS;
   }, [dbUsers]);
