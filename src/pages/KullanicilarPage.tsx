@@ -7,6 +7,7 @@ import {
 } from "@heroui/react";
 import { Search, Eye, Pencil, Trash2, ChevronDown, Users, Crown, Star, User as UserIcon, CircleDot, Columns3 } from "lucide-react";
 import { useDataStore } from "@/stores/dataStore";
+import { toast } from "@/stores/toastStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { hexToHSL } from "@/lib/colorUtils";
 import CreateButton from "@/components/shared/CreateButton";
@@ -260,6 +261,7 @@ export default function KullanicilarPage() {
                 setConfirmMessage(`"${user.name}" kullanıcısını silmek istediğinize emin misiniz?`);
                 setConfirmAction(() => () => {
                   deleteUserDb(user.id);
+                  toast.success("Kullanıcı silindi", { message: user.name });
                 });
                 setConfirmOpen(true);
               }}>
@@ -510,6 +512,14 @@ export default function KullanicilarPage() {
               isDisabled={!newName.trim() || !newEmail.trim()}
               onPress={() => {
                 addUser({ displayName: newName.trim(), email: newEmail.trim(), department: newDept.trim(), role: newRole, locale: newLocale });
+                toast.success("Kullanıcı oluşturuldu", {
+                  message: newName.trim(),
+                  details: [
+                    { label: "E-posta", value: newEmail.trim() },
+                    { label: "Rol", value: newRole },
+                    { label: "Departman", value: newDept.trim() || "—" },
+                  ],
+                });
                 setNewName(""); setNewEmail(""); setNewDept(""); setNewRole("Kullanıcı"); setNewLocale("tr");
                 setShowNewForm(false);
               }}>
@@ -630,7 +640,17 @@ export default function KullanicilarPage() {
                     isDisabled={!editName.trim() || !editEmail.trim()}
                     onPress={() => {
                       if (selectedUser) {
+                        const changes: { label: string; value: string }[] = [];
+                        if (editName.trim() !== selectedUser.name) changes.push({ label: "Ad", value: editName.trim() });
+                        if (editEmail.trim() !== selectedUser.email) changes.push({ label: "E-posta", value: editEmail.trim() });
+                        if (editDept.trim() !== selectedUser.department) changes.push({ label: "Departman", value: editDept.trim() });
+                        if (editRole !== selectedUser.role) changes.push({ label: "Rol", value: editRole });
+                        if (editLocale !== selectedUser.locale) changes.push({ label: "Dil", value: editLocale === "en" ? "English" : "Türkçe" });
                         updateUserDb(selectedUser.id, { displayName: editName.trim(), email: editEmail.trim(), department: editDept.trim(), role: editRole, locale: editLocale });
+                        toast.success("Kullanıcı güncellendi", {
+                          message: editName.trim(),
+                          details: changes.length > 0 ? changes : [{ label: "Durum", value: "Değişiklik kaydedildi" }],
+                        });
                       }
                       setIsEditing(false);
                       setSelectedUser(null);
