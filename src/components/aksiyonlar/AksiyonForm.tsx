@@ -105,8 +105,10 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
     const elapsed = now - startMs;
     const expectedProgress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
     const diff = expectedProgress - progress;
-    if (diff > 20) return "Behind";    // %20'den fazla geride → Gecikmeli
-    if (diff > 10) return "At Risk";   // %10-20 geride → Risk Altında
+    const behindT = Number(localStorage.getItem("tyro-behind-threshold")) || 20;
+    const atRiskT = Number(localStorage.getItem("tyro-atrisk-threshold")) || 10;
+    if (diff > behindT) return "Behind";
+    if (diff > atRiskT) return "At Risk";
     return "On Track";                  // Planda → Yolunda
   };
 

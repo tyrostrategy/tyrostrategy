@@ -15,7 +15,7 @@ import { isSupabaseMode } from "@/hooks/useSupabaseData";
 
 export default function AyarlarPage() {
   const { t } = useTranslation();
-  const { locale, setLocale, companyName, setCompanyName, allowMultipleTags, setAllowMultipleTags } = useUIStore();
+  const { companyName, setCompanyName, allowMultipleTags, setAllowMultipleTags, behindThreshold, setBehindThreshold, atRiskThreshold, setAtRiskThreshold } = useUIStore();
   const sidebarTheme = useSidebarTheme();
   // Bildirimler kaldırıldı — fonksiyonel değildi
 
@@ -133,6 +133,26 @@ export default function AyarlarPage() {
       <SettingsCard title="Kurallar">
         <SettingsRow label="Çoklu etiket" description="Kapalıyken projelere yalnızca tek etiket atanabilir">
           <Switch isSelected={allowMultipleTags} onValueChange={setAllowMultipleTags} size="sm" />
+        </SettingsRow>
+        <SettingsRow label="Gecikmeli eşiği" description={`Beklenen ilerlemeye göre %${behindThreshold}'den fazla geride → Gecikmeli`}>
+          <Select
+            selectedKeys={[String(behindThreshold)]}
+            onSelectionChange={(keys) => setBehindThreshold(Number(Array.from(keys)[0]))}
+            variant="bordered" size="sm" className="w-[100px]"
+            classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
+          >
+            {[10, 15, 20, 25, 30].map((v) => <SelectItem key={String(v)}>%{v}</SelectItem>)}
+          </Select>
+        </SettingsRow>
+        <SettingsRow label="Risk altında eşiği" description={`Beklenen ilerlemeye göre %${atRiskThreshold}'den fazla geride → Risk Altında`}>
+          <Select
+            selectedKeys={[String(atRiskThreshold)]}
+            onSelectionChange={(keys) => setAtRiskThreshold(Number(Array.from(keys)[0]))}
+            variant="bordered" size="sm" className="w-[100px]"
+            classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
+          >
+            {[5, 10, 15, 20].map((v) => <SelectItem key={String(v)}>%{v}</SelectItem>)}
+          </Select>
         </SettingsRow>
       </SettingsCard>
 

@@ -93,7 +93,7 @@ function now(): string {
   return new Date().toISOString();
 }
 
-/** Calculate status from progress + dates (same logic for both aksiyon and proje) */
+/** Calculate status from progress + dates — thresholds from app settings */
 function suggestStatusFromProgress(progress: number, startDate: string, endDate: string): EntityStatus {
   if (progress === 0) return "Not Started";
   if (progress >= 100) return "Achieved";
@@ -106,8 +106,11 @@ function suggestStatusFromProgress(progress: number, startDate: string, endDate:
   const elapsed = now - startMs;
   const expectedProgress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
   const diff = expectedProgress - progress;
-  if (diff > 20) return "Behind";
-  if (diff > 10) return "At Risk";
+  // Thresholds from settings (lazy import to avoid circular dep)
+  const behindT = Number(localStorage.getItem("tyro-behind-threshold")) || 20;
+  const atRiskT = Number(localStorage.getItem("tyro-atrisk-threshold")) || 10;
+  if (diff > behindT) return "Behind";
+  if (diff > atRiskT) return "At Risk";
   return "On Track";
 }
 

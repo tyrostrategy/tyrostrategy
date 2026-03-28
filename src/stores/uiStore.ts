@@ -19,8 +19,12 @@ interface UIState {
   locale: "tr" | "en";
   companyName: string;
   allowMultipleTags: boolean;
+  behindThreshold: number;
+  atRiskThreshold: number;
   setCompanyName: (name: string) => void;
   setAllowMultipleTags: (v: boolean) => void;
+  setBehindThreshold: (v: number) => void;
+  setAtRiskThreshold: (v: number) => void;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   openCommandPalette: () => void;
@@ -55,6 +59,8 @@ export const useUIStore = create<UIState>((set) => ({
   locale: (localStorage.getItem("tyro-locale") as "tr" | "en") || "tr",
   companyName: localStorage.getItem("tyro-company-name") || "Tiryaki Agro",
   allowMultipleTags: localStorage.getItem("tyro-allow-multiple-tags") !== "false",
+  behindThreshold: Number(localStorage.getItem("tyro-behind-threshold")) || 20,
+  atRiskThreshold: Number(localStorage.getItem("tyro-atrisk-threshold")) || 10,
   setCompanyName: (name) => {
     localStorage.setItem("tyro-company-name", name);
     syncSetting("company_name", name);
@@ -64,6 +70,16 @@ export const useUIStore = create<UIState>((set) => ({
     localStorage.setItem("tyro-allow-multiple-tags", String(v));
     syncSetting("allow_multiple_tags", v);
     set({ allowMultipleTags: v });
+  },
+  setBehindThreshold: (v) => {
+    localStorage.setItem("tyro-behind-threshold", String(v));
+    syncSetting("behind_threshold", v);
+    set({ behindThreshold: v });
+  },
+  setAtRiskThreshold: (v) => {
+    localStorage.setItem("tyro-atrisk-threshold", String(v));
+    syncSetting("atrisk_threshold", v);
+    set({ atRiskThreshold: v });
   },
   toggleSidebar: () =>
     set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
@@ -113,6 +129,8 @@ if (isSupabaseMode) {
       const updates: Partial<UIState> = {};
       if (map.has("company_name")) updates.companyName = map.get("company_name") as string;
       if (map.has("allow_multiple_tags")) updates.allowMultipleTags = map.get("allow_multiple_tags") as boolean;
+      if (map.has("behind_threshold")) updates.behindThreshold = map.get("behind_threshold") as number;
+      if (map.has("atrisk_threshold")) updates.atRiskThreshold = map.get("atrisk_threshold") as number;
       if (Object.keys(updates).length > 0) {
         console.log("[Supabase] Loaded app_settings:", Object.keys(updates));
         useUIStore.setState(updates);

@@ -247,8 +247,10 @@ function DetailPanel({
       if (totalDuration > 0) {
         const expectedProgress = Math.min(100, Math.max(0, ((now - startMs) / totalDuration) * 100));
         const diff = expectedProgress - progress;
-        if (diff > 20) status = "Behind";
-        else if (diff > 10) status = "At Risk";
+        const behindT = Number(localStorage.getItem("tyro-behind-threshold")) || 20;
+        const atRiskT = Number(localStorage.getItem("tyro-atrisk-threshold")) || 10;
+        if (diff > behindT) status = "Behind";
+        else if (diff > atRiskT) status = "At Risk";
         else status = "On Track";
       } else {
         status = "On Track";
