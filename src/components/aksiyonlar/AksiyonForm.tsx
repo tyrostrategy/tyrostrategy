@@ -273,8 +273,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
         <span className="form-scroll-chevron text-[10px] text-tyro-text-muted flex items-center gap-1">↓ Diğer alanlar</span>
         <div ref={scrollRef} className="form-scroll-body h-full px-0.5 py-1 space-y-3" onScroll={updateScroll}>
 
-      {/* Section: Temel Bilgiler */}
-      <FormSection title="Temel Bilgiler">
+      <FormSection title="Aksiyon Bilgileri">
         <Controller
           name="name"
           control={control}
@@ -316,10 +315,8 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
             </div>
           )}
         />
-      </FormSection>
 
-      {/* Section: İlerleme & Durum */}
-      <FormSection title="İlerleme & Durum">
+
       <Controller
         name="progress"
         control={control}
@@ -431,10 +428,8 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
           </div>
         )}
       />
-      </FormSection>
 
-      {/* Section: Tarihler */}
-      <FormSection title="Tarihler">
+
       <div className="grid grid-cols-2 gap-3">
         <Controller
           name="startDate"

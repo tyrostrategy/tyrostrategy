@@ -196,8 +196,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
         <span className="form-scroll-chevron text-[10px] text-tyro-text-muted flex items-center gap-1">↓ Diğer alanlar</span>
         <div ref={scrollRef} className="form-scroll-body h-full px-0.5 py-1 space-y-3" onScroll={updateScroll}>
 
-      {/* Section: Temel Bilgiler */}
-      <FormSection title="Temel Bilgiler">
+      <FormSection title="Proje Bilgileri">
       <Controller
         name="name"
         control={control}
@@ -239,10 +238,8 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
           </div>
         )}
       />
-      </FormSection>
 
-      {/* Section: Sorumluluk */}
-      <FormSection title="Sorumluluk">
+
       <Controller
         name="owner"
         control={control}
@@ -324,10 +321,8 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
           </div>
         )}
       />
-      </FormSection>
 
-      {/* Section: Sınıflandırma */}
-      <FormSection title="Sınıflandırma">
+
       <div className="grid grid-cols-2 gap-3">
         <Controller
           name="source"
@@ -496,10 +491,8 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
           );
         }}
       />
-      </FormSection>
 
-      {/* Section: Tarihler */}
-      <FormSection title="Tarihler">
+
       <div className="grid grid-cols-2 gap-3">
         <Controller
           name="startDate"
