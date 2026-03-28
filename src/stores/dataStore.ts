@@ -307,6 +307,12 @@ export const useDataStore = create<DataState>()(
     {
       name: "tyro-data-store-v7",
       skipHydration: true,
+      partialize: (state) => ({
+        projeler: state.projeler,
+        aksiyonlar: state.aksiyonlar,
+        tagDefinitions: state.tagDefinitions,
+        // users excluded from persist — always fetched fresh from Supabase
+      }),
     }
   )
 );

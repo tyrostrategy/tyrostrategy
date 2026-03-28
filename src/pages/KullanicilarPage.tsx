@@ -84,52 +84,59 @@ export default function KullanicilarPage() {
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
-  // Build users from data
+  const dbUsers = useDataStore((s) => s.users);
+
+  // Build users from DB + enrich with proje/aksiyon counts
   const users: UserRow[] = useMemo(() => {
-    const ownerMap = new Map<string, { projeCount: number; aksiyonCount: number; achievedCount: number; departments: Set<string> }>();
+    // Count stats per user
+    const statsMap = new Map<string, { projeCount: number; aksiyonCount: number; achievedCount: number }>();
     for (const h of projeler) {
-      const owner = h.owner;
-      if (!owner) continue;
-      const existing = ownerMap.get(owner) || { projeCount: 0, aksiyonCount: 0, achievedCount: 0, departments: new Set<string>() };
-      existing.projeCount += 1;
-      if (h.department) existing.departments.add(h.department);
-      ownerMap.set(owner, existing);
+      if (!h.owner) continue;
+      const s = statsMap.get(h.owner) || { projeCount: 0, aksiyonCount: 0, achievedCount: 0 };
+      s.projeCount += 1;
+      statsMap.set(h.owner, s);
     }
     for (const a of aksiyonlar) {
-      const owner = a.owner;
-      if (!owner) continue;
-      const existing = ownerMap.get(owner) || { projeCount: 0, aksiyonCount: 0, achievedCount: 0, departments: new Set<string>() };
-      existing.aksiyonCount += 1;
-      if (a.status === "Achieved") existing.achievedCount += 1;
-      ownerMap.set(owner, existing);
+      if (!a.owner) continue;
+      const s = statsMap.get(a.owner) || { projeCount: 0, aksiyonCount: 0, achievedCount: 0 };
+      s.aksiyonCount += 1;
+      if (a.status === "Achieved") s.achievedCount += 1;
+      statsMap.set(a.owner, s);
     }
-    const fromData = Array.from(ownerMap.entries()).map(([name, stats]) => ({
-      id: `user-${name.replace(/\\s+/g, "-").toLowerCase()}`,
+
+    // If DB users available, use them
+    if (dbUsers.length > 0) {
+      return dbUsers.map((u) => {
+        const s = statsMap.get(u.displayName) || { projeCount: 0, aksiyonCount: 0, achievedCount: 0 };
+        return {
+          id: u.id,
+          name: u.displayName,
+          initials: u.displayName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2),
+          email: u.email,
+          department: u.department,
+          active: true,
+          role: u.role as YetkiRol,
+          projeCount: s.projeCount,
+          aksiyonCount: s.aksiyonCount,
+          achievedCount: s.achievedCount,
+        };
+      });
+    }
+
+    // Fallback: derive from proje/aksiyon owners
+    return Array.from(statsMap.entries()).map(([name, s]) => ({
+      id: `user-${name.replace(/\s+/g, "-").toLowerCase()}`,
       name,
       initials: name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2),
       email: nameToEmail(name),
-      department: Array.from(stats.departments).join(", "),
+      department: "",
       active: true,
-      role: assignRole(stats.projeCount),
-      projeCount: stats.projeCount,
-      aksiyonCount: stats.aksiyonCount,
-      achievedCount: stats.achievedCount,
+      role: assignRole(s.projeCount),
+      projeCount: s.projeCount,
+      aksiyonCount: s.aksiyonCount,
+      achievedCount: s.achievedCount,
     }));
-
-    const currentUser: UserRow = {
-      id: "user-cenk-sayli",
-      name: "Cenk \u015eayli",
-      initials: "C\u015e",
-      email: "cenk.sayli@tiryaki.com.tr",
-      department: "IT",
-      active: true,
-      role: "Admin",
-      projeCount: projeler.length,
-      aksiyonCount: aksiyonlar.length,
-      achievedCount: aksiyonlar.filter((a) => a.status === "Achieved").length,
-    };
-    return [currentUser, ...fromData];
-  }, [projeler, aksiyonlar]);
+  }, [projeler, aksiyonlar, dbUsers]);
 
   // Filter
   const filtered = useMemo(() => {
