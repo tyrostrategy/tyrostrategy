@@ -330,12 +330,6 @@ if (typeof window !== "undefined") {
       supabaseAdapter.fetchUsers(),
     ]).then(([projeler, aksiyonlar, tagDefinitions, users]) => {
       console.log(`[Supabase] Loaded ${projeler.length} projeler, ${aksiyonlar.length} aksiyonlar, ${tagDefinitions.length} tags, ${users.length} users`);
-      // One-time fix: ensure Burcu is "Kullanıcı" role
-      const burcu = users.find((u) => u.displayName === "Burcu Gözen");
-      if (burcu && burcu.role !== "Kullanıcı") {
-        supabaseAdapter.updateUser(burcu.id, { role: "Kullanıcı" });
-        burcu.role = "Kullanıcı";
-      }
       useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users });
     }).catch((err) => {
       console.error("[Supabase] Initial fetch failed, using cached data:", err?.message || err?.code || JSON.stringify(err));

@@ -25,6 +25,7 @@ interface UserRow {
   department: string;
   active: boolean;
   role: YetkiRol;
+  locale: "tr" | "en";
   projeCount: number;
   aksiyonCount: number;
   achievedCount: number;
@@ -50,11 +51,12 @@ const columns = [
   { uid: "status", name: "Durum" },
   { uid: "email", name: "E-posta" },
   { uid: "department", name: "Departman" },
+  { uid: "locale", name: "Dil" },
   { uid: "projeCount", name: "Projeler" },
   { uid: "actions", name: "İşlemler" },
 ];
 
-const INITIAL_VISIBLE = new Set(["name", "role", "status", "email", "department", "projeCount", "actions"]);
+const INITIAL_VISIBLE = new Set(["name", "role", "status", "email", "department", "locale", "projeCount", "actions"]);
 
 export default function KullanicilarPage() {
   const { t } = useTranslation();
@@ -85,6 +87,7 @@ export default function KullanicilarPage() {
   const [editEmail, setEditEmail] = useState("");
   const [editDept, setEditDept] = useState("");
   const [editRole, setEditRole] = useState<YetkiRol>("Kullanıcı");
+  const [editLocale, setEditLocale] = useState<"tr" | "en">("tr");
   const [editActive, setEditActive] = useState(true);
 
   // Confirm dialog state
@@ -124,6 +127,7 @@ export default function KullanicilarPage() {
           department: u.department,
           active: true,
           role: u.role as YetkiRol,
+          locale: u.locale ?? "tr",
           projeCount: s.projeCount,
           aksiyonCount: s.aksiyonCount,
           achievedCount: s.achievedCount,
@@ -140,6 +144,7 @@ export default function KullanicilarPage() {
       department: "",
       active: true,
       role: assignRole(s.projeCount),
+      locale: "tr" as const,
       projeCount: s.projeCount,
       aksiyonCount: s.aksiyonCount,
       achievedCount: s.achievedCount,
@@ -184,6 +189,7 @@ export default function KullanicilarPage() {
     setEditEmail(user.email);
     setEditDept(user.department);
     setEditRole(user.role);
+    setEditLocale(user.locale);
     setEditActive(user.active);
     setIsEditing(false);
   };
@@ -231,6 +237,8 @@ export default function KullanicilarPage() {
         return <span className="text-[13px] text-tyro-text-secondary">{user.email}</span>;
       case "department":
         return <span className="text-[13px] text-tyro-text-secondary">{user.department}</span>;
+      case "locale":
+        return <span className="text-[13px] text-tyro-text-secondary">{user.locale === "en" ? "English" : "Türkçe"}</span>;
       case "projeCount":
         return <span className="text-[13px] font-bold" style={{ color: sidebarTheme.accentColor }}>{user.projeCount}</span>;
       case "actions":
@@ -242,7 +250,7 @@ export default function KullanicilarPage() {
               </button>
             </Tooltip>
             <Tooltip content="Düzenle" size="sm">
-              <button className="text-lg text-tyro-text-muted cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditRole(user.role); setEditActive(user.active); }}>
+              <button className="text-lg text-tyro-text-muted cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditRole(user.role); setEditLocale(user.locale); setEditActive(user.active); }}>
                 <Pencil size={16} />
               </button>
             </Tooltip>
@@ -408,7 +416,7 @@ export default function KullanicilarPage() {
                 <span>{user.role}</span>
               </div>
               <div className="flex items-center gap-2 pt-2 border-t border-tyro-border/20" onClick={(e) => e.stopPropagation()}>
-                <button aria-label="Düzenle" onClick={() => { setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditRole(user.role); setEditActive(user.active); }} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-tyro-text-secondary bg-tyro-bg hover:bg-tyro-border/30 transition-colors">
+                <button aria-label="Düzenle" onClick={() => { setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditRole(user.role); setEditLocale(user.locale); setEditActive(user.active); }} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-tyro-text-secondary bg-tyro-bg hover:bg-tyro-border/30 transition-colors">
                   <Pencil size={14} /> Düzenle
                 </button>
               </div>
@@ -604,6 +612,13 @@ export default function KullanicilarPage() {
                   </Select>
                 </div>
                 <div>
+                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Dil</label>
+                  <Select selectedKeys={[editLocale]} onSelectionChange={(keys) => setEditLocale(Array.from(keys)[0] as "tr" | "en")} variant="bordered" size="sm" classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}>
+                    <SelectItem key="tr">Türkçe</SelectItem>
+                    <SelectItem key="en">English</SelectItem>
+                  </Select>
+                </div>
+                <div>
                   <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Durum</label>
                   <Select selectedKeys={[editActive ? "true" : "false"]} onSelectionChange={(keys) => setEditActive(Array.from(keys)[0] === "true")} variant="bordered" size="sm" placeholder="Durum seçiniz">
                     <SelectItem key="true">Etkin</SelectItem>
@@ -615,7 +630,7 @@ export default function KullanicilarPage() {
                     isDisabled={!editName.trim() || !editEmail.trim()}
                     onPress={() => {
                       if (selectedUser) {
-                        updateUserDb(selectedUser.id, { displayName: editName.trim(), email: editEmail.trim(), department: editDept.trim(), role: editRole });
+                        updateUserDb(selectedUser.id, { displayName: editName.trim(), email: editEmail.trim(), department: editDept.trim(), role: editRole, locale: editLocale });
                       }
                       setIsEditing(false);
                       setSelectedUser(null);
