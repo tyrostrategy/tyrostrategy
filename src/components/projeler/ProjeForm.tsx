@@ -85,18 +85,12 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
       parentObjectiveId: proje?.parentObjectiveId ?? "",
       startDate: proje?.startDate ?? "",
       endDate: proje?.endDate ?? "",
-      reviewDate: proje?.reviewDate ?? "",
+      reviewDate: proje?.reviewDate ?? new Date().toISOString().slice(0, 10),
     },
   });
 
-  // Yeni hedefte: startDate değiştiğinde reviewDate otomatik doldur (eğer boşsa)
-  const watchStartDate = watch("startDate");
-  const watchReviewDate = watch("reviewDate");
-  useEffect(() => {
-    if (!proje && watchStartDate && !watchReviewDate) {
-      setValue("reviewDate", watchStartDate);
-    }
-  }, [watchStartDate]); // eslint-disable-line react-hooks/exhaustive-deps
+  // reviewDate varsayılan: bugünün tarihi (yeni kayıtta)
+  // startDate'ten otomatik atama kaldırıldı
 
   const onSubmit = (data: ProjeFormData) => {
     setIsLoading(true);

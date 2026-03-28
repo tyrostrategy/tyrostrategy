@@ -123,7 +123,7 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
       parentObjectiveId: "",
       startDate: "",
       endDate: "",
-      reviewDate: "",
+      reviewDate: new Date().toISOString().slice(0, 10),
       aksiyonlar: [],
     },
     mode: "onTouched",
