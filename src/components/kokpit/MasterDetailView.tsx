@@ -975,12 +975,13 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
         isOpen={aksiyonPanelOpen}
         onClose={() => setAksiyonPanelOpen(false)}
         title="Yeni Aksiyon Oluştur"
-        icon={<CircleCheckBig size={16} className="text-emerald-500" />}
+        hideHeader
       >
         {selectedProje && (
           <AksiyonForm
             defaultProjeId={selectedProje.id}
             onSuccess={() => setAksiyonPanelOpen(false)}
+            onClose={() => setAksiyonPanelOpen(false)}
           />
         )}
       </SlidingPanel>
@@ -1029,13 +1030,14 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
         isOpen={!!editingAksiyon}
         onClose={() => setEditingAksiyon(null)}
         title="Aksiyonu Düzenle"
-        icon={<Pencil size={16} className="text-amber-500" />}
+        hideHeader
       >
         {editingAksiyon && (
           <AksiyonForm
             aksiyon={editingAksiyon}
             defaultProjeId={editingAksiyon.projeId}
             onSuccess={() => setEditingAksiyon(null)}
+            onClose={() => setEditingAksiyon(null)}
           />
         )}
       </SlidingPanel>

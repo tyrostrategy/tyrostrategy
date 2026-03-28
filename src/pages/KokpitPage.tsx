@@ -533,12 +533,13 @@ export default function KokpitPage() {
         isOpen={aksiyonPanelOpen}
         onClose={() => setAksiyonPanelOpen(false)}
         title="Yeni Aksiyon Oluştur"
-        icon={<CircleCheckBig size={16} className="text-emerald-500" />}
+        hideHeader
       >
         {selectedProje && (
           <AksiyonForm
             defaultProjeId={selectedProje.id}
             onSuccess={() => setAksiyonPanelOpen(false)}
+            onClose={() => setAksiyonPanelOpen(false)}
           />
         )}
       </SlidingPanel>

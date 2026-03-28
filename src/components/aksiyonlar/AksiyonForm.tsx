@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Textarea, Select, SelectItem, DatePicker, Autocomplete, AutocompleteItem } from "@heroui/react";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
@@ -38,17 +38,27 @@ interface AksiyonFormProps {
   aksiyon?: Aksiyon;
   defaultProjeId?: string;
   onSuccess: () => void;
+  onClose?: () => void;
 }
 
-export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess }: AksiyonFormProps) {
+export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClose }: AksiyonFormProps) {
   const { t } = useTranslation();
   const projeler = useDataStore((s) => s.projeler);
-  const proje = aksiyon ? projeler.find((p) => p.id === aksiyon.projeId) : null;
+  const proje = aksiyon
+    ? projeler.find((p) => p.id === aksiyon.projeId)
+    : defaultProjeId ? projeler.find((p) => p.id === defaultProjeId) : null;
   const addAksiyon = useDataStore((s) => s.addAksiyon);
   const updateAksiyon = useDataStore((s) => s.updateAksiyon);
   const [isLoading, setIsLoading] = useState(false);
   const sidebarTheme = useSidebarTheme();
   const accentColor = sidebarTheme.accentColor ?? "#c8922a";
+  const isDark = sidebarTheme.isDark !== false;
+  const txtColor = isDark ? "#ffffff" : "#1e293b";
+  const btnBg = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.06)";
+  const btnBgHover = isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.12)";
+  const btnBorder = isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.1)";
+  const btnBorderHover = isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.2)";
+  const sepColor = isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)";
 
   const aksiyonSchema = createAksiyonSchema(t);
 
@@ -148,7 +158,36 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess }: Aksi
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
-      {/* Themed Header — edit mode only (same style as AksiyonDetail) */}
+      {/* Themed Header — create mode */}
+      {!aksiyon && (
+        <div className="relative rounded-xl overflow-hidden px-4 py-3" style={{ background: sidebarTheme.bg }}>
+          <div className="absolute inset-0 opacity-[0.06]" style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, ${sidebarTheme.accentColor ?? "rgba(255,255,255,0.4)"} 1px, transparent 0)`,
+            backgroundSize: "20px 20px",
+          }} />
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: sidebarTheme.accentColor ?? "#c8922a" }} />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(30,41,59,0.4)" }}>Yeni Aksiyon Oluştur</span>
+              {onClose && (
+                <button type="button" onClick={onClose}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.05] active:scale-[0.95]"
+                  style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}>
+                  <X size={15} />
+                </button>
+              )}
+            </div>
+            <div className="h-px rounded-full mb-2" style={{ background: `linear-gradient(to right, transparent, ${sepColor} 30%, ${sepColor} 70%, transparent)` }} />
+            <h3 className="text-[15px] font-bold leading-snug" style={{ color: sidebarTheme.textPrimary ?? "#ffffff" }}>
+              {watch("name") || "Aksiyon adı giriniz..."}
+            </h3>
+          </div>
+        </div>
+      )}
+
+      {/* Themed Header — edit mode (same style as AksiyonDetail) */}
       {aksiyon && (
         <div className="relative rounded-xl overflow-hidden px-4 py-3" style={{ background: sidebarTheme.bg }}>
           <div className="absolute inset-0 opacity-[0.06]" style={{
@@ -157,9 +196,20 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess }: Aksi
           }} />
           <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: sidebarTheme.accentColor ?? "#c8922a" }} />
           <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[13px] font-bold tabular-nums" style={{ color: sidebarTheme.isDark !== false ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.6)" }}>{aksiyon.id}</span>
-              <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: sidebarTheme.isDark !== false ? "rgba(255,255,255,0.5)" : "rgba(30,41,59,0.4)" }}>Aksiyon Düzenleme</span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[13px] font-bold tabular-nums" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.6)" }}>{aksiyon.id}</span>
+                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(30,41,59,0.4)" }}>Aksiyon Düzenleme</span>
+              </div>
+              {onClose && (
+                <button type="button" onClick={onClose}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.05] active:scale-[0.95]"
+                  style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}>
+                  <X size={15} />
+                </button>
+              )}
             </div>
             <div className="h-px rounded-full mb-2" style={{ background: `linear-gradient(to right, transparent, ${sidebarTheme.isDark !== false ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"} 30%, ${sidebarTheme.isDark !== false ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"} 70%, transparent)` }} />
             <h3 className="text-[15px] font-bold leading-snug" style={{ color: sidebarTheme.textPrimary ?? "#ffffff" }}>
@@ -178,8 +228,8 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess }: Aksi
         </div>
       )}
 
-      {/* Parent Project Card — edit mode only (brandStrategy color) */}
-      {aksiyon && proje && (
+      {/* Parent Project Card (brandStrategy color) */}
+      {proje && (
         <div className="relative rounded-xl overflow-hidden px-4 py-3" style={{ background: sidebarTheme.brandStrategy ?? sidebarTheme.accentColor ?? "#c8922a" }}>
           <div className="absolute inset-0 opacity-[0.08]" style={{
             backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.5) 1px, transparent 0)`,
