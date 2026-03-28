@@ -14,7 +14,9 @@ interface UIState {
   sidebarTheme: SidebarThemeId;
   locale: "tr" | "en";
   companyName: string;
+  allowMultipleTags: boolean;
   setCompanyName: (name: string) => void;
+  setAllowMultipleTags: (v: boolean) => void;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   openCommandPalette: () => void;
@@ -42,9 +44,14 @@ export const useUIStore = create<UIState>((set) => ({
   sidebarTheme: (localStorage.getItem("tyro-sidebar-theme") as SidebarThemeId) || "light",
   locale: (localStorage.getItem("tyro-locale") as "tr" | "en") || "tr",
   companyName: localStorage.getItem("tyro-company-name") || "Tiryaki Agro",
+  allowMultipleTags: localStorage.getItem("tyro-allow-multiple-tags") !== "false",
   setCompanyName: (name) => {
     localStorage.setItem("tyro-company-name", name);
     set({ companyName: name });
+  },
+  setAllowMultipleTags: (v) => {
+    localStorage.setItem("tyro-allow-multiple-tags", String(v));
+    set({ allowMultipleTags: v });
   },
   toggleSidebar: () =>
     set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),

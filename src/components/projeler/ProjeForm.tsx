@@ -9,6 +9,7 @@ import type { TFunction } from "i18next";
 import { useDataStore } from "@/stores/dataStore";
 import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
 import { toast } from "@/stores/toastStore";
+import { useUIStore } from "@/stores/uiStore";
 import { getStatusOptions, getSourceOptions } from "@/lib/constants";
 import { departments } from "@/config/departments";
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
@@ -401,9 +402,15 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
           const addTagDef = useDataStore((s) => s.addTagDefinition);
           const getTagColor = useDataStore((s) => s.getTagColor);
 
+          const allowMultiple = useUIStore((s) => s.allowMultipleTags);
           const addTag = (tag: string) => {
             const trimmed = tag.trim();
             if (!trimmed || field.value.includes(trimmed)) { setTagInput(""); return; }
+            if (!allowMultiple && field.value.length >= 1) {
+              toast.error("Tek etiket kuralı aktif", { message: "Ayarlar sayfasından 'Projede birden fazla etiket seçebilme' kuralını aktif edin." });
+              setTagInput("");
+              return;
+            }
             // On-the-fly: register unknown tag in store
             const exists = tagDefs.some(
               (t) => t.name.toLocaleLowerCase("tr") === trimmed.toLocaleLowerCase("tr")

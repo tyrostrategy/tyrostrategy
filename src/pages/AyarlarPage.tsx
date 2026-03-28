@@ -14,7 +14,7 @@ import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 
 export default function AyarlarPage() {
   const { t } = useTranslation();
-  const { locale, setLocale, companyName, setCompanyName } = useUIStore();
+  const { locale, setLocale, companyName, setCompanyName, allowMultipleTags, setAllowMultipleTags } = useUIStore();
   const sidebarTheme = useSidebarTheme();
   const [emailNotif, setEmailNotif] = useState(true);
   const [browserNotif, setBrowserNotif] = useState(false);
@@ -147,6 +147,18 @@ export default function AyarlarPage() {
           <p className="text-[11px] text-tyro-text-muted mt-2">
             P = Project (Proje), A = Action (Aksiyon), YY = Yıl, NNNN = Sıra numarası. Kayıtlar başlangıç tarihine göre sıralanır.
           </p>
+        </div>
+
+        {/* Kurallar */}
+        <div className="mt-4 pt-4 border-t border-tyro-border/30">
+          <h3 className="text-[13px] font-bold text-tyro-text-primary mb-3">Kurallar</h3>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-tyro-text-primary">Projede birden fazla etiket seçebilme</p>
+              <p className="text-xs text-tyro-text-muted">Kapalıyken projelere yalnızca tek etiket atanabilir</p>
+            </div>
+            <Switch isSelected={allowMultipleTags} onValueChange={setAllowMultipleTags} size="sm" />
+          </div>
         </div>
       </div>
 
