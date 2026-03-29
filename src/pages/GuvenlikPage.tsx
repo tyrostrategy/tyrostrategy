@@ -170,6 +170,7 @@ export default function GuvenlikPage() {
                         size="sm"
                         isSelected={rolePerms.pages[pageKey]}
                         onValueChange={() => togglePage(r.role, pageKey)}
+                        isDisabled={r.role === "Admin" && pageKey === "guvenlik"}
                         classNames={{ wrapper: "group-data-[selected=true]:bg-tyro-navy" }}
                       />
                     </div>
