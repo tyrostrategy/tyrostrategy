@@ -361,7 +361,7 @@ export const supabaseAdapter: DataService = {
     if (data.displayName !== undefined) row.display_name = data.displayName;
     if (data.department !== undefined) row.department = data.department;
     if (data.role !== undefined) row.role = data.role;
-    // locale is not a column in the users table — stored in uiStore/localStorage only
+    if (data.locale !== undefined) row.locale = data.locale;
     const { error, count } = await supabase.from("users").update(row).eq("id", id).select();
     if (error) {
       console.error("[Supabase] updateUser error:", error.code, error.message, error.details);
