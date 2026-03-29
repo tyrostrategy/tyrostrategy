@@ -361,9 +361,15 @@ export const supabaseAdapter: DataService = {
     if (data.displayName !== undefined) row.display_name = data.displayName;
     if (data.department !== undefined) row.department = data.department;
     if (data.role !== undefined) row.role = data.role;
-    if (data.locale !== undefined) row.locale = data.locale;
-    const { error } = await supabase.from("users").update(row).eq("id", id);
-    if (error) console.error("[Supabase] updateUser:", error);
+    // locale is not a column in the users table — stored in uiStore/localStorage only
+    const { error, count } = await supabase.from("users").update(row).eq("id", id).select();
+    if (error) {
+      console.error("[Supabase] updateUser error:", error.code, error.message, error.details);
+      throw error;
+    }
+    if (count === 0) {
+      console.warn("[Supabase] updateUser: 0 rows updated — RLS may be blocking or id not found:", id);
+    }
   },
 
   async deleteUser(id: string): Promise<boolean> {
