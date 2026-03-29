@@ -742,7 +742,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
 
       {/* Count footer */}
       <div className="px-3 py-2 border-t border-tyro-border/20 text-[11px] text-tyro-text-secondary text-center font-medium">
-        <span className="text-tyro-text-primary font-bold">{filtered.length}</span> / {projeler.length} proje
+        <span className="text-tyro-text-primary font-bold">{filtered.length}</span> / {projeler.length} {t("nav.objectives")}
       </div>
     </div>
   );

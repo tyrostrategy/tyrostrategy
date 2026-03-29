@@ -200,7 +200,9 @@
       "parentObjectivePlaceholder": "Select parent project (optional)",
       "standalone": "Standalone Project",
       "editTitle": "Edit Project",
-      "sectionTitle": "Project Details"
+      "sectionTitle": "Project Details",
+      "tags": "Tags",
+      "tagsPlaceholder": "Type or select a tag..."
     },
     "action": {
       "name": "Action Name",
@@ -677,6 +679,9 @@
     "confirm": "Confirm",
     "cancel": "Cancel"
   },
+  "permissions": {
+    "cannotDeleteProject": "This project has {{count}} action(s). Delete all actions first before deleting the project."
+  },
   "search": {
     "placeholder": "Search commands or pages...",
     "pages": "Pages",
@@ -723,11 +728,16 @@
   },
   "wizard": {
     "title": "Goal-Action Wizard",
+    "subtitle": "Create your strategic projects and actions step by step",
     "triggerButton": "Create Goal",
     "step1Title": "Goal Details",
     "step2Title": "Ownership & Dates",
     "step3Title": "Actions",
     "step4Title": "Review & Confirm",
+    "step1Desc": "Define project details",
+    "step2Desc": "Set team and timeline",
+    "step3Desc": "Add actions linked to the goal",
+    "step4Desc": "Review and confirm everything",
     "next": "Next",
     "back": "Back",
     "submit": "Create",

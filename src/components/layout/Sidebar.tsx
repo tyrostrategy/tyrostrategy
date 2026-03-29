@@ -216,12 +216,12 @@ function SidebarContent({ collapsed, onNavigate, pinned, onTogglePin }: { collap
           <div key={section.title}>
             <div
               className={clsx(
-                "text-[11px] font-bold uppercase tracking-wider px-3 py-3 whitespace-nowrap overflow-hidden transition-all duration-300",
+                "text-[11px] font-bold tracking-wider px-3 py-3 whitespace-nowrap overflow-hidden transition-all duration-300",
                 collapsed && "opacity-0 h-2 py-1"
               )}
               style={{ color: "var(--sb-section-title)" }}
             >
-              {section.title}
+              {section.title.toLocaleUpperCase('en-US')}
             </div>
             {section.items.map((item) => {
               const isActive = location.pathname === item.path;
@@ -351,10 +351,10 @@ function SidebarContent({ collapsed, onNavigate, pinned, onTogglePin }: { collap
                         <div className="px-3 pt-1.5 pb-2">
                           {/* Sidebar-only themes */}
                           <p
-                            className="text-[11px] font-bold uppercase tracking-wider mb-1.5"
+                            className="text-[11px] font-bold tracking-wider mb-1.5"
                             style={{ color: "var(--sb-text-muted)" }}
                           >
-                            {t("nav.sidebarTheme")}
+                            {t("nav.sidebarTheme").toLocaleUpperCase('en-US')}
                           </p>
                           <div className="flex gap-2 flex-wrap">
                             {sidebarOnlyThemes.map((t) => {
@@ -395,10 +395,10 @@ function SidebarContent({ collapsed, onNavigate, pinned, onTogglePin }: { collap
 
                           {/* Full app themes */}
                           <p
-                            className="text-[11px] font-bold uppercase tracking-wider mb-1.5"
+                            className="text-[11px] font-bold tracking-wider mb-1.5"
                             style={{ color: "var(--sb-text-muted)" }}
                           >
-                            {t("nav.appTheme")}
+                            {t("nav.appTheme").toLocaleUpperCase('en-US')}
                           </p>
                           <div className="flex gap-2 flex-wrap">
                             {fullAppThemes.map((t) => {

@@ -1,10 +1,12 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRoleStore } from "@/stores/roleStore";
 import { useDataStore } from "@/stores/dataStore";
 import type { Proje, Aksiyon, RolePermissions } from "@/types";
 
 export function usePermissions() {
+  const { t } = useTranslation();
   const user = useCurrentUser();
   const perms: RolePermissions = useRoleStore((s) => s.getPermissions(user.role));
   const projeler = useDataStore((s) => s.projeler);
@@ -86,7 +88,7 @@ export function usePermissions() {
   const getProjeDeleteReason = (projeId: string): string | null => {
     const children = aksiyonlar.filter((a) => a.projeId === projeId);
     if (children.length > 0) {
-      return `Bu projenin altında ${children.length} aksiyon bulunuyor. Projeyi silmek için önce tüm aksiyonları silmeniz gerekir.`;
+      return t("permissions.cannotDeleteProject", { count: children.length });
     }
     return null;
   };

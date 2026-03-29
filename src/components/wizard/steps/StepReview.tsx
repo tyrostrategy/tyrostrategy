@@ -38,7 +38,7 @@ export default function StepReview({ control }: Props) {
       {/* Proje Summary */}
       <div className="rounded-2xl border border-tyro-border overflow-hidden">
         <div className="px-4 py-2.5 rounded-t-2xl" style={{ backgroundColor: sidebarTheme.accentColor ?? "#c8922a" }}>
-          <span className="text-[11px] font-bold text-white/80 uppercase tracking-wide">
+          <span className="text-[11px] font-bold text-white/80 tracking-wide">
             {t("wizard.reviewProje", "Proje Özeti")}
           </span>
         </div>
@@ -91,7 +91,7 @@ export default function StepReview({ control }: Props) {
       {/* Aksiyonlar Summary */}
       <div className="rounded-2xl border border-tyro-border overflow-hidden">
         <div className="bg-tyro-gold/10 px-4 py-2.5">
-          <span className="text-[11px] font-bold text-tyro-gold uppercase tracking-wide">
+          <span className="text-[11px] font-bold text-tyro-gold tracking-wide">
             {t("wizard.reviewAksiyonlar")} ({data.aksiyonlar?.length || 0})
           </span>
         </div>

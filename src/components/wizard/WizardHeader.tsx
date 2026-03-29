@@ -101,7 +101,7 @@ export default function WizardHeader() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            Stratejik proje ve aksiyonlarınızı adım adım oluşturun
+            {t("wizard.subtitle")}
           </motion.p>
         </div>
       </div>

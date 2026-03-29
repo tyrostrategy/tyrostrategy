@@ -122,7 +122,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               </FilterSection>
 
               {/* Durum */}
-              <FilterSection title={t("dashboard.status")}>
+              <FilterSection title={t("common.status")}>
                 <div className="flex flex-wrap gap-2">
                   {statusOptions.map((s) => (
                     <ChipToggle

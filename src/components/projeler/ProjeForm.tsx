@@ -442,7 +442,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
                 }}
                 variant="bordered"
                 size="sm"
-                placeholder={t("forms.objective.tagsPlaceholder", "Etiket yazın veya seçin...")}
+                placeholder={t("forms.objective.tagsPlaceholder")}
                 classNames={{ base: "w-full", input: "font-semibold text-tyro-text-primary" }}
                 allowsCustomValue
                 menuTrigger="input"

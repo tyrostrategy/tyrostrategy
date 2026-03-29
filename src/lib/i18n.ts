@@ -23,4 +23,13 @@ i18n.use(initReactI18next).init({
   }),
 });
 
+// Sync document lang with i18n — CSS text-transform:uppercase uses this
+// Without it, Turkish OS uppercases "i" → "İ" even in English mode
+if (typeof document !== "undefined") {
+  document.documentElement.lang = savedLocale;
+  i18n.on("languageChanged", (lng) => {
+    document.documentElement.lang = lng;
+  });
+}
+
 export default i18n;

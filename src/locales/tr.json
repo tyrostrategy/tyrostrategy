@@ -200,7 +200,9 @@
       "parentProjectPlaceholder": "Ana proje seçiniz (isteğe bağlı)",
       "standalone": "Bağımsız Proje",
       "editTitle": "Proje Düzenleme",
-      "sectionTitle": "Proje Bilgileri"
+      "sectionTitle": "Proje Bilgileri",
+      "tags": "Etiketler",
+      "tagsPlaceholder": "Etiket yazın veya seçin..."
     },
     "action": {
       "name": "Aksiyon Adı",
@@ -677,6 +679,9 @@
     "confirm": "Onayla",
     "cancel": "İptal"
   },
+  "permissions": {
+    "cannotDeleteProject": "Bu projenin altında {{count}} aksiyon bulunuyor. Projeyi silmek için önce tüm aksiyonları silmeniz gerekir."
+  },
   "search": {
     "placeholder": "Komut veya sayfa ara...",
     "pages": "Sayfalar",
@@ -723,11 +728,16 @@
   },
   "wizard": {
     "title": "Proje-Aksiyon Sihirbazı",
+    "subtitle": "Stratejik proje ve aksiyonlarınızı adım adım oluşturun",
     "triggerButton": "Proje Oluştur",
     "step1Title": "Proje Bilgileri",
     "step2Title": "Sahiplik & Tarihler",
     "step3Title": "Aksiyonlar",
     "step4Title": "Özet & Onay",
+    "step1Desc": "Proje bilgilerini tanımlayın",
+    "step2Desc": "Ekip ve zaman planı belirleyin",
+    "step3Desc": "Hedefe bağlı aksiyonları ekleyin",
+    "step4Desc": "Her şey doğru mu kontrol edin",
     "next": "Devam",
     "back": "Geri",
     "submit": "Oluştur",

@@ -52,7 +52,7 @@ export default function ProjelerPage() {
     { uid: "status", name: t("common.status") },
     { uid: "startDate", name: t("common.startDate") },
     { uid: "endDate", name: t("common.endDate") },
-    { uid: "reviewDate", name: "Kontrol Tarihi" },
+    { uid: "reviewDate", name: t("common.controlDate") },
     { uid: "aksiyonCount", name: t("nav.actions") },
     { uid: "actions", name: t("common.edit") },
   ];

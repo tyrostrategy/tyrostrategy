@@ -78,11 +78,11 @@ const stepVariants = {
   }),
 };
 
-const STEP_THEMES = [
-  { icon: Target, color: "text-tyro-navy", bg: "bg-tyro-navy/8", label: "Proje bilgilerini tanımlayın" },
-  { icon: Users, color: "text-emerald-600", bg: "bg-emerald-500/8", label: "Ekip ve zaman planı belirleyin" },
-  { icon: ListChecks, color: "text-violet-600", bg: "bg-violet-500/8", label: "Hedefe bağlı aksiyonları ekleyin" },
-  { icon: ClipboardCheck, color: "text-tyro-gold", bg: "bg-tyro-gold/8", label: "Her şey doğru mu kontrol edin" },
+const STEP_THEME_CONFIGS = [
+  { icon: Target, color: "text-tyro-navy", bg: "bg-tyro-navy/8", key: "step1Desc" },
+  { icon: Users, color: "text-emerald-600", bg: "bg-emerald-500/8", key: "step2Desc" },
+  { icon: ListChecks, color: "text-violet-600", bg: "bg-violet-500/8", key: "step3Desc" },
+  { icon: ClipboardCheck, color: "text-tyro-gold", bg: "bg-tyro-gold/8", key: "step4Desc" },
 ];
 
 interface Props {
@@ -255,7 +255,7 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
           >
             {/* Step header banner — accent color themed */}
             {(() => {
-              const theme = STEP_THEMES[currentStep];
+              const theme = STEP_THEME_CONFIGS[currentStep];
               const StepIcon = theme.icon;
               return (
                 <div
@@ -263,7 +263,7 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
                   style={{ backgroundColor: `${accentColor}12` }}
                 >
                   <StepIcon size={16} style={{ color: accentColor }} />
-                  <span className="text-[12px] font-semibold" style={{ color: accentColor }}>{theme.label}</span>
+                  <span className="text-[12px] font-semibold" style={{ color: accentColor }}>{t(`wizard.${theme.key}`)}</span>
                 </div>
               );
             })()}
