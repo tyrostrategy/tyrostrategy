@@ -31,6 +31,7 @@ import { useSidebarTheme, sidebarCSSVars } from "@/hooks/useSidebarTheme";
 import { sidebarOnlyThemes, fullAppThemes } from "@/config/sidebarThemes";
 import type { SidebarThemeId } from "@/config/sidebarThemes";
 import { usePermissions } from "@/hooks/usePermissions";
+import { getRoleLabel } from "@/lib/constants";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { RoleAvatar } from "@/components/ui/RoleAvatar";
 import { clsx } from "clsx";
@@ -492,7 +493,7 @@ function SidebarContent({ collapsed, onNavigate, pinned, onTogglePin }: { collap
             )}
           >
             <h4 className="text-[13px] font-semibold truncate" style={{ color: "var(--sb-text-primary)" }}>{currentUser.name}</h4>
-            <p className="text-[11px] font-medium truncate" style={{ color: "var(--sb-text-muted)" }}>{currentUser.title || currentUser.department}</p>
+            <p className="text-[11px] font-medium truncate" style={{ color: "var(--sb-text-muted)" }}>{getRoleLabel(currentUser.role, t)}</p>
           </div>
 
           {/* Chevron indicator */}
