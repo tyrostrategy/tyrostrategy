@@ -4,7 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Shield, BarChart3, Target, LayoutDashboard, Globe } from "lucide-react";
 import { TyroLogo } from "@/components/ui/TyroLogo";
 import { useUIStore } from "@/stores/uiStore";
-import { useMsalLogin } from "@/hooks/useMsalLogin";
+import { useMsalLogin, resolveUser, applyUser } from "@/hooks/useMsalLogin";
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { InteractionStatus } from "@azure/msal-browser";
+import { useNavigate } from "react-router-dom";
+import { useDataStore } from "@/stores/dataStore";
 import { useState, useEffect } from "react";
 
 function MicrosoftIcon() {
@@ -23,6 +27,26 @@ export default function LoginPage() {
   const { locale, setLocale } = useUIStore();
   const { login: msalLogin, loading: msalLoading, error: msalError } = useMsalLogin();
   const [featureIndex, setFeatureIndex] = useState(0);
+
+  // Handle redirect return (mobile MSAL flow)
+  const isAuthenticated = useIsAuthenticated();
+  const { accounts, inProgress } = useMsal();
+  const mockLoggedIn = useUIStore((s) => s.mockLoggedIn);
+  const users = useDataStore((s) => s.users);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // After redirect login: MSAL is authenticated but app state not yet set
+    if (!isAuthenticated || mockLoggedIn || accounts.length === 0) return;
+    if (inProgress !== InteractionStatus.None) return;
+    if (users.length === 0) return; // Wait for DB users
+    const email = accounts[0].username.toLowerCase().trim();
+    const user = resolveUser(email, users);
+    if (user) {
+      applyUser(user);
+      navigate("/workspace", { replace: true });
+    }
+  }, [isAuthenticated, mockLoggedIn, accounts, users, inProgress, navigate]);
 
   const features = [
     { icon: Target, title: t("login.strategicPlanning"), desc: t("login.strategicPlanningDesc") },

@@ -6,6 +6,13 @@ import { loginRequest } from "@/lib/auth/msalConfig";
 import { useUIStore } from "@/stores/uiStore";
 import { useDataStore } from "@/stores/dataStore";
 
+/** Detect mobile / tablet browsers where popups are unreliable */
+function isMobile(): boolean {
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(
+    navigator.userAgent,
+  );
+}
+
 /** Wait for users to appear in the store (Supabase may still be loading) */
 function waitForUsers(maxMs = 5000): Promise<typeof useDataStore.getState extends () => infer R ? R["users"] : never> {
   return new Promise((resolve) => {
@@ -18,11 +25,11 @@ function waitForUsers(maxMs = 5000): Promise<typeof useDataStore.getState extend
   });
 }
 
-function resolveUser(email: string, users: { email: string; displayName: string; role: string; locale?: string }[]) {
+export function resolveUser(email: string, users: { email: string; displayName: string; role: string; locale?: string }[]) {
   return users.find((u) => u.email.toLowerCase() === email);
 }
 
-function applyUser(user: { displayName: string; role: string; locale?: string }) {
+export function applyUser(user: { displayName: string; role: string; locale?: string }) {
   const ui = useUIStore.getState();
   ui.setMockUserName(user.displayName);
   ui.setMockUserRole(user.role);
@@ -41,7 +48,6 @@ export function useMsalLogin() {
     setError(null);
     try {
       // 1. If MSAL already has a cached account, try silent token acquisition first.
-      //    This avoids the "interaction_in_progress" issue after page refresh.
       const cachedAccounts = instance.getAllAccounts();
       let email: string | null = null;
 
@@ -53,15 +59,19 @@ export function useMsalLogin() {
           });
           email = (silent.account.username || "").toLowerCase().trim();
         } catch (silentErr) {
-          // Silent failed (expired/no token) — fall through to popup
           if (!(silentErr instanceof InteractionRequiredAuthError)) {
-            console.warn("[MSAL] Silent acquisition failed, falling back to popup", silentErr);
+            console.warn("[MSAL] Silent acquisition failed, falling back to interactive", silentErr);
           }
         }
       }
 
-      // 2. If silent didn't work, use popup
+      // 2. If silent didn't work, use redirect on mobile, popup on desktop
       if (!email) {
+        if (isMobile()) {
+          // Redirect flow — page will reload after auth, AuthGuard handles the rest
+          await instance.loginRedirect(loginRequest);
+          return; // page navigates away
+        }
         const result = await instance.loginPopup(loginRequest);
         email = (result.account.username || "").toLowerCase().trim();
       }
@@ -72,9 +82,12 @@ export function useMsalLogin() {
 
       if (!user) {
         setError(`Bu hesap sisteme tanımlanmamış: ${email}`);
-        await instance
-          .logoutPopup({ onRedirectNavigate: () => false })
-          .catch(() => {});
+        // Clear MSAL session — use redirect on mobile
+        if (isMobile()) {
+          await instance.logoutRedirect({ onRedirectNavigate: () => false }).catch(() => {});
+        } else {
+          await instance.logoutPopup({ onRedirectNavigate: () => false }).catch(() => {});
+        }
         setLoading(false);
         return;
       }
@@ -83,20 +96,19 @@ export function useMsalLogin() {
       navigate("/workspace");
     } catch (err: unknown) {
       const msalErr = err as { errorCode?: string; name?: string; message?: string };
-      // Ignore user-cancelled popup
+      // Ignore user-cancelled interactions
       if (
         msalErr?.errorCode === "user_cancelled" ||
         msalErr?.errorCode === "popup_window_error"
       ) {
         // User closed the popup — no error to show
       } else if (msalErr?.errorCode === "interaction_in_progress") {
-        // Another MSAL interaction is in progress — wait and retry silently
         console.warn("[MSAL] Interaction in progress, retrying silently...");
         setError("Giriş işlemi devam ediyor, lütfen bekleyin…");
         setTimeout(() => setError(null), 2000);
       } else {
         setError("Microsoft girişi başarısız. Lütfen tekrar deneyin.");
-        console.error("[MSAL] loginPopup error:", err);
+        console.error("[MSAL] login error:", err);
       }
     } finally {
       setLoading(false);

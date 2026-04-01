@@ -134,8 +134,13 @@ function SidebarContent({ collapsed, onNavigate, pinned, onTogglePin }: { collap
   const handleLogout = () => {
     setProfileOpen(false);
     setMockLoggedIn(false);
-    // Clear MSAL session so user doesn't get stuck on next visit
-    msalInstance.logoutPopup({ onRedirectNavigate: () => false }).catch(() => {});
+    // Clear MSAL session — use redirect on mobile, popup on desktop
+    const isMob = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+    if (isMob) {
+      msalInstance.logoutRedirect({ postLogoutRedirectUri: "/" }).catch(() => {});
+    } else {
+      msalInstance.logoutPopup({ onRedirectNavigate: () => false }).catch(() => {});
+    }
     onNavigate?.();
     navigate("/login");
   };
