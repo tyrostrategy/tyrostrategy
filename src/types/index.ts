@@ -77,6 +77,7 @@ export interface Aksiyon {
   progress: number;
   startDate: string;
   endDate: string;
+  sortOrder?: number;
   createdBy?: string;
   createdAt?: string;
   updatedBy?: string;
@@ -112,6 +113,7 @@ export interface AppUser {
   role: UserRole;
   locale: "tr" | "en";
   title?: string;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

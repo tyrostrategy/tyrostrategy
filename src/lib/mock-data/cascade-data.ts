@@ -33,7 +33,7 @@ export interface CascadeProje {
   tasks: CascadeTask[];
 }
 
-export const turkiyeHedefler: CascadeHedef[] = [
+export const turkiyeProjeler: CascadeHedef[] = [
   {
     id: "t-1",
     name: "TR Antep Fıstığı ile Çin pazarına giriş",
@@ -219,7 +219,7 @@ export const turkiyeHedefler: CascadeHedef[] = [
   },
 ];
 
-export const kurumsalHedefler: CascadeHedef[] = [
+export const kurumsalProjeler: CascadeHedef[] = [
   {
     id: "k-9",
     name: "2 adet 8330 dwt'lik Deniz-Nehir tipi gemi inşa projesi",
@@ -1079,7 +1079,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
   },
 ];
 
-export const internationalHedefler: CascadeHedef[] = [
+export const internationalProjeler: CascadeHedef[] = [
   {
     id: "i-44",
     name: "Carbon Trading",

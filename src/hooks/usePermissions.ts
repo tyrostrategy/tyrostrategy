@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRoleStore } from "@/stores/roleStore";
@@ -15,7 +15,7 @@ export function usePermissions() {
   const normalizedName = user.name.toLowerCase().trim();
 
   // Kullanicinin proje ID'leri (owner veya participant)
-  const myHedefIds = useMemo(() => {
+  const myProjeIds = useMemo(() => {
     const ids = new Set<string>();
 
     if (!perms.viewOnlyOwn) {
@@ -41,41 +41,39 @@ export function usePermissions() {
     for (const a of aksiyonlar) {
       if (
         a.owner?.toLowerCase().trim() === normalizedName ||
-        myHedefIds.has(a.projeId)
+        myProjeIds.has(a.projeId)
       ) {
         ids.add(a.id);
       }
     }
     return ids;
-  }, [aksiyonlar, normalizedName, myHedefIds]);
+  }, [aksiyonlar, normalizedName, myProjeIds]);
 
   // ===== Sayfa erisim =====
   const canAccessPage = (pageKey: keyof RolePermissions["pages"]) => perms.pages[pageKey];
 
   // ===== Veri filtreleme =====
-  const filterProjeler = (list: Proje[]): Proje[] => {
+  const filterProjeler = useCallback((list: Proje[]): Proje[] => {
     if (!perms.viewOnlyOwn) return list;
-    return list.filter((h) => myHedefIds.has(h.id));
-  };
+    return list.filter((h) => myProjeIds.has(h.id));
+  }, [perms.viewOnlyOwn, myProjeIds]);
 
-  const filterAksiyonlar = (list: Aksiyon[]): Aksiyon[] => {
+  const filterAksiyonlar = useCallback((list: Aksiyon[]): Aksiyon[] => {
     if (!perms.viewOnlyOwn) return list;
     if (user.role === "Kullanıcı") {
-      // Kullanici sadece kendi aksiyonlarini gorur (owner)
       return list.filter((a) => a.owner?.toLowerCase().trim() === normalizedName);
     }
-    // Proje Lideri — kendi hedeflerindeki aksiyonlar
     return list.filter((a) => myAksiyonIds.has(a.id));
-  };
+  }, [perms.viewOnlyOwn, user.role, normalizedName, myAksiyonIds]);
 
   // ===== CRUD izinleri =====
 
   // Proje
   const canCreateProje = perms.proje.create;
-  const canEditProje = (hedefId: string) => {
+  const canEditProje = (projeId: string) => {
     if (!perms.proje.edit) return false;
     if (!perms.editOnlyOwn) return true;
-    return myHedefIds.has(hedefId);
+    return myProjeIds.has(projeId);
   };
   const canDeleteProje = (projeId: string) => {
     if (!perms.proje.delete) return false;
@@ -127,6 +125,6 @@ export function usePermissions() {
 
     // Yardimcilar
     myAksiyonIds,
-    myHedefIds,
+    myProjeIds,
   };
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pencil, Trash2, ArrowLeft, X, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import StatusBadge from "@/components/ui/StatusBadge";
 import AksiyonForm from "@/components/aksiyonlar/AksiyonForm";
@@ -35,6 +36,7 @@ export default function AksiyonDetail({
   const [projeCardOpen, setProjeCardOpen] = useState(false);
   const setMode = (m: "detail" | "editing") => { _setMode(m); onModeChange?.(m); };
   const sidebarTheme = useSidebarTheme();
+  const { canEditAksiyon, canDeleteAksiyon } = usePermissions();
   const getAksiyonById = useDataStore((s) => s.getAksiyonById);
   const getProjeById = useDataStore((s) => s.getProjeById);
 
@@ -89,14 +91,14 @@ export default function AksiyonDetail({
               <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: txtMuted, opacity: 0.7 }}>{t("kokpit.actionDetail")}</span>
             </div>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => setMode("editing")}
-                className="h-8 px-2 sm:px-3.5 rounded-xl flex items-center gap-1.5 sm:gap-2 text-[12px] font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.03] active:scale-[0.97]"
+              <button type="button" disabled={!canEditAksiyon(currentAksiyon.id)} onClick={() => setMode("editing")}
+                className="h-8 px-2 sm:px-3.5 rounded-xl flex items-center gap-1.5 sm:gap-2 text-[12px] font-semibold transition-all duration-200 backdrop-blur-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:scale-[1.03] active:scale-[0.97]"
                 style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
+                onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; } }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}>
                 <Pencil size={13} /> <span className="hidden sm:inline">{t("common.edit")}</span>
               </button>
-              {onDelete && (
+              {onDelete && canDeleteAksiyon(currentAksiyon.id) && (
                 <button type="button" onClick={onDelete}
                   className="h-8 px-2 sm:px-3.5 rounded-xl flex items-center gap-1.5 sm:gap-2 text-[12px] font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.03] active:scale-[0.97]"
                   style={{ backgroundColor: btnBg, color: "#ef4444", border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
@@ -175,6 +177,10 @@ export default function AksiyonDetail({
 
       {/* ── Info Grid ── */}
       <div className="rounded-xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-tyro-border/30 dark:border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden divide-y divide-tyro-border/20">
+        <div className="grid grid-cols-2 divide-x divide-tyro-border/15">
+          <InfoCell label={t("common.sortOrder", "Sıra No")} value={currentAksiyon.sortOrder ? `#${currentAksiyon.sortOrder}` : "—"} />
+          <InfoCell label={t("common.owner")} value={currentAksiyon.owner} />
+        </div>
         <div className="grid grid-cols-2 divide-x divide-tyro-border/15">
           <InfoCell label={t("common.startDate")} value={formatDate(currentAksiyon.startDate)} />
           <InfoCell label={t("common.endDate")} value={formatDate(currentAksiyon.endDate)} />

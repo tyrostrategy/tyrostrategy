@@ -1,10 +1,8 @@
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { Autocomplete, AutocompleteItem, Select, SelectItem, DatePicker } from "@heroui/react";
 import { useTranslation } from "react-i18next";
-import { departments } from "@/config/departments";
 import { useDataStore } from "@/stores/dataStore";
 import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
-const allUsers = departments.flatMap((d) => d.users.map((u) => u.name));
 
 interface Props {
   control: Control<any>;
@@ -14,6 +12,8 @@ interface Props {
 export default function StepOwnershipDates({ control, errors }: Props) {
   const { t } = useTranslation();
   const projeler = useDataStore((s) => s.projeler);
+  const dbUsers = useDataStore((s) => s.users);
+  const allUsers = dbUsers.map((u) => u.displayName);
 
   return (
     <div className="flex flex-col gap-5">

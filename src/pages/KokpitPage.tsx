@@ -103,7 +103,7 @@ export default function KokpitPage() {
   const reviewOverdue = searchParams.get("reviewOverdue") === "true";
   const rawProjeler = useDataStore((s) => s.projeler);
   const rawAksiyonlar = useDataStore((s) => s.aksiyonlar);
-  const { filterProjeler, filterAksiyonlar, canDeleteProje, getProjeDeleteReason } = usePermissions();
+  const { filterProjeler, filterAksiyonlar, canDeleteProje, getProjeDeleteReason, canCreateProje, canEditProje, canCreateAksiyon } = usePermissions();
   const allProjeler = useMemo(() => filterProjeler(rawProjeler), [rawProjeler, filterProjeler]);
   const aksiyonlar = useMemo(() => filterAksiyonlar(rawAksiyonlar), [rawAksiyonlar, filterAksiyonlar]);
   const [advFilterOpen, setAdvFilterOpen] = useState(false);
@@ -183,12 +183,12 @@ export default function KokpitPage() {
 
   // ─── Sliding panel state ─────────────────────────────────
   const [panelOpen, setPanelOpen] = useState(false);
-  const [panelHedef, setPanelHedef] = useState<Proje | null>(null);
+  const [panelProje, setPanelProje] = useState<Proje | null>(null);
   const [panelAksiyon, setPanelAksiyon] = useState<Aksiyon | null>(null);
   const [panelInitialMode, setPanelInitialMode] = useState<"detail" | "editing">("detail");
 
-  const openHedefPanel = useCallback((h: Proje, mode: "detail" | "editing" = "detail") => {
-    setPanelHedef(h);
+  const openProjePanel = useCallback((h: Proje, mode: "detail" | "editing" = "detail") => {
+    setPanelProje(h);
     setPanelAksiyon(null);
     setPanelInitialMode(mode);
     setPanelOpen(true);
@@ -196,17 +196,17 @@ export default function KokpitPage() {
 
   const openAksiyonPanel = useCallback((a: Aksiyon) => {
     setPanelAksiyon(a);
-    setPanelHedef(null);
+    setPanelProje(null);
     setPanelOpen(true);
   }, []);
 
   const closePanel = useCallback(() => {
     setPanelOpen(false);
-    setPanelHedef(null);
+    setPanelProje(null);
     setPanelAksiyon(null);
   }, []);
 
-  const panelTitle = panelHedef
+  const panelTitle = panelProje
     ? t("detail.objectiveDetail")
     : panelAksiyon
       ? t("detail.actionDetail")
@@ -371,8 +371,9 @@ export default function KokpitPage() {
                   >
                     <button
                       type="button"
+                      disabled={!canCreateProje}
                       onClick={() => { setNewMenuOpen(false); setWizardOpen(true); }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-tyro-text-primary hover:bg-tyro-navy/5"
                     >
                       <Wand2 size={16} className="text-tyro-gold" />
                       {t("kokpit.projectWizard")}
@@ -422,7 +423,7 @@ export default function KokpitPage() {
                   >
                     <button
                       type="button"
-                      onClick={() => { setEditMenuOpen(false); openHedefPanel(selectedProje); }}
+                      onClick={() => { setEditMenuOpen(false); openProjePanel(selectedProje); }}
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
                       <Eye size={16} className="text-tyro-navy" />
@@ -431,7 +432,7 @@ export default function KokpitPage() {
                     <div className="h-px bg-tyro-border/20 mx-3" />
                     <button
                       type="button"
-                      onClick={() => { setEditMenuOpen(false); openHedefPanel(selectedProje, "editing"); }}
+                      onClick={() => { setEditMenuOpen(false); openProjePanel(selectedProje, "editing"); }}
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
                       <Pencil size={16} className="text-amber-500" />
@@ -462,11 +463,13 @@ export default function KokpitPage() {
                 type="button"
                 onClick={() => {
                   if (!selectedProje) return;
+                  if (!canDeleteProje(selectedProje.id)) {
+                    toast.error(t("toast.operationFailed"), t("permissions.noDeletePermission", "Proje silme yetkiniz yok."));
+                    return;
+                  }
                   const reason = getProjeDeleteReason(selectedProje.id);
                   if (reason) {
-                    toast.error(`"${selectedProje.name}" silinemez`, {
-                      message: reason,
-                    });
+                    toast.error(`"${selectedProje.name}" silinemez`, { message: reason });
                     return;
                   }
                   setConfirmOpen(true);
@@ -503,7 +506,7 @@ export default function KokpitPage() {
         <TabloView
           projeler={projeler}
           aksiyonlar={aksiyonlar}
-          onHedefClick={openHedefPanel}
+          onProjeClick={openProjePanel}
           onAksiyonClick={openAksiyonPanel}
           externalSearch={toolbarSearch}
           externalSortBy={sortBy}
@@ -514,14 +517,14 @@ export default function KokpitPage() {
       )}
       {/* Kanban view removed */}
       {/* Detail panel */}
-      <SlidingPanel isOpen={panelOpen} onClose={closePanel} title={panelTitle} hideHeader={!!panelHedef || !!panelAksiyon}>
-        {panelHedef && (
+      <SlidingPanel isOpen={panelOpen} onClose={closePanel} title={panelTitle} hideHeader={!!panelProje || !!panelAksiyon}>
+        {panelProje && (
           <ProjeDetail
-            proje={panelHedef}
+            proje={panelProje}
             initialMode={panelInitialMode}
             onEdit={() => {}}
             onModeChange={() => {}}
-            onSelectHedef={(p) => setPanelHedef(p)}
+            onSelectProje={(p) => setPanelProje(p)}
             onClose={closePanel}
           />
         )}
@@ -688,8 +691,9 @@ export default function KokpitPage() {
               >
                 <button
                   type="button"
+                  disabled={!canCreateProje}
                   onClick={() => { setNewMenuOpen(false); setWizardOpen(true); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-tyro-text-primary hover:bg-tyro-navy/5"
                 >
                   <Wand2 size={16} className="text-tyro-gold" />
                   {t("kokpit.projectWizard")}
@@ -722,7 +726,7 @@ export default function KokpitPage() {
               >
                 <button
                   type="button"
-                  onClick={() => { setEditMenuOpen(false); openHedefPanel(selectedProje); }}
+                  onClick={() => { setEditMenuOpen(false); openProjePanel(selectedProje); }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                 >
                   <Eye size={16} className="text-tyro-navy" />
@@ -731,7 +735,7 @@ export default function KokpitPage() {
                 <div className="h-px bg-tyro-border/20 mx-3" />
                 <button
                   type="button"
-                  onClick={() => { setEditMenuOpen(false); openHedefPanel(selectedProje, "editing"); }}
+                  onClick={() => { setEditMenuOpen(false); openProjePanel(selectedProje, "editing"); }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                 >
                   <Pencil size={16} className="text-amber-500" />
@@ -753,7 +757,7 @@ export default function KokpitPage() {
 function TabloView({
   projeler,
   aksiyonlar,
-  onHedefClick,
+  onProjeClick,
   onAksiyonClick,
   externalSearch = "",
   externalSortBy = "id",
@@ -763,7 +767,7 @@ function TabloView({
 }: {
   projeler: Proje[];
   aksiyonlar: Aksiyon[];
-  onHedefClick: (h: Proje) => void;
+  onProjeClick: (h: Proje) => void;
   onAksiyonClick: (a: Aksiyon) => void;
   externalSearch?: string;
   externalSortBy?: string;
@@ -788,8 +792,8 @@ function TabloView({
     if (externalSearch.trim()) {
       const q = externalSearch.toLocaleLowerCase("tr");
       result = result.filter((h) => {
-        const hedefStr = [h.id, h.name, h.description, h.owner, h.department, h.source, h.status, h.startDate, h.endDate, ...(h.tags ?? [])].filter(Boolean).join(" ").toLocaleLowerCase("tr");
-        if (hedefStr.includes(q)) return true;
+        const projeStr = [h.id, h.name, h.description, h.owner, h.department, h.source, h.status, h.startDate, h.endDate, ...(h.tags ?? [])].filter(Boolean).join(" ").toLocaleLowerCase("tr");
+        if (projeStr.includes(q)) return true;
         const childActions = aksiyonlar.filter((a) => a.projeId === h.id);
         return childActions.some((a) => [a.name, a.description, a.owner].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q));
       });
@@ -873,7 +877,7 @@ function TabloView({
                     )}
                     <Target size={14} className="text-tyro-gold shrink-0" />
                     <button
-                      onClick={(e) => { e.stopPropagation(); onHedefClick(proje); }}
+                      onClick={(e) => { e.stopPropagation(); onProjeClick(proje); }}
                       className="text-sm font-semibold text-tyro-text-primary truncate hover:text-tyro-navy transition-colors text-left cursor-pointer"
                     >
                       {proje.name}
@@ -973,7 +977,7 @@ function TabloView({
                   )}
                   <div className="flex-1 min-w-0">
                     <button
-                      onClick={(e) => { e.stopPropagation(); onHedefClick(proje); }}
+                      onClick={(e) => { e.stopPropagation(); onProjeClick(proje); }}
                       className="text-sm font-bold text-tyro-text-primary text-left cursor-pointer hover:text-tyro-navy"
                     >
                       {proje.name}
@@ -1049,8 +1053,8 @@ function KanbanView({
     if (!kanbanSearch.trim()) return aksiyonlar;
     const q = kanbanSearch.toLocaleLowerCase("tr");
     return aksiyonlar.filter((a) => {
-      const hedefName = projeler.find((h) => h.id === a.projeId)?.name ?? "";
-      return [a.name, a.description, a.owner, hedefName, a.status].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q);
+      const projeName = projeler.find((h) => h.id === a.projeId)?.name ?? "";
+      return [a.name, a.description, a.owner, projeName, a.status].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q);
     });
   }, [aksiyonlar, projeler, kanbanSearch]);
 
@@ -1068,7 +1072,7 @@ function KanbanView({
     return map;
   }, [filteredAksiyonlar]);
 
-  const getHedefName = (projeId: string) =>
+  const getProjeName = (projeId: string) =>
     projeler.find((h) => h.id === projeId)?.name || "";
 
   const handleDragStart = (e: React.DragEvent, aksiyonId: string) => {
@@ -1160,7 +1164,7 @@ function KanbanView({
                   >
                     {/* Proje tag */}
                     <p className="text-[11px] font-medium text-tyro-text-muted truncate mb-1">
-                      {getHedefName(aksiyon.projeId)}
+                      {getProjeName(aksiyon.projeId)}
                     </p>
                     {/* Aksiyon name */}
                     <button
@@ -1322,7 +1326,7 @@ function GanttView({
     return off >= 0 && off <= 100 ? off : -1;
   }, [tlMin, tlDays]);
 
-  const getHedefSource = (projeId: string) =>
+  const getProjeSource = (projeId: string) =>
     projeler.find((h) => h.id === projeId)?.source || "Kurumsal";
 
   const barPos = (task: Aksiyon) => {
@@ -1421,7 +1425,7 @@ function GanttView({
           </div>
         ) : (
           tasks.map((task) => {
-            const color = sourceColors[getHedefSource(task.projeId)] || "var(--tyro-navy)";
+            const color = sourceColors[getProjeSource(task.projeId)] || "var(--tyro-navy)";
             return (
               <div key={task.id} className="glass-card px-4 py-3">
                 <div className="flex items-start gap-2 mb-2">
@@ -1477,7 +1481,7 @@ function GanttView({
               <div className="flex flex-col gap-0.5 min-w-[900px] mt-1">
                 {tasks.map((task, idx) => {
                   const { left, width } = barPos(task);
-                  const color = sourceColors[getHedefSource(task.projeId)] || "var(--tyro-navy)";
+                  const color = sourceColors[getProjeSource(task.projeId)] || "var(--tyro-navy)";
                   const realStart = new Date(task.startDate);
                   const isClipped = zoom === "all" && realStart.getTime() < tlMin.getTime();
                   const clippedYear = realStart.getFullYear();
@@ -1594,7 +1598,7 @@ function WBSAksiyonNode({ aksiyon }: { aksiyon: Aksiyon }) {
   );
 }
 
-function WBSHedefNode({ proje }: { proje: Proje }) {
+function WBSProjeNode({ proje }: { proje: Proje }) {
   const [expanded, setExpanded] = useState(false);
   const allAksiyonlar = useDataStore((s) => s.aksiyonlar);
   const childAksiyonlar = allAksiyonlar.filter((a) => a.projeId === proje.id);
@@ -1710,7 +1714,7 @@ function WBSView({
               </span>
             </div>
             {items.map((h) => (
-              <WBSHedefNode key={h.id} proje={h} />
+              <WBSProjeNode key={h.id} proje={h} />
             ))}
           </div>
         ))}

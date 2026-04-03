@@ -4,6 +4,7 @@ import { Pencil, Plus, ArrowLeft, ChevronRight, ChevronDown, X, GitBranch } from
 import TagChip from "@/components/ui/TagChip";
 import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ProjeForm from "@/components/projeler/ProjeForm";
@@ -20,7 +21,7 @@ interface ProjeDetailProps {
   proje: Proje;
   onEdit: () => void;
   onModeChange?: (mode: string) => void;
-  onSelectHedef?: (proje: Proje) => void;
+  onSelectProje?: (proje: Proje) => void;
   onClose?: () => void;
   initialMode?: DetailMode;
 }
@@ -29,7 +30,7 @@ export default function ProjeDetail({
   proje,
   onEdit: _onEdit,
   onModeChange,
-  onSelectHedef,
+  onSelectProje,
   onClose,
   initialMode = "detail",
 }: ProjeDetailProps) {
@@ -42,23 +43,24 @@ export default function ProjeDetail({
     onModeChange?.(m);
   };
   const sidebarTheme = useSidebarTheme();
+  const { canEditProje, canCreateAksiyon } = usePermissions();
   const projeler = useDataStore((s) => s.projeler);
-  const getAksiyonlarByHedefId = useDataStore((s) => s.getAksiyonlarByHedefId);
+  const getAksiyonlarByProjeId = useDataStore((s) => s.getAksiyonlarByProjeId);
   const getProjeById = useDataStore((s) => s.getProjeById);
   const getAksiyonById = useDataStore((s) => s.getAksiyonById);
-  const aksiyonlar = getAksiyonlarByHedefId(proje.id);
+  const aksiyonlar = getAksiyonlarByProjeId(proje.id);
 
-  const currentHedef = getProjeById(proje.id) ?? proje;
+  const currentProje = getProjeById(proje.id) ?? proje;
 
-  const parentHedef = currentHedef.parentObjectiveId
-    ? getProjeById(currentHedef.parentObjectiveId)
+  const parentProje = currentProje.parentObjectiveId
+    ? getProjeById(currentProje.parentObjectiveId)
     : undefined;
 
-  const relatedHedefler = currentHedef.parentObjectiveId
+  const relatedProjeler = currentProje.parentObjectiveId
     ? projeler.filter(
         (h) =>
-          h.parentObjectiveId === currentHedef.parentObjectiveId &&
-          h.id !== currentHedef.id
+          h.parentObjectiveId === currentProje.parentObjectiveId &&
+          h.id !== currentProje.id
       )
     : [];
 
@@ -71,7 +73,7 @@ export default function ProjeDetail({
     return (
       <div className="flex flex-col h-full max-h-full overflow-hidden">
         <ProjeForm
-          proje={currentHedef}
+          proje={currentProje}
           onSuccess={() => setMode("detail")}
           onClose={() => setMode("detail")}
         />
@@ -91,7 +93,7 @@ export default function ProjeDetail({
           {t("detail.backToObjective")}
         </button>
         <AksiyonForm
-          defaultProjeId={currentHedef.id}
+          defaultProjeId={currentProje.id}
           onSuccess={() => setMode("detail")}
         />
       </div>
@@ -114,7 +116,7 @@ export default function ProjeDetail({
     );
   }
 
-  const stColor = statusColor(currentHedef.status);
+  const stColor = statusColor(currentProje.status);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -154,15 +156,16 @@ export default function ProjeDetail({
                 {/* Row 0: ID + Buttons */}
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[13px] font-bold tabular-nums" style={{ color: txtMuted }}>
-                    {currentHedef.id}
+                    {currentProje.id}
                   </span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
+                      disabled={!canEditProje(currentProje.id)}
                       onClick={() => setMode("editing")}
-                      className="h-8 px-2 sm:px-3.5 rounded-xl flex items-center gap-1.5 sm:gap-2 text-[12px] font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.03] active:scale-[0.97]"
+                      className="h-8 px-2 sm:px-3.5 rounded-xl flex items-center gap-1.5 sm:gap-2 text-[12px] font-semibold transition-all duration-200 backdrop-blur-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:scale-[1.03] active:scale-[0.97]"
                       style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
+                      onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; } }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}
                     >
                       <Pencil size={13} />
@@ -192,32 +195,32 @@ export default function ProjeDetail({
             className="text-[15px] font-bold leading-snug"
             style={{ color: sidebarTheme.textPrimary ?? "#ffffff" }}
           >
-            {currentHedef.name}
+            {currentProje.name}
           </h3>
 
           {/* Row 2: Açıklama (varsa) */}
-          {currentHedef.description && (
+          {currentProje.description && (
             <p
               className="text-[11px] leading-relaxed mt-1 line-clamp-2"
               style={{ color: sidebarTheme.textSecondary ?? "rgba(255,255,255,0.6)" }}
             >
-              {currentHedef.description}
+              {currentProje.description}
             </p>
           )}
 
           {/* Row 3: Statü + Tag + İlerleme */}
           <div className="flex items-center flex-wrap gap-2 mt-2">
-            <StatusBadge status={currentHedef.status} />
-            {currentHedef.tags && currentHedef.tags.length > 0 && (
+            <StatusBadge status={currentProje.status} />
+            {currentProje.tags && currentProje.tags.length > 0 && (
               <>
                 <span className="w-px h-3.5 rounded-full" style={{ backgroundColor: sidebarTheme.isDark !== false ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)" }} />
-                {currentHedef.tags.map((tag) => (
+                {currentProje.tags.map((tag) => (
                   <TagChip key={tag} name={tag} size="md" showIcon />
                 ))}
               </>
             )}
             <span className="ml-auto text-[13px] font-extrabold tabular-nums" style={{ color: sidebarTheme.isDark !== false ? "#ffffff" : "#1e293b" }}>
-              %{currentHedef.progress}
+              %{currentProje.progress}
             </span>
           </div>
 
@@ -226,7 +229,7 @@ export default function ProjeDetail({
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{
-                width: `${currentHedef.progress}%`,
+                width: `${currentProje.progress}%`,
                 backgroundColor: stColor,
               }}
             />
@@ -240,40 +243,40 @@ export default function ProjeDetail({
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.owner")}</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.owner ?? "-"}</p>
+            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentProje.owner ?? "-"}</p>
           </div>
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.participants")}</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.participants?.join(", ") || "-"}</p>
+            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentProje.participants?.join(", ") || "-"}</p>
           </div>
         </div>
         {/* Kaynak + Departman */}
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.source")}</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.source}</p>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{currentProje.source}</p>
           </div>
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.department")}</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">{deptLabel(currentHedef.department, t) || "-"}</p>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{deptLabel(currentProje.department, t) || "-"}</p>
           </div>
         </div>
         {/* Başlangıç + Bitiş */}
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.startDate")}</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">{formatDate(currentHedef.startDate)}</p>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{formatDate(currentProje.startDate)}</p>
           </div>
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.endDate")}</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">{formatDate(currentHedef.endDate)}</p>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{formatDate(currentProje.endDate)}</p>
           </div>
         </div>
         {/* Kontrol Tarihi */}
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.controlDate")}</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.reviewDate ? formatDate(currentHedef.reviewDate) : "-"}</p>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{currentProje.reviewDate ? formatDate(currentProje.reviewDate) : "-"}</p>
           </div>
           <div className="px-3 py-2" />
         </div>
@@ -281,24 +284,24 @@ export default function ProjeDetail({
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.createdBy")}</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.createdBy || "-"}</p>
+            <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentProje.createdBy || "-"}</p>
           </div>
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.createdAt")}</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.createdAt ? formatDate(currentHedef.createdAt) : "-"}</p>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{currentProje.createdAt ? formatDate(currentProje.createdAt) : "-"}</p>
           </div>
         </div>
         {/* Tamamlanma (varsa) */}
-        {currentHedef.completedAt && (
+        {currentProje.completedAt && (
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.completedAt")}</span>
-            <p className="text-[12px] font-medium text-emerald-600">{formatDate(currentHedef.completedAt)}</p>
+            <p className="text-[12px] font-medium text-emerald-600">{formatDate(currentProje.completedAt)}</p>
           </div>
         )}
       </div>
 
       {/* Proje İlişkileri — Collapsible */}
-      {(parentHedef || relatedHedefler.length > 0) && (
+      {(parentProje || relatedProjeler.length > 0) && (
         <>
           <div className="rounded-xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-tyro-border/30 dark:border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden">
             <button
@@ -309,9 +312,9 @@ export default function ProjeDetail({
               <GitBranch size={15} className="text-tyro-text-muted shrink-0" />
               <span className="text-[13px] font-bold text-tyro-text-primary flex-1 text-left">
                 {t("common.projectRelations")}
-                {(parentHedef ? 1 : 0) + relatedHedefler.length > 0 && (
+                {(parentProje ? 1 : 0) + relatedProjeler.length > 0 && (
                   <span className="ml-1.5 text-[11px] font-medium text-tyro-text-muted">
-                    ({(parentHedef ? 1 : 0) + relatedHedefler.length})
+                    ({(parentProje ? 1 : 0) + relatedProjeler.length})
                   </span>
                 )}
               </span>
@@ -321,47 +324,47 @@ export default function ProjeDetail({
             {relationsOpen && (
               <div className="px-4 pb-3 space-y-3">
                 {/* Ana Proje */}
-                {parentHedef && (
+                {parentProje && (
                   <div>
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-tyro-text-muted/70 block mb-1.5">
                       {t("detail.parentObjective")}
                     </span>
                     <div
-                      onClick={() => onSelectHedef?.(parentHedef)}
-                      className={`px-3 py-2.5 rounded-lg border border-tyro-border/15 bg-tyro-bg/40 ${onSelectHedef ? "cursor-pointer hover:bg-tyro-bg/70" : ""} transition-colors`}
+                      onClick={() => onSelectProje?.(parentProje)}
+                      className={`px-3 py-2.5 rounded-lg border border-tyro-border/15 bg-tyro-bg/40 ${onSelectProje ? "cursor-pointer hover:bg-tyro-bg/70" : ""} transition-colors`}
                     >
                       <div className="flex items-center justify-between mb-1.5">
                         <p className="text-[13px] font-medium text-tyro-text-primary leading-snug truncate flex-1">
-                          {parentHedef.name}
+                          {parentProje.name}
                         </p>
-                        {onSelectHedef && <ChevronRight size={14} className="text-tyro-text-muted shrink-0 ml-2" />}
+                        {onSelectProje && <ChevronRight size={14} className="text-tyro-text-muted shrink-0 ml-2" />}
                       </div>
                       <div className="flex items-center gap-2">
-                        <StatusBadge status={parentHedef.status} />
+                        <StatusBadge status={parentProje.status} />
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-tyro-bg text-tyro-text-secondary">
-                          {parentHedef.source}
+                          {parentProje.source}
                         </span>
                         <div className="flex-1 h-1.5 rounded-full bg-tyro-border/30 overflow-hidden">
-                          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${parentHedef.progress}%`, backgroundColor: statusColor(parentHedef.status) }} />
+                          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${parentProje.progress}%`, backgroundColor: statusColor(parentProje.status) }} />
                         </div>
-                        <span className="text-[11px] font-medium text-tyro-text-secondary tabular-nums shrink-0">%{parentHedef.progress}</span>
+                        <span className="text-[11px] font-medium text-tyro-text-secondary tabular-nums shrink-0">%{parentProje.progress}</span>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {/* İlişkili Projeler */}
-                {relatedHedefler.length > 0 && (
+                {relatedProjeler.length > 0 && (
                   <div>
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-tyro-text-muted/70 block mb-1.5">
-                      {t("detail.relatedObjectives")} ({relatedHedefler.length})
+                      {t("detail.relatedObjectives")} ({relatedProjeler.length})
                     </span>
                     <div className="flex flex-col gap-1.5">
-                      {relatedHedefler.map((rh) => (
+                      {relatedProjeler.map((rh) => (
                         <div
                           key={rh.id}
-                          onClick={() => onSelectHedef?.(rh)}
-                          className={`px-3 py-2 rounded-lg border border-tyro-border/15 bg-tyro-bg/40 ${onSelectHedef ? "cursor-pointer hover:bg-tyro-bg/70" : ""} transition-colors`}
+                          onClick={() => onSelectProje?.(rh)}
+                          className={`px-3 py-2 rounded-lg border border-tyro-border/15 bg-tyro-bg/40 ${onSelectProje ? "cursor-pointer hover:bg-tyro-bg/70" : ""} transition-colors`}
                         >
                           <p className="text-[13px] font-medium text-tyro-text-primary leading-snug mb-1.5 truncate">{rh.name}</p>
                           <div className="flex items-center gap-2">
@@ -393,9 +396,10 @@ export default function ProjeDetail({
         </h4>
         <Button
           size="sm"
+          isDisabled={!canCreateAksiyon}
           startContent={<Plus size={14} />}
           onPress={() => setMode("addAksiyon")}
-          className="rounded-button font-semibold text-[12px] h-7 min-w-0 px-3 border-0"
+          className="rounded-button font-semibold text-[12px] h-7 min-w-0 px-3 border-0 disabled:opacity-40"
           style={btnStyle}
         >
           {t("detail.addAction")}

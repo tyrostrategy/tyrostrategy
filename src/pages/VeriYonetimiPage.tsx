@@ -110,7 +110,15 @@ export default function VeriYonetimiPage() {
       color: "#8b5cf6",
       getCount: () => Object.keys(rolePermissions ?? {}).length,
       getData: () => Object.entries(rolePermissions ?? {}).map(([role, perms]) => ({ role, ...(perms as Record<string, unknown>) })),
-      setData: () => { /* Role store doesn't have bulk import yet */ },
+      setData: (data: unknown[]) => {
+        const updatePerms = useRoleStore.getState().updatePermissions;
+        for (const row of data as Record<string, unknown>[]) {
+          const role = row.role as string;
+          if (!role) continue;
+          const { role: _, ...permsData } = row;
+          updatePerms(role as import("@/types").UserRole, permsData as import("@/types").RolePermissions);
+        }
+      },
       description: t("dataManagement.rolePermissionsDesc"),
     },
     {
@@ -128,7 +136,15 @@ export default function VeriYonetimiPage() {
           mockUserRole: ui.mockUserRole,
         }];
       },
-      setData: () => { /* UI store set individually */ },
+      setData: (data: unknown[]) => {
+        if (!data.length) return;
+        const row = data[0] as Record<string, unknown>;
+        const ui = useUIStore.getState();
+        if (row.locale) ui.setLocale(row.locale as "tr" | "en");
+        if (row.sidebarTheme) ui.setSidebarTheme(row.sidebarTheme as import("@/config/sidebarThemes").SidebarThemeId);
+        if (row.mockUserName) ui.setMockUserName(row.mockUserName as string);
+        if (row.mockUserRole) ui.setMockUserRole(row.mockUserRole as string);
+      },
       description: t("dataManagement.uiSettingsDesc"),
     },
   ];

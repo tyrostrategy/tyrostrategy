@@ -11,7 +11,7 @@ import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
 import { toast } from "@/stores/toastStore";
 import { useUIStore } from "@/stores/uiStore";
 import { getStatusOptions, getSourceOptions } from "@/lib/constants";
-import { departments, PROJECT_DEPARTMENT_KEYS, deptLabel } from "@/config/departments";
+import { PROJECT_DEPARTMENT_KEYS, deptLabel } from "@/config/departments";
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 import TagChip from "@/components/ui/TagChip";
 import StatusBadge from "@/components/ui/StatusBadge";
@@ -19,10 +19,7 @@ import FormSection from "@/components/shared/FormSection";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import type { Proje } from "@/types";
 
-const CURRENT_USER = "Cenk \u015eayli";
-const allUsers = departments.flatMap((d) => d.users.map((u) => u.name));
-
-const createHedefSchema = (t: TFunction) =>
+const createProjeSchema = (t: TFunction) =>
   z.object({
     name: z.string().min(3, t("validation.minChars")),
     description: z.string().optional(),
@@ -31,6 +28,7 @@ const createHedefSchema = (t: TFunction) =>
     department: z.string().default(""),
     source: z.enum(["T\u00fcrkiye", "Kurumsal", "International"]),
     status: z.enum(["On Track", "At Risk", "Behind", "Achieved", "Not Started", "Cancelled", "On Hold"]),
+    progress: z.number().min(0).max(100),
     tags: z.array(z.string()).default([]),
     parentObjectiveId: z.string().optional(),
     startDate: z.string().min(1, t("validation.startDateRequired")),
@@ -38,7 +36,12 @@ const createHedefSchema = (t: TFunction) =>
     reviewDate: z.string().min(1, t("validation.reviewDateRequired")),
   });
 
-type ProjeFormData = z.infer<ReturnType<typeof createHedefSchema>>;
+const STATUS_HEX: Record<string, string> = {
+  "On Track": "#10b981", "At Risk": "#f59e0b", "Behind": "#ef4444",
+  "Achieved": "#3b82f6", "Not Started": "#94a3b8", "Cancelled": "#6b7280", "On Hold": "#8b5cf6",
+};
+
+type ProjeFormData = z.infer<ReturnType<typeof createProjeSchema>>;
 
 interface ProjeFormProps {
   proje?: Proje;
@@ -51,6 +54,9 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
   const addProje = useDataStore((s) => s.addProje);
   const updateProje = useDataStore((s) => s.updateProje);
   const projeler = useDataStore((s) => s.projeler);
+  const dbUsers = useDataStore((s) => s.users);
+  const allUsers = dbUsers.map((u) => u.displayName);
+  const currentUserName = useUIStore((s) => s.mockUserName);
   const [isLoading, setIsLoading] = useState(false);
   const sidebarTheme = useSidebarTheme();
   const accentColor = sidebarTheme.accentColor ?? "#c8922a";
@@ -62,7 +68,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
   const btnBorderHover = isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.2)";
   const sepColor = isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)";
 
-  const hedefSchema = createHedefSchema(t);
+  const projeSchema = createProjeSchema(t);
 
   const {
     control,
@@ -71,15 +77,16 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
     setValue,
     formState: { errors },
   } = useForm<ProjeFormData>({
-    resolver: zodResolver(hedefSchema),
+    resolver: zodResolver(projeSchema),
     defaultValues: {
       name: proje?.name ?? "",
       description: proje?.description ?? "",
-      owner: proje?.owner ?? (localStorage.getItem("tyro-mock-user") || "Demo User"),
+      owner: proje?.owner ?? currentUserName,
       participants: proje?.participants ?? [],
       department: proje?.department ?? "",
       source: proje?.source ?? "T\u00fcrkiye",
       status: proje?.status ?? "Not Started",
+      progress: proje?.progress ?? 0,
       tags: proje?.tags ?? [],
       parentObjectiveId: proje?.parentObjectiveId ?? "",
       startDate: proje?.startDate ?? "",
@@ -103,6 +110,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
         // Detect changed fields for structured toast
         const details: { label: string; value: string }[] = [];
         if (data.name !== proje.name) details.push({ label: t("common.name"), value: data.name });
+        if (data.progress !== proje.progress) details.push({ label: t("common.progress"), value: `%${data.progress}` });
         if (data.status !== proje.status) details.push({ label: t("common.status"), value: data.status });
         if (data.owner !== proje.owner) details.push({ label: t("common.owner"), value: data.owner });
         if (data.source !== proje.source) details.push({ label: t("common.source"), value: data.source });
@@ -115,7 +123,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
           details: details.length > 0 ? details : [{ label: t("common.status"), value: t("toast.changeSaved") }],
         });
       } else {
-        addProje({ ...payload, progress: 0 });
+        addProje({ ...payload });
         toast.success(t("toast.objectiveCreated"), { message: data.name });
       }
       onSuccess();
@@ -183,8 +191,11 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
             <div className="flex items-center flex-wrap gap-2 mt-2">
               <StatusBadge status={watch("status") || proje?.status || "On Track"} />
               <span className="ml-auto text-[13px] font-extrabold tabular-nums" style={{ color: txtColor }}>
-                %{proje.progress}
+                %{watch("progress") ?? proje.progress}
               </span>
+            </div>
+            <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)" }}>
+              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${watch("progress") ?? proje.progress}%`, backgroundColor: STATUS_HEX[watch("status") || proje.status] ?? "#94a3b8" }} />
             </div>
           </div>
         </div>
@@ -381,6 +392,60 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
       </div>
 
       <Controller
+        name="progress"
+        control={control}
+        render={({ field }) => {
+          const val = field.value;
+          const barColor = STATUS_HEX[watch("status")] ?? "#94a3b8";
+          return (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[11px] font-semibold text-tyro-text-secondary">
+                  {t("common.progress")}
+                </label>
+                <span className="text-lg font-extrabold tabular-nums" style={{ color: barColor }}>
+                  %{val}
+                </span>
+              </div>
+              <div className="relative mb-3 h-4 flex items-center">
+                <div className="absolute inset-x-0 h-2.5 rounded-full bg-tyro-border/15" />
+                <div
+                  className="absolute left-0 h-2.5 rounded-full"
+                  style={{ width: `${val}%`, backgroundColor: barColor, transition: "width 50ms linear, background-color 300ms ease" }}
+                />
+                <input
+                  type="range" min={0} max={100} step={5}
+                  value={val}
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                <div
+                  className="absolute w-5 h-5 rounded-full bg-white border-[2.5px] shadow-[0_1px_4px_rgba(0,0,0,0.15)] pointer-events-none"
+                  style={{ left: `calc(${val}% - 10px)`, transition: "left 50ms linear, border-color 300ms ease", borderColor: barColor }}
+                />
+              </div>
+              <div className="flex gap-[3px]">
+                {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((v) => {
+                  const isExact = val === v;
+                  const isPassed = val > v;
+                  return (
+                    <button key={v} type="button" onClick={() => field.onChange(v)}
+                      className={`flex-1 min-w-0 py-1 rounded text-[10px] font-bold tabular-nums transition-all cursor-pointer ${
+                        isExact ? "text-white shadow-sm scale-105" : isPassed ? "text-white/70" : "bg-tyro-bg text-tyro-text-muted hover:bg-tyro-border/20"
+                      }`}
+                      style={isExact || isPassed ? { backgroundColor: isExact ? barColor : `${barColor}60` } : undefined}
+                    >
+                      {v}%
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        }}
+      />
+
+      <Controller
         name="tags"
         control={control}
         render={({ field }) => {
@@ -464,7 +529,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
         name="parentObjectiveId"
         control={control}
         render={({ field }) => {
-          const availableHedefler = projeler.filter((h) => !proje || h.id !== proje.id);
+          const availableProjeler = projeler.filter((h) => !proje || h.id !== proje.id);
           return (
             <div>
               <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
@@ -481,7 +546,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
                 classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
                 placeholder={t("forms.objective.parentObjectivePlaceholder")}
               >
-                {availableHedefler.map((h) => (
+                {availableProjeler.map((h) => (
                   <SelectItem key={h.id}>{h.name}</SelectItem>
                 ))}
               </Select>

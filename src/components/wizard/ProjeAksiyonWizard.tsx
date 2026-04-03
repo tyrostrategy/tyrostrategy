@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, Wand2, Target, Users, ListChecks, ClipboardCheck
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { useDataStore } from "@/stores/dataStore";
+import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "@/stores/toastStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import WizardStepper from "./WizardStepper";
@@ -95,6 +96,7 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
   const accentColor = sidebarTheme.accentColor ?? "#c8922a";
   const addProje = useDataStore((s) => s.addProje);
   const addAksiyon = useDataStore((s) => s.addAksiyon);
+  const { canCreateProje } = usePermissions();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -171,6 +173,10 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
 
   const onSubmit = useCallback(
     (data: WizardFormData) => {
+      if (!canCreateProje) {
+        toast.error(t("toast.operationFailed"), t("permissions.noCreatePermission", "Proje oluşturma yetkiniz yok."));
+        return;
+      }
       try {
         // Aksiyon tarih aralığı kontrolü
         const invalidAksiyon = (data.aksiyonlar ?? []).find((a) =>
@@ -199,11 +205,11 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
           progress: 0,
         });
 
-        const newHedefId = useDataStore.getState().projeler.at(-1)!.id;
+        const newProjeId = useDataStore.getState().projeler.at(-1)!.id;
 
         (data.aksiyonlar ?? []).forEach((a, i) => {
           addAksiyon({
-            projeId: newHedefId,
+            projeId: newProjeId,
             name: a.name,
             description: a.description || undefined,
             owner: a.owner || data.owner,
@@ -211,6 +217,7 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
             endDate: a.endDate,
             status: "Not Started",
             progress: 0,
+            sortOrder: i + 1,
           });
         });
 
@@ -232,7 +239,7 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
         );
       }
     },
-    [addProje, addAksiyon, t],
+    [addProje, addAksiyon, t, canCreateProje],
   );
 
   const isLastStep = currentStep === steps.length - 1;
@@ -341,7 +348,7 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
       <AnimatePresence>
         {showSuccess && (
           <WizardSuccess
-            hedefName={createdName}
+            projeName={createdName}
             aksiyonCount={createdAksiyonCount}
             onClose={onClose}
           />

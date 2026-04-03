@@ -6,12 +6,13 @@ import { Search, Sparkles, Wand2, RefreshCw } from "lucide-react";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useMyWorkspace } from "@/hooks/useMyWorkspace";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useUIStore } from "@/stores/uiStore";
 import { useDataStore } from "@/stores/dataStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import SlidingPanel from "@/components/shared/SlidingPanel";
 // Lazy load heavy components
-const MyHedeflerList = lazy(() => import("@/components/workspace/MyProjectsList"));
+const MyProjelerList = lazy(() => import("@/components/workspace/MyProjectsList"));
 const UpcomingDeadlines = lazy(() => import("@/components/workspace/UpcomingDeadlines"));
 // MyProgressWidget merged into BentoKPI
 const BentoKPI = lazy(() => import("@/components/workspace/BentoKPI"));
@@ -88,6 +89,7 @@ export default function WorkspacePage() {
   const { name, department, title, initials } = useCurrentUser();
   const openCommandPalette = useUIStore((s) => s.openCommandPalette);
   const ws = useMyWorkspace();
+  const { canCreateProje } = usePermissions();
   const sidebarTheme = useSidebarTheme();
   const brandColor = sidebarTheme.brandStrategy ?? sidebarTheme.accentColor ?? "#c8922a";
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -224,9 +226,10 @@ export default function WorkspacePage() {
 
             <motion.button
               type="button"
+              disabled={!canCreateProje}
               onClick={() => setWizardOpen(true)}
-              className="btn-expandable bg-gradient-to-r from-tyro-gold to-tyro-gold-light text-white font-semibold text-[13px] shadow-sm shadow-tyro-gold/20 cursor-pointer shrink-0"
-              whileTap={{ scale: 0.95 }}
+              className="btn-expandable bg-gradient-to-r from-tyro-gold to-tyro-gold-light text-white font-semibold text-[13px] shadow-sm shadow-tyro-gold/20 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              whileTap={{ scale: canCreateProje ? 0.95 : 1 }}
             >
               <Wand2 size={14} className="shrink-0" />
               <span>{t("kokpit.projectWizard")}</span>
@@ -247,7 +250,7 @@ export default function WorkspacePage() {
       {/* Row 2: Bireysel Performans (12 — tam genişlik) */}
       <Suspense fallback={<div className="h-64 rounded-2xl bg-tyro-surface animate-pulse" />}>
         <motion.div variants={fadeUp}>
-          <MyHedeflerList />
+          <MyProjelerList />
         </motion.div>
       </Suspense>
 
@@ -264,7 +267,7 @@ export default function WorkspacePage() {
 
       {/* ── Wizard FAB (mobile only) ── */}
       <AnimatePresence>
-        {showFab && (
+        {showFab && canCreateProje && (
           <motion.button
             type="button"
             onClick={() => setWizardOpen(true)}

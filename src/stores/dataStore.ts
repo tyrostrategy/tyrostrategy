@@ -54,7 +54,7 @@ interface DataState {
   // Selectors
   getProjeById: (id: string) => Proje | undefined;
   getAksiyonById: (id: string) => Aksiyon | undefined;
-  getAksiyonlarByHedefId: (projeId: string) => Aksiyon[];
+  getAksiyonlarByProjeId: (projeId: string) => Aksiyon[];
   getTagColor: (tagName: string) => string;
   getTagDefinitionByName: (tagName: string) => TagDefinition | undefined;
 
@@ -302,8 +302,10 @@ export const useDataStore = create<DataState>()(
       // Selectors
       getProjeById: (id) => get().projeler.find((h) => h.id === id),
       getAksiyonById: (id) => get().aksiyonlar.find((a) => a.id === id),
-      getAksiyonlarByHedefId: (projeId) =>
-        get().aksiyonlar.filter((a) => a.projeId === projeId),
+      getAksiyonlarByProjeId: (projeId) =>
+        get().aksiyonlar
+          .filter((a) => a.projeId === projeId)
+          .sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999)),
       getTagColor: (tagName) => {
         const def = get().tagDefinitions.find(
           (t) => t.name.toLocaleLowerCase("tr") === tagName.toLocaleLowerCase("tr")

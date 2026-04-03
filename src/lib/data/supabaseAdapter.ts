@@ -37,6 +37,7 @@ interface DbAksiyon {
   status: string;
   start_date: string;
   end_date: string;
+  sort_order: number | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -101,6 +102,7 @@ function dbToAksiyon(row: DbAksiyon): Aksiyon {
     status: row.status as EntityStatus,
     startDate: row.start_date,
     endDate: row.end_date,
+    sortOrder: row.sort_order ?? undefined,
     createdBy: row.created_by ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -118,6 +120,7 @@ function aksiyonToDb(data: Partial<Aksiyon>): Record<string, unknown> {
   if (data.status !== undefined) map.status = data.status;
   if (data.startDate !== undefined) map.start_date = data.startDate;
   if (data.endDate !== undefined) map.end_date = data.endDate;
+  if (data.sortOrder !== undefined) map.sort_order = data.sortOrder;
   if (data.completedAt !== undefined) map.completed_at = data.completedAt;
   return map;
 }
@@ -134,6 +137,7 @@ interface DbUser {
   role: string;
   locale: string | null;
   title: string | null;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -234,7 +238,7 @@ export const supabaseAdapter: DataService = {
       const { data: partLinks } = await supabase.from("proje_participants").select("*");
       for (const link of partLinks ?? []) {
         const projeId = link.proje_id;
-        const userName = link.user_name || link.display_name || "";
+        const userName = link.user_email || link.user_name || link.display_name || "";
         if (projeId && userName) {
           const arr = projeParticipantsMap.get(projeId) ?? [];
           arr.push(userName);
@@ -244,7 +248,7 @@ export const supabaseAdapter: DataService = {
     } catch { /* participants optional */ }
 
     return (data as DbProje[]).map((row) =>
-      dbToProje(row, projeTagsMap.get(row.id) ?? [], projeParticipantsMap.get(row.id) ?? [row.owner])
+      dbToProje(row, projeTagsMap.get(row.id) ?? [], projeParticipantsMap.get(row.id) ?? [])
     );
   },
 
@@ -272,7 +276,14 @@ export const supabaseAdapter: DataService = {
       if (tagInserts.length) await supabase.from("proje_tags").insert(tagInserts);
     }
 
-    return dbToProje(data as DbProje, input.tags ?? [], input.participants ?? [input.owner]);
+    // Handle participants
+    const participants = input.participants ?? [];
+    if (participants.length) {
+      const partInserts = participants.map((name) => ({ proje_id: id, user_email: name }));
+      await supabase.from("proje_participants").insert(partInserts);
+    }
+
+    return dbToProje(data as DbProje, input.tags ?? [], participants);
   },
 
   async updateProje(id: string, data: Partial<Proje>): Promise<Proje> {
@@ -290,7 +301,16 @@ export const supabaseAdapter: DataService = {
       if (tagInserts.length) await supabase.from("proje_tags").insert(tagInserts);
     }
 
-    return dbToProje(updated as DbProje, data.tags);
+    // Update participants if provided
+    if (data.participants !== undefined) {
+      await supabase.from("proje_participants").delete().eq("proje_id", id);
+      if (data.participants.length) {
+        const partInserts = data.participants.map((name) => ({ proje_id: id, user_email: name }));
+        await supabase.from("proje_participants").insert(partInserts);
+      }
+    }
+
+    return dbToProje(updated as DbProje, data.tags, data.participants);
   },
 
   async deleteProje(id: string): Promise<boolean> {
@@ -303,14 +323,14 @@ export const supabaseAdapter: DataService = {
 
   async fetchAksiyonlar(): Promise<Aksiyon[]> {
     if (!supabase) return [];
-    const { data, error } = await supabase.from("aksiyonlar").select("*").order("created_at");
+    const { data, error } = await supabase.from("aksiyonlar").select("*").order("sort_order", { ascending: true, nullsFirst: false }).order("created_at");
     if (error) throw error;
     return (data as DbAksiyon[]).map(dbToAksiyon);
   },
 
   async fetchAksiyonlarByProje(projeId: string): Promise<Aksiyon[]> {
     if (!supabase) return [];
-    const { data, error } = await supabase.from("aksiyonlar").select("*").eq("proje_id", projeId).order("created_at");
+    const { data, error } = await supabase.from("aksiyonlar").select("*").eq("proje_id", projeId).order("sort_order", { ascending: true, nullsFirst: false }).order("created_at");
     if (error) throw error;
     return (data as DbAksiyon[]).map(dbToAksiyon);
   },
@@ -382,6 +402,7 @@ export const supabaseAdapter: DataService = {
       role: (row.role as UserRole) ?? "Kullanıcı",
       locale: row.locale ?? "tr",
       title: row.title ?? undefined,
+      isActive: row.is_active ?? true,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }));
@@ -396,9 +417,10 @@ export const supabaseAdapter: DataService = {
       role: user.role,
       locale: user.locale,
       title: user.title ?? null,
+      is_active: user.isActive ?? true,
     }).select().single();
     if (error) { console.error("[Supabase] createUser:", error); return null; }
-    return { id: data.id, email: data.email, displayName: data.display_name, department: data.department ?? "", role: data.role, locale: data.locale ?? "tr", title: data.title ?? undefined, createdAt: data.created_at, updatedAt: data.updated_at };
+    return { id: data.id, email: data.email, displayName: data.display_name, department: data.department ?? "", role: data.role, locale: data.locale ?? "tr", title: data.title ?? undefined, isActive: data.is_active ?? true, createdAt: data.created_at, updatedAt: data.updated_at };
   },
 
   async updateUser(id: string, data: Partial<AppUser>): Promise<void> {
@@ -410,6 +432,7 @@ export const supabaseAdapter: DataService = {
     if (data.role !== undefined) row.role = data.role;
     if (data.locale !== undefined) row.locale = data.locale;
     if (data.title !== undefined) row.title = data.title;
+    if (data.isActive !== undefined) row.is_active = data.isActive;
     const { error, count } = await supabase.from("users").update(row).eq("id", id).select();
     if (error) {
       console.error("[Supabase] updateUser error:", error.code, error.message, error.details);

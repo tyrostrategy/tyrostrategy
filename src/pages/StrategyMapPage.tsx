@@ -5,6 +5,7 @@ import { ZoomIn, ZoomOut, RotateCcw, Eye, EyeOff, Target, ListChecks, ChevronDow
 import { TyroLogo } from "@/components/ui/TyroLogo";
 import { Button } from "@heroui/react";
 import { useDataStore } from "@/stores/dataStore";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { getStatusLabel } from "@/lib/constants";
 import { progressColor } from "@/lib/colorUtils";
@@ -247,20 +248,23 @@ function ActionNode({ name, progress, status, onClick }: { name: string; progres
 export default function StrategyMapPage() {
   const { t } = useTranslation();
   const sidebarTheme = useSidebarTheme();
-  const projeler = useDataStore((s) => s.projeler);
-  const aksiyonlar = useDataStore((s) => s.aksiyonlar);
+  const allProjeler = useDataStore((s) => s.projeler);
+  const allAksiyonlar = useDataStore((s) => s.aksiyonlar);
+  const { filterProjeler, filterAksiyonlar } = usePermissions();
+  const projeler = useMemo(() => filterProjeler(allProjeler), [allProjeler, filterProjeler]);
+  const aksiyonlar = useMemo(() => filterAksiyonlar(allAksiyonlar), [allAksiyonlar, filterAksiyonlar]);
 
-  const [expandedHedefIds, setExpandedHedefIds] = useState<Set<string>>(new Set());
+  const [expandedProjeIds, setExpandedProjeIds] = useState<Set<string>>(new Set());
   const [showAllActions, setShowAllActions] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [mapSearch, setMapSearch] = useState("");
-  const [selectedProje, setSelectedHedef] = useState<Proje | null>(null);
+  const [selectedProje, setSelectedProje] = useState<Proje | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelType, setPanelType] = useState<"proje" | "aksiyon">("proje");
   const [selectedAksiyonId, setSelectedAksiyonId] = useState<string | null>(null);
 
-  const toggleHedefExpand = (projeId: string) => {
-    setExpandedHedefIds((prev) => {
+  const toggleProjeExpand = (projeId: string) => {
+    setExpandedProjeIds((prev) => {
       const next = new Set(prev);
       if (next.has(projeId)) next.delete(projeId);
       else next.add(projeId);
@@ -270,7 +274,7 @@ export default function StrategyMapPage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Arama eşleşen proje ID'leri
-  const matchedHedefIds = useMemo(() => {
+  const matchedProjeIds = useMemo(() => {
     if (!mapSearch.trim()) return null; // null = hepsi eşleşir
     const q = mapSearch.toLocaleLowerCase("tr");
     const ids = new Set<string>();
@@ -283,9 +287,9 @@ export default function StrategyMapPage() {
 
   // Filtreli projeler
   const filteredProjeler = useMemo(() => {
-    if (!matchedHedefIds) return projeler; // null = no search
-    return projeler.filter((h) => matchedHedefIds.has(h.id));
-  }, [projeler, matchedHedefIds]);
+    if (!matchedProjeIds) return projeler; // null = no search
+    return projeler.filter((h) => matchedProjeIds.has(h.id));
+  }, [projeler, matchedProjeIds]);
 
   // Source'a göre grupla (filtreli)
   const themeGroups = useMemo(() => {
@@ -308,7 +312,7 @@ export default function StrategyMapPage() {
   );
 
   // Proje ID → aksiyonlari
-  const hedefAksiyonlar = useMemo(() => {
+  const projeAksiyonlar = useMemo(() => {
     const map = new Map<string, typeof aksiyonlar>();
     for (const a of aksiyonlar) {
       const list = map.get(a.projeId) ?? [];
@@ -319,7 +323,7 @@ export default function StrategyMapPage() {
   }, [aksiyonlar]);
 
   const openDetail = (proje: Proje) => {
-    setSelectedHedef(proje);
+    setSelectedProje(proje);
     setPanelOpen(true);
   };
 
@@ -356,10 +360,10 @@ export default function StrategyMapPage() {
             setShowAllActions(!showAllActions);
             if (!showAllActions) {
               // Expand all
-              setExpandedHedefIds(new Set(projeler.map((h) => h.id)));
+              setExpandedProjeIds(new Set(projeler.map((h) => h.id)));
             } else {
               // Collapse all
-              setExpandedHedefIds(new Set());
+              setExpandedProjeIds(new Set());
             }
           }}
           className="rounded-button text-[12px] font-semibold h-8 border-0"
@@ -418,7 +422,7 @@ export default function StrategyMapPage() {
             {/* Level 1: Company */}
             <CompanyNode
               projeCount={filteredProjeler.length}
-              aksiyonCount={mapSearch.trim() ? filteredProjeler.reduce((s, h) => s + (hedefAksiyonlar.get(h.id)?.length ?? 0), 0) : aksiyonlar.length}
+              aksiyonCount={mapSearch.trim() ? filteredProjeler.reduce((s, h) => s + (projeAksiyonlar.get(h.id)?.length ?? 0), 0) : aksiyonlar.length}
               overallProgress={filteredProjeler.length > 0 ? Math.round(filteredProjeler.reduce((s, h) => s + h.progress, 0) / filteredProjeler.length) : 0}
               theme={sidebarTheme}
             />
@@ -454,27 +458,27 @@ export default function StrategyMapPage() {
                     className="flex flex-col items-start gap-3"
                   >
                     {[...list].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime()).map((proje) => {
-                      const isExpanded = expandedHedefIds.has(proje.id);
-                      const hedefActions = hedefAksiyonlar.get(proje.id) ?? [];
+                      const isExpanded = expandedProjeIds.has(proje.id);
+                      const projeActions = projeAksiyonlar.get(proje.id) ?? [];
                       return (
                         <div key={proje.id} className="flex flex-col items-center">
                           <ObjectiveNode
                             proje={proje}
                             onClick={() => openDetail(proje)}
                             expanded={isExpanded}
-                            onToggleExpand={() => toggleHedefExpand(proje.id)}
-                            aksiyonCount={hedefActions.length}
+                            onToggleExpand={() => toggleProjeExpand(proje.id)}
+                            aksiyonCount={projeActions.length}
                           />
 
                           {/* Level 4: Actions — per-proje expand */}
-                          {isExpanded && hedefActions.length > 0 && (
+                          {isExpanded && projeActions.length > 0 && (
                             <motion.div
                               initial={{ opacity: 0, y: -8 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ duration: 0.2 }}
                               className="flex flex-col items-start gap-1.5 mt-2"
                             >
-                                {hedefActions.map((aksiyon) => (
+                                {projeActions.map((aksiyon) => (
                                   <ActionNode
                                     key={aksiyon.id}
                                     name={aksiyon.name}
@@ -482,7 +486,7 @@ export default function StrategyMapPage() {
                                     status={aksiyon.status}
                                     onClick={() => {
                                       setSelectedAksiyonId(aksiyon.id);
-                                      setSelectedHedef(proje);
+                                      setSelectedProje(proje);
                                       setPanelType("aksiyon");
                                       setPanelOpen(true);
                                     }}

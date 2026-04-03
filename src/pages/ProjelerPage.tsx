@@ -75,7 +75,7 @@ export default function ProjelerPage() {
 
   // Panel state
   const [panelMode, setPanelMode] = useState<"closed" | "create" | "edit" | "detail">("closed");
-  const [selectedProje, setSelectedHedef] = useState<Proje | null>(null);
+  const [selectedProje, setSelectedProje] = useState<Proje | null>(null);
 
   const [detailTitle, setDetailTitle] = useState(t("detail.objectiveDetail"));
 
@@ -146,24 +146,24 @@ export default function ProjelerPage() {
   const headerColumns = useMemo(() => columns.filter((c) => visibleColumns.has(c.uid)), [visibleColumns]);
 
   const openCreate = () => {
-    setSelectedHedef(null);
+    setSelectedProje(null);
     setPanelMode("create");
   };
 
   const openDetail = (h: Proje) => {
-    setSelectedHedef(h);
+    setSelectedProje(h);
     setPanelMode("detail");
     setDetailTitle(t("detail.objectiveDetail"));
   };
 
   const openEdit = (h: Proje) => {
-    setSelectedHedef(h);
+    setSelectedProje(h);
     setPanelMode("edit");
   };
 
   const closePanel = () => {
     setPanelMode("closed");
-    setSelectedHedef(null);
+    setSelectedProje(null);
   };
 
   const renderCell = useCallback((proje: Proje, columnKey: Key) => {
@@ -218,13 +218,25 @@ export default function ProjelerPage() {
               </button>
             </Tooltip>
             )}
-            {canDeleteProje(proje.id) && (
             <Tooltip content={t("common.delete")} color="danger" size="sm">
-              <button className="text-lg text-danger cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); const reason = getProjeDeleteReason(proje.id); if (reason) { toast.error(reason); return; } setConfirmMessage(t("confirm.deleteObjective")); setConfirmAction(() => () => { deleteProje(proje.id); toast.success(t("toast.objectiveDeleted"), { message: proje.name }); }); setConfirmOpen(true); }}>
+              <button className="text-lg text-danger cursor-pointer active:opacity-50" onClick={(e) => {
+                e.stopPropagation();
+                if (!canDeleteProje(proje.id)) {
+                  const reason = getProjeDeleteReason(proje.id);
+                  if (reason) {
+                    toast.error(`"${proje.name}" silinemez`, { message: reason });
+                  } else {
+                    toast.error(t("toast.operationFailed"), t("permissions.noDeletePermission", "Proje silme yetkiniz yok."));
+                  }
+                  return;
+                }
+                setConfirmMessage(t("confirm.deleteObjective", { name: proje.name }));
+                setConfirmAction(() => () => { deleteProje(proje.id); toast.success(t("toast.objectiveDeleted"), { message: proje.name }); });
+                setConfirmOpen(true);
+              }}>
                 <Trash2 size={16} />
               </button>
             </Tooltip>
-            )}
           </div>
         );
       default:
@@ -244,8 +256,17 @@ export default function ProjelerPage() {
             </span>
             <button
               onClick={() => {
-                setConfirmMessage(t("confirm.deleteObjective"));
-                setConfirmAction(() => () => { const count = selectedKeys.size; selectedKeys.forEach((id) => deleteProje(id)); setSelectedKeys(new Set()); toast.success(t("toast.objectiveDeleted")); });
+                setConfirmMessage(t("confirm.deleteObjective", { name: `${selectedKeys.size} proje` }));
+                setConfirmAction(() => () => {
+                  let deleted = 0; let blocked = 0;
+                  selectedKeys.forEach((id) => {
+                    if (!canDeleteProje(id)) { blocked++; return; }
+                    deleteProje(id); deleted++;
+                  });
+                  setSelectedKeys(new Set());
+                  if (deleted > 0) toast.success(t("toast.objectiveDeleted"), { message: `${deleted} proje silindi` });
+                  if (blocked > 0) toast.error(t("toast.operationFailed"), { message: `${blocked} proje silinemedi — aksiyonları var veya yetkiniz yok` });
+                });
                 setConfirmOpen(true);
               }}
               className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors cursor-pointer"
@@ -269,7 +290,7 @@ export default function ProjelerPage() {
         </select>
       </label>
     </div>
-  ), [filtered.length, rowsPerPage, selectedKeys, deleteProje]);
+  ), [filtered.length, rowsPerPage, selectedKeys, deleteProje, canDeleteProje, t]);
 
   // Bottom content
   const bottomContent = useMemo(() => (
@@ -407,7 +428,7 @@ export default function ProjelerPage() {
               </DropdownMenu>
             </Dropdown>
           </div>
-          {canCreateProje && <CreateButton onPress={openCreate} />}
+          <CreateButton onPress={openCreate} disabled={!canCreateProje} />
         </div>
       </div>
 
@@ -439,11 +460,22 @@ export default function ProjelerPage() {
                     <Pencil size={14} /> {t("common.edit")}
                   </button>
                   )}
-                  {canDeleteProje(proje.id) && (
-                  <button aria-label={t("common.delete")} onClick={() => { const reason = getProjeDeleteReason(proje.id); if (reason) { toast.error(reason); return; } if (window.confirm(t("confirm.deleteObjective"))) deleteProje(proje.id); }} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 transition-colors ml-auto">
+                  <button aria-label={t("common.delete")} onClick={() => {
+                    if (!canDeleteProje(proje.id)) {
+                      const reason = getProjeDeleteReason(proje.id);
+                      if (reason) {
+                        toast.error(`"${proje.name}" silinemez`, { message: reason });
+                      } else {
+                        toast.error(t("toast.operationFailed"), t("permissions.noDeletePermission", "Proje silme yetkiniz yok."));
+                      }
+                      return;
+                    }
+                    setConfirmMessage(t("confirm.deleteObjective", { name: proje.name }));
+                    setConfirmAction(() => () => { deleteProje(proje.id); toast.success(t("toast.objectiveDeleted"), { message: proje.name }); });
+                    setConfirmOpen(true);
+                  }} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 transition-colors ml-auto">
                     <Trash2 size={14} /> {t("common.delete")}
                   </button>
-                  )}
                 </div>
               </div>
             ))
@@ -562,8 +594,11 @@ export default function ProjelerPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        onConfirm={() => confirmAction?.()}
+        onConfirm={() => { confirmAction?.(); setConfirmOpen(false); }}
+        title={t("kokpit.deleteProject")}
         message={confirmMessage}
+        confirmLabel={t("common.delete")}
+        variant="danger"
       />
     </div>
   );

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Textarea, Select, SelectItem, DatePicker } from "@heroui/react";
 import { Check, X, ArrowLeft, ChevronDown } from "lucide-react";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
+import { useUIStore } from "@/stores/uiStore";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { useDataStore } from "@/stores/dataStore";
@@ -16,8 +17,6 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import FormSection from "@/components/shared/FormSection";
 import type { Aksiyon, EntityStatus } from "@/types";
 
-const CURRENT_USER = "Cenk \u015eayli";
-
 const createAksiyonSchema = (t: TFunction) =>
   z.object({
     name: z.string().min(1, t("validation.actionNameRequired")),
@@ -26,6 +25,7 @@ const createAksiyonSchema = (t: TFunction) =>
     projeId: z.string().min(1, t("validation.objectiveRequired")),
     progress: z.number().min(0).max(100),
     status: z.enum(["On Track", "At Risk", "Behind", "Achieved", "Not Started", "Cancelled", "On Hold"]),
+    sortOrder: z.number().min(1).optional(),
     startDate: z.string().min(1, t("validation.startDateRequired")),
     endDate: z.string().min(1, t("validation.endDateRequired")),
   });
@@ -41,10 +41,12 @@ interface AksiyonFormProps {
 
 export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClose }: AksiyonFormProps) {
   const { t } = useTranslation();
+  const mockUserName = useUIStore((s) => s.mockUserName);
   const projeler = useDataStore((s) => s.projeler);
   const proje = aksiyon
     ? projeler.find((p) => p.id === aksiyon.projeId)
     : defaultProjeId ? projeler.find((p) => p.id === defaultProjeId) : null;
+  const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const addAksiyon = useDataStore((s) => s.addAksiyon);
   const updateAksiyon = useDataStore((s) => s.updateAksiyon);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,16 +71,25 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
     formState: { errors },
   } = useForm<AksiyonFormData>({
     resolver: zodResolver(aksiyonSchema),
-    defaultValues: {
-      name: aksiyon?.name ?? "",
-      description: aksiyon?.description ?? "",
-      owner: aksiyon?.owner ?? proje?.owner ?? (localStorage.getItem("tyro-mock-user") || "Demo User"),
-      projeId: aksiyon?.projeId ?? defaultProjeId ?? "",
-      progress: aksiyon?.progress ?? 0,
-      status: aksiyon?.status ?? "Not Started",
-      startDate: aksiyon?.startDate ?? "",
-      endDate: aksiyon?.endDate ?? "",
-    },
+    defaultValues: (() => {
+      // Yeni aksiyonda: aynı projedeki mevcut aksiyonların max sort_order'ı + 1
+      const targetProjeId = aksiyon?.projeId ?? defaultProjeId ?? "";
+      const siblingOrders = aksiyonlar
+        .filter((a) => a.projeId === targetProjeId)
+        .map((a) => a.sortOrder ?? 0);
+      const nextOrder = siblingOrders.length > 0 ? Math.max(...siblingOrders) + 1 : 1;
+      return {
+        name: aksiyon?.name ?? "",
+        description: aksiyon?.description ?? "",
+        owner: aksiyon?.owner ?? proje?.owner ?? mockUserName ?? "Demo User",
+        projeId: aksiyon?.projeId ?? defaultProjeId ?? "",
+        progress: aksiyon?.progress ?? 0,
+        status: aksiyon?.status ?? "Not Started",
+        sortOrder: aksiyon?.sortOrder ?? nextOrder,
+        startDate: aksiyon?.startDate ?? "",
+        endDate: aksiyon?.endDate ?? "",
+      };
+    })(),
   });
 
   // ===== İlerleme → Durum otomatik hesaplama =====
@@ -146,6 +157,19 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
       }
     }
 
+    // Aynı projede aynı sıra numarasını kullanma kontrolü
+    if (data.sortOrder) {
+      const duplicateSortOrder = aksiyonlar.find(
+        (a) => a.projeId === data.projeId && a.sortOrder === data.sortOrder && a.id !== aksiyon?.id
+      );
+      if (duplicateSortOrder) {
+        toast.error(t("toast.operationFailed"), {
+          message: `Sıra No ${data.sortOrder} bu projede "${duplicateSortOrder.name}" tarafından kullanılıyor.`,
+        });
+        return;
+      }
+    }
+
     setIsLoading(true);
     try {
       if (aksiyon) {
@@ -155,6 +179,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
         if (data.progress !== aksiyon.progress) details.push({ label: t("common.progress"), value: `%${data.progress}` });
         if (data.status !== aksiyon.status) details.push({ label: t("common.status"), value: data.status });
         if (data.owner !== aksiyon.owner) details.push({ label: t("common.owner"), value: data.owner });
+        if (data.sortOrder !== aksiyon.sortOrder) details.push({ label: t("common.sortOrder", "Sıra"), value: `#${data.sortOrder}` });
         if (data.startDate !== aksiyon.startDate) details.push({ label: t("common.startDate"), value: data.startDate });
         if (data.endDate !== aksiyon.endDate) details.push({ label: t("common.endDate"), value: data.endDate });
         updateAksiyon(aksiyon.id, data);
@@ -310,6 +335,29 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
                 variant="bordered"
                 size="sm"
                 classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }}
+              />
+            </div>
+          )}
+        />
+
+        <Controller
+          name="sortOrder"
+          control={control}
+          render={({ field }) => (
+            <div>
+              <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
+                {t("common.sortOrder", "Sıra No")}
+              </label>
+              <Input
+                type="number"
+                min={1}
+                value={String(field.value ?? "")}
+                onValueChange={(v) => field.onChange(v ? Number(v) : undefined)}
+                isInvalid={!!errors.sortOrder}
+                errorMessage={errors.sortOrder?.message}
+                variant="bordered"
+                size="sm"
+                classNames={{ inputWrapper: "border-tyro-border max-w-[100px]", input: "font-semibold text-tyro-text-primary" }}
               />
             </div>
           )}

@@ -78,7 +78,7 @@ export default function DashboardPage() {
   // ===== KPI Hesaplamaları (tamamen veriye dayalı) =====
 
   // KPI 1: Proje Tamamlanma — tüm aksiyonları "Achieved" olan projeler
-  const hedefTamamlanan = useMemo(
+  const projeTamamlanan = useMemo(
     () =>
       projeler.filter((h) => {
         const aksiyonlarForH = aksiyonlar.filter((a) => a.projeId === h.id);
@@ -88,7 +88,7 @@ export default function DashboardPage() {
     [projeler, aksiyonlar]
   );
   const projeProgress =
-    projeler.length > 0 ? Math.round((hedefTamamlanan.length / projeler.length) * 100) : 0;
+    projeler.length > 0 ? Math.round((projeTamamlanan.length / projeler.length) * 100) : 0;
 
   // Single-pass status counts + avg progress
   const { statusCounts, avgProgress } = useMemo(() => {
@@ -113,12 +113,12 @@ export default function DashboardPage() {
   const kpiCards = [
     {
       label: t("dashboard.projectCompletion"),
-      value: hedefTamamlanan.length,
+      value: projeTamamlanan.length,
       target: projeler.length,
       icon: "Target",
       color: "var(--tyro-navy)",
       progress: projeProgress,
-      contextText: t("dashboard.projectCount", { completed: hedefTamamlanan.length, total: projeler.length }),
+      contextText: t("dashboard.projectCount", { completed: projeTamamlanan.length, total: projeler.length }),
       onClick: () => navigate("/stratejik-kokpit?status=Achieved"),
     },
     {
@@ -294,7 +294,7 @@ export default function DashboardPage() {
         <motion.div key={kpiCards[0].label} variants={fadeUp} className="flex">
           <ActiveBentoCard
             kpi={kpiCards[0]}
-            completedHedefler={hedefTamamlanan.map((h) => ({ id: h.id, name: h.name }))}
+            completedProjeler={projeTamamlanan.map((h) => ({ id: h.id, name: h.name }))}
           />
         </motion.div>
         {kpiCards.slice(1).map((kpi) => (
@@ -344,10 +344,10 @@ interface ActiveBentoCardProps {
     trendLabel?: string;
     contextText?: string;
   };
-  completedHedefler: { id: string; name: string }[];
+  completedProjeler: { id: string; name: string }[];
 }
 
-function ActiveBentoCard({ kpi, completedHedefler }: ActiveBentoCardProps) {
+function ActiveBentoCard({ kpi, completedProjeler }: ActiveBentoCardProps) {
   const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
@@ -414,11 +414,11 @@ function ActiveBentoCard({ kpi, completedHedefler }: ActiveBentoCardProps) {
                 <p className="text-[11px] font-bold uppercase tracking-wider text-tyro-text-muted mb-2">
                   {t("dashboard.completedGoals")}
                 </p>
-                {completedHedefler.length === 0 ? (
+                {completedProjeler.length === 0 ? (
                   <p className="text-xs text-tyro-text-muted">{t("dashboard.noCompletedProjects")}</p>
                 ) : (
                   <ul className="space-y-1">
-                    {completedHedefler.slice(0, 3).map((h) => (
+                    {completedProjeler.slice(0, 3).map((h) => (
                       <li
                         key={h.id}
                         className="text-xs text-tyro-text-secondary truncate cursor-pointer hover:text-tyro-navy transition-colors"

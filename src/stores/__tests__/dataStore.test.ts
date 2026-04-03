@@ -159,7 +159,7 @@ describe("Aksiyon CRUD", () => {
     expect(useDataStore.getState().aksiyonlar).toHaveLength(0);
   });
 
-  it("getAksiyonlarByHedefId returns matching aksiyonlar", () => {
+  it("getAksiyonlarByProjeId returns matching aksiyonlar", () => {
     useDataStore.getState().addAksiyon({
       projeId: "p1",
       name: "Aksiyon A",
@@ -179,7 +179,7 @@ describe("Aksiyon CRUD", () => {
       endDate: "2024-03-31",
     });
 
-    const result = useDataStore.getState().getAksiyonlarByHedefId("p1");
+    const result = useDataStore.getState().getAksiyonlarByProjeId("p1");
     expect(result).toHaveLength(1);
     expect(result[0].name).toBe("Aksiyon A");
   });

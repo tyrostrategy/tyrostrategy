@@ -5,7 +5,7 @@ import { Button } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
 interface WizardSuccessProps {
-  hedefName: string;
+  projeName: string;
   aksiyonCount: number;
   onClose: () => void;
   onGoToDetail?: () => void;
@@ -44,7 +44,7 @@ function ConfettiParticle({ index }: { index: number }) {
   );
 }
 
-export default function WizardSuccess({ hedefName, aksiyonCount, onClose, onGoToDetail }: WizardSuccessProps) {
+export default function WizardSuccess({ projeName, aksiyonCount, onClose, onGoToDetail }: WizardSuccessProps) {
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -91,7 +91,7 @@ export default function WizardSuccess({ hedefName, aksiyonCount, onClose, onGoTo
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.55 }}
       >
-        <p className="text-sm font-semibold text-tyro-navy">"{hedefName}"</p>
+        <p className="text-sm font-semibold text-tyro-navy">"{projeName}"</p>
         <p className="text-xs text-tyro-text-secondary mt-1">
           {t("wizard.successActions", { count: aksiyonCount })}
         </p>

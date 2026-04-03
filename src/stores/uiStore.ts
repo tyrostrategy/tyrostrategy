@@ -56,7 +56,7 @@ export const useUIStore = create<UIState>((set) => ({
   sidebarCollapsed: false,
   commandPaletteOpen: false,
   activePage: "dashboard",
-  mockLoggedIn: false,
+  mockLoggedIn: import.meta.env.DEV ? !!localStorage.getItem("tyro-mock-user") : false,
   mockUserName: localStorage.getItem("tyro-mock-user") || "Cenk Şayli",
   mockUserRole: localStorage.getItem("tyro-mock-role") || "Admin",
   mobileDrawerOpen: false,

@@ -7,9 +7,10 @@ import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 interface CreateButtonProps {
   onPress: () => void;
   label?: string;
+  disabled?: boolean;
 }
 
-export default function CreateButton({ onPress, label }: CreateButtonProps) {
+export default function CreateButton({ onPress, label, disabled }: CreateButtonProps) {
   const { t } = useTranslation();
   const displayLabel = label ?? t("common.new");
   const theme = useSidebarTheme();
@@ -20,7 +21,8 @@ export default function CreateButton({ onPress, label }: CreateButtonProps) {
       color="primary"
       size="sm"
       onPress={onPress}
-      className="font-semibold text-white transition-all duration-300 active:scale-[0.97] group/btn relative overflow-hidden"
+      isDisabled={disabled}
+      className="font-semibold text-white transition-all duration-300 active:scale-[0.97] group/btn relative overflow-hidden disabled:opacity-40"
       style={{
         background: hovered ? theme.buttonGradientHover : theme.buttonGradient,
         boxShadow: "none",

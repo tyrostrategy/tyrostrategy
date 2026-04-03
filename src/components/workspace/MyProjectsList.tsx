@@ -150,22 +150,22 @@ export default function MyProjectsList() {
   const projeler = useDataStore((s) => s.projeler);
 
   // Stats
-  const hedefSourceMap = new Map<string, number>();
-  for (const h of ws.myProjeler) hedefSourceMap.set(h.source, (hedefSourceMap.get(h.source) ?? 0) + 1);
-  const hedefTagMap = new Map<string, number>();
+  const projeSourceMap = new Map<string, number>();
+  for (const h of ws.myProjeler) projeSourceMap.set(h.source, (projeSourceMap.get(h.source) ?? 0) + 1);
+  const projeTagMap = new Map<string, number>();
   for (const h of ws.myProjeler) {
-    for (const tag of (h.tags ?? [])) hedefTagMap.set(tag, (hedefTagMap.get(tag) ?? 0) + 1);
+    for (const tag of (h.tags ?? [])) projeTagMap.set(tag, (projeTagMap.get(tag) ?? 0) + 1);
   }
   const getTagColor = useDataStore((s) => s.getTagColor);
-  const hedefAvg = ws.myProjeler.length > 0
+  const projeAvg = ws.myProjeler.length > 0
     ? Math.round(ws.myProjeler.reduce((s, h) => s + h.progress, 0) / ws.myProjeler.length) : 0;
-  const hedefAchieved = ws.myProjeler.filter((h) => h.status === "Achieved").length;
+  const projeAchieved = ws.myProjeler.filter((h) => h.status === "Achieved").length;
   const aksiyonAvg = ws.myAksiyonlar.length > 0
     ? Math.round(ws.myAksiyonlar.reduce((s, a) => s + a.progress, 0) / ws.myAksiyonlar.length) : 0;
 
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
-  const hedefNameMap = new Map(ws.myProjeler.map((h) => [h.id, h.name]));
-  const aksiyonlarWithParent = ws.myAksiyonlar.map((a) => ({ ...a, parentName: hedefNameMap.get(a.projeId) ?? "" }));
+  const projeNameMap = new Map(ws.myProjeler.map((h) => [h.id, h.name]));
+  const aksiyonlarWithParent = ws.myAksiyonlar.map((a) => ({ ...a, parentName: projeNameMap.get(a.projeId) ?? "" }));
 
   // Count aksiyonlar per proje for display
   const aksiyonCountMap = new Map<string, number>();
@@ -205,9 +205,9 @@ export default function MyProjectsList() {
             {/* Gauge + Status bars */}
             <div className="flex items-start gap-6">
               <RadialGauge
-                value={hedefAchieved}
+                value={projeAchieved}
                 total={ws.myProjeler.length}
-                avgProgress={hedefAvg}
+                avgProgress={projeAvg}
                 color="var(--tyro-success)"
               />
               <div className="flex-1 min-w-0">
@@ -217,7 +217,7 @@ export default function MyProjectsList() {
                   </span>
                   <div className="flex items-baseline gap-1">
                     <span className="text-[11px] text-tyro-text-muted">{t("workspace.avgProgress")}</span>
-                    <span className="text-[16px] font-extrabold text-tyro-navy tabular-nums">%{hedefAvg}</span>
+                    <span className="text-[16px] font-extrabold text-tyro-navy tabular-nums">%{projeAvg}</span>
                   </div>
                 </div>
                 <StackedStatusBar
@@ -232,7 +232,7 @@ export default function MyProjectsList() {
               <div>
                 <p className="text-[12px] font-bold text-tyro-text-primary mb-2">{t("workspace.sourceDistribution")}</p>
                 <div className="flex items-center gap-1 h-5 rounded-lg overflow-hidden bg-tyro-bg/40">
-                  {Array.from(hedefSourceMap.entries()).map(([source, count]) => {
+                  {Array.from(projeSourceMap.entries()).map(([source, count]) => {
                     const pct = Math.round((count / ws.myProjeler.length) * 100);
                     return (
                       <Tooltip key={source} content={`${source}: ${count} (${pct}%)`} placement="top" size="sm">
@@ -247,7 +247,7 @@ export default function MyProjectsList() {
                   })}
                 </div>
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5">
-                  {Array.from(hedefSourceMap.entries()).map(([source, count]) => (
+                  {Array.from(projeSourceMap.entries()).map(([source, count]) => (
                     <span key={source} className="flex items-center gap-1 text-[11px] text-tyro-text-secondary">
                       <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: SOURCE_COLORS[source] ?? "#94a3b8" }} />
                       {source} · {count}
@@ -258,11 +258,11 @@ export default function MyProjectsList() {
             )}
 
             {/* Tag distribution (proje only) */}
-            {tab === "proje" && hedefTagMap.size > 0 && (
+            {tab === "proje" && projeTagMap.size > 0 && (
               <div>
                 <p className="text-[12px] font-bold text-tyro-text-primary mb-2">{t("workspace.tagDistribution", "Etiket Dağılımı")}</p>
                 {(() => {
-                  const sortedTags = Array.from(hedefTagMap.entries()).sort((a, b) => b[1] - a[1]);
+                  const sortedTags = Array.from(projeTagMap.entries()).sort((a, b) => b[1] - a[1]);
                   const total = ws.myProjeler.length;
                   return (
                     <>

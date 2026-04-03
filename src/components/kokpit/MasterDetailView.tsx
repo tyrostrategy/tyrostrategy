@@ -220,25 +220,26 @@ function DetailPanel({
   aksiyonlar,
   onUpdateAksiyon,
   onAddAksiyon,
-  onEditHedef,
+  onEditProje,
   onEditAksiyon,
   onClickAksiyon,
-  onUpdateHedef,
-  onDeleteHedef,
-  parentHedef,
+  onUpdateProje,
+  onDeleteProje,
+  parentProje,
 }: {
   proje: Proje;
   aksiyonlar: Aksiyon[];
   onUpdateAksiyon: (id: string, data: Partial<Aksiyon>) => void;
   onAddAksiyon?: () => void;
-  onEditHedef?: () => void;
+  onEditProje?: () => void;
   onEditAksiyon?: (aksiyon: Aksiyon) => void;
   onClickAksiyon?: (aksiyon: Aksiyon) => void;
-  onUpdateHedef?: (data: Partial<Proje>) => void;
-  onDeleteHedef?: () => void;
-  parentHedef?: Proje;
+  onUpdateProje?: (data: Partial<Proje>) => void;
+  onDeleteProje?: () => void;
+  parentProje?: Proje;
 }) {
   const { t } = useTranslation();
+  const { canEditAksiyon } = usePermissions();
   const [reviewPopoverOpen, setReviewPopoverOpen] = useState(false);
   const todayStr = new Date().toISOString().slice(0, 10);
   const [reviewDateDraft, setReviewDateDraft] = useState(todayStr);
@@ -422,13 +423,13 @@ function DetailPanel({
                 </div>
               )}
               {/* Row 4: Ana Proje (sadece varsa) */}
-              {parentHedef && (
+              {parentProje && (
                 <div className="border-t border-tyro-border/15 px-3 py-2.5">
                   <span className="text-[10px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">{t("kokpit.parentProject")}</span>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[11px] text-tyro-text-muted tabular-nums">{parentHedef.id}</span>
-                    <span className="text-[11px] font-medium text-tyro-text-primary truncate flex-1">{parentHedef.name}</span>
-                    <StatusBadge status={parentHedef.status} />
+                    <span className="text-[11px] text-tyro-text-muted tabular-nums">{parentProje.id}</span>
+                    <span className="text-[11px] font-medium text-tyro-text-primary truncate flex-1">{parentProje.name}</span>
+                    <StatusBadge status={parentProje.status} />
                   </div>
                 </div>
               )}
@@ -456,14 +457,14 @@ function DetailPanel({
         </div>
 
         <div className="flex flex-col gap-2">
-          {aksiyonlar
-            .sort((a, b) => a.id.localeCompare(b.id))
-            .map((aksiyon, idx) => (
+          {[...aksiyonlar]
+            .sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999))
+            .map((aksiyon) => (
               <AksiyonRow
                 key={aksiyon.id}
                 aksiyon={aksiyon}
-                index={idx + 1}
-                canEdit={true}
+                index={aksiyon.sortOrder ?? 0}
+                canEdit={canEditAksiyon(aksiyon.id)}
                 onQuickProgress={(val) => handleQuickProgress(aksiyon.id, val)}
                 onClick={() => onClickAksiyon?.(aksiyon)}
                 onEdit={() => onEditAksiyon?.(aksiyon)}
@@ -582,7 +583,7 @@ function AksiyonRow({
 export default function MasterDetailView({ projeler, onOpenWizard, externalSearch = "", externalStatusFilter, externalSourceFilter, externalSortBy, externalSortAsc, aksiyonFilters, onSelectionChange }: MasterDetailViewProps) {
   const { t } = useTranslation();
   const sidebarTheme = useSidebarTheme();
-  const { filterProjeler } = usePermissions();
+  const { filterProjeler, canCreateAksiyon, canEditProje, canCreateProje } = usePermissions();
 
   // Filters
   const [search, setSearch] = useState("");
@@ -658,7 +659,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
 
   // Panel state for forms
   const [aksiyonPanelOpen, setAksiyonPanelOpen] = useState(false);
-  const [projePanelOpen, setHedefPanelOpen] = useState(false);
+  const [projePanelOpen, setProjePanelOpen] = useState(false);
   const [editingAksiyon, setEditingAksiyon] = useState<Aksiyon | null>(null);
   const [viewingAksiyon, setViewingAksiyon] = useState<Aksiyon | null>(null);
   const [fabOpen, setFabOpen] = useState(false);
@@ -694,7 +695,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
       if (aksiyonFilters.progressMin !== undefined && aksiyonFilters.progressMin > 0) list = list.filter((a) => a.progress >= aksiyonFilters.progressMin!);
       if (aksiyonFilters.progressMax !== undefined && aksiyonFilters.progressMax < 100) list = list.filter((a) => a.progress <= aksiyonFilters.progressMax!);
     }
-    return list;
+    return list.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
   }, [aksiyonlar, selectedId, aksiyonFilters]);
 
   // Keyboard navigation
@@ -720,7 +721,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
     setSourceFilter("all");
   };
 
-  const handleSelectHedef = (id: string) => {
+  const handleSelectProje = (id: string) => {
     setSelectedId(id);
     setMobileDetail(true);
   };
@@ -748,7 +749,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
             proje={h}
             aksiyonCount={aksiyonCountMap.get(h.id) ?? 0}
             isSelected={h.id === selectedId}
-            onClick={() => handleSelectHedef(h.id)}
+            onClick={() => handleSelectProje(h.id)}
           />
         ))}
         {filtered.length === 0 && (
@@ -797,12 +798,12 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
           proje={selectedProje}
           aksiyonlar={selectedAksiyonlar}
           onUpdateAksiyon={updateAksiyon}
-          onAddAksiyon={() => setAksiyonPanelOpen(true)}
-          onEditHedef={() => setHedefPanelOpen(true)}
+          onAddAksiyon={() => { if (canCreateAksiyon) setAksiyonPanelOpen(true); }}
+          onEditProje={() => { if (selectedProje && canEditProje(selectedProje.id)) setProjePanelOpen(true); }}
           onClickAksiyon={(a) => { setViewingAksiyon(a); }}
           onEditAksiyon={(a) => { setEditingAksiyon(a); }}
-          onUpdateHedef={(data) => selectedProje && updateProje(selectedProje.id, data)}
-          parentHedef={selectedProje.parentObjectiveId ? projeler.find((h) => h.id === selectedProje.parentObjectiveId) : undefined}
+          onUpdateProje={(data) => selectedProje && updateProje(selectedProje.id, data)}
+          parentProje={selectedProje.parentObjectiveId ? projeler.find((h) => h.id === selectedProje.parentObjectiveId) : undefined}
         />
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-6">
@@ -902,8 +903,9 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
                 {/* Düzenle */}
                 <button
                   type="button"
-                  onClick={() => { setActionsFabOpen(false); setHedefPanelOpen(true); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-tyro-gold/5 transition-colors cursor-pointer"
+                  disabled={!selectedProje || !canEditProje(selectedProje.id)}
+                  onClick={() => { setActionsFabOpen(false); setProjePanelOpen(true); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-tyro-gold/5 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm shrink-0">
                     <Pencil size={15} className="text-white" />
@@ -982,6 +984,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
               >
                 <button
                   type="button"
+                  disabled={!canCreateProje}
                   onClick={() => { setFabOpen(false); onOpenWizard?.(); }}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-tyro-gold/5 transition-colors cursor-pointer"
                 >
@@ -996,8 +999,9 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
                 <div className="h-px bg-tyro-border/15 mx-4" />
                 <button
                   type="button"
+                  disabled={!canCreateAksiyon}
                   onClick={() => { setFabOpen(false); setAksiyonPanelOpen(true); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-tyro-navy/5 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-tyro-navy to-tyro-navy-light flex items-center justify-center shadow-sm shrink-0">
                     <CircleCheckBig size={15} className="text-white" />
@@ -1046,15 +1050,15 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
       {/* Proje Düzenle SlidingPanel */}
       <SlidingPanel
         isOpen={projePanelOpen}
-        onClose={() => setHedefPanelOpen(false)}
+        onClose={() => setProjePanelOpen(false)}
         title={t("kokpit.editProjectCard")}
         hideHeader
       >
         {selectedProje && (
           <ProjeForm
             proje={selectedProje}
-            onSuccess={() => setHedefPanelOpen(false)}
-            onClose={() => setHedefPanelOpen(false)}
+            onSuccess={() => setProjePanelOpen(false)}
+            onClose={() => setProjePanelOpen(false)}
           />
         )}
       </SlidingPanel>

@@ -48,13 +48,13 @@ export function useMyWorkspace(): WorkspaceData {
         h.participants?.some((p) => p.toLowerCase().trim() === normalizedName)
     );
 
-    const myHedefIds = new Set(myProjeler.map((h) => h.id));
+    const myProjeIds = new Set(myProjeler.map((h) => h.id));
 
     // Filter aksiyonlar: owner or belongs to user's proje
     const myAksiyonlar = aksiyonlar.filter(
       (a) =>
         a.owner?.toLowerCase().trim() === normalizedName ||
-        myHedefIds.has(a.projeId)
+        myProjeIds.has(a.projeId)
     );
 
     // Proje counts
@@ -90,7 +90,7 @@ export function useMyWorkspace(): WorkspaceData {
     }
 
     // Upcoming deadlines — combine proje and aksiyon deadlines
-    const hedefNameMap = new Map(projeler.map((h) => [h.id, h.name]));
+    const projeNameMap = new Map(projeler.map((h) => [h.id, h.name]));
 
     const allDeadlines: DeadlineItem[] = [];
 
@@ -117,7 +117,7 @@ export function useMyWorkspace(): WorkspaceData {
           name: a.name,
           type: "aksiyon",
           endDate: a.endDate,
-          parentName: hedefNameMap.get(a.projeId) ?? "-",
+          parentName: projeNameMap.get(a.projeId) ?? "-",
           status: a.status,
           progress: a.progress,
         });

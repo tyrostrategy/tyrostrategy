@@ -78,7 +78,7 @@ export default function TagActivityGauge() {
       });
   }, [projeler, tagDefinitions]);
 
-  const totalTaggedHedef = useMemo(() => {
+  const totalTaggedProje = useMemo(() => {
     const ids = new Set<string>();
     for (const h of projeler) {
       if (h.tags && h.tags.length > 0) ids.add(h.id);
@@ -141,7 +141,7 @@ export default function TagActivityGauge() {
                 dominantBaseline="central"
                 style={{ fill: "var(--color-tyro-text-primary, #0f172a)", fontSize: 15, fontWeight: 700 }}
               >
-                {totalTaggedHedef}
+                {totalTaggedProje}
               </text>
             </RadialBarChart>
           </ResponsiveContainer>

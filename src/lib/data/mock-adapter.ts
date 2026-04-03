@@ -1,7 +1,7 @@
 import {
-  turkiyeHedefler,
-  kurumsalHedefler,
-  internationalHedefler,
+  turkiyeProjeler,
+  kurumsalProjeler,
+  internationalProjeler,
 } from "@/lib/mock-data/cascade-data";
 import type { CascadeProje } from "@/lib/mock-data/cascade-data";
 import type { Proje, Aksiyon, EntityStatus, Source, TagDefinition } from "@/types";
@@ -37,7 +37,7 @@ function buildParticipants(leader: string, projeId: string): string[] {
 
 // Deterministic tag assignment based on proje name keywords
 // İsme bakarak kısa mock açıklama üret
-function generateHedefDescription(name: string, source: Source): string {
+function generateProjeDescription(name: string, source: Source): string {
   const n = name.toLocaleLowerCase("tr");
   // Türkiye projeleri
   if (n.includes("fıstık") || n.includes("çin")) return "Antep fıstığı ürünlerinin Çin pazarına girişi için pazar araştırması, lojistik planlama ve dağıtım ağının kurulması.";
@@ -171,7 +171,7 @@ function flattenProjeler(projeler: CascadeProje[], source: Source): Proje[] {
       startDate: h.startDate,
       endDate: h.endDate,
       reviewDate: computeReviewDate(h.endDate),
-      description: generateHedefDescription(h.name, source),
+      description: generateProjeDescription(h.name, source),
       tags: assignTags(h.name, source, progress, mapStatus(h.status)),
       createdBy: h.leader,
       createdAt: h.startDate,
@@ -206,9 +206,9 @@ function flattenAksiyonlar(projeler: CascadeProje[]): Aksiyon[] {
 }
 
 const allSources: [CascadeProje[], Source][] = [
-  [turkiyeHedefler, "Türkiye"],
-  [kurumsalHedefler, "Kurumsal"],
-  [internationalHedefler, "International"],
+  [turkiyeProjeler, "Türkiye"],
+  [kurumsalProjeler, "Kurumsal"],
+  [internationalProjeler, "International"],
 ];
 
 /**

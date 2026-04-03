@@ -141,7 +141,7 @@ export default function KullanicilarPage() {
           email: u.email,
           department: u.department,
           title: u.title ?? "",
-          active: true,
+          active: u.isActive ?? true,
           role: u.role as YetkiRol,
           locale: u.locale ?? "tr",
           projeCount: s.projeCount,
@@ -538,7 +538,7 @@ export default function KullanicilarPage() {
             <Button color="primary" size="sm" startContent={<Check size={14} />} className="rounded-button font-semibold"
               isDisabled={!newName.trim() || !newEmail.trim()}
               onPress={() => {
-                addUser({ displayName: newName.trim(), email: newEmail.trim(), department: newDept.trim(), title: newTitle.trim() || undefined, role: newRole, locale: newLocale });
+                addUser({ displayName: newName.trim(), email: newEmail.trim(), department: newDept.trim(), title: newTitle.trim() || undefined, role: newRole, locale: newLocale, isActive: true });
                 toast.success(t("users.userCreated"), {
                   message: newName.trim(),
                   details: [
@@ -683,7 +683,7 @@ export default function KullanicilarPage() {
                         if (editDept.trim() !== selectedUser.department) changes.push({ label: t("users.department"), value: editDept.trim() });
                         if (editRole !== selectedUser.role) changes.push({ label: t("users.authRole"), value: editRole });
                         if (editLocale !== selectedUser.locale) changes.push({ label: t("users.language"), value: editLocale === "en" ? t("profile.english") : t("profile.turkish") });
-                        updateUserDb(selectedUser.id, { displayName: editName.trim(), email: editEmail.trim(), title: editTitle.trim() || undefined, department: editDept.trim(), role: editRole, locale: editLocale });
+                        updateUserDb(selectedUser.id, { displayName: editName.trim(), email: editEmail.trim(), title: editTitle.trim() || undefined, department: editDept.trim(), role: editRole, locale: editLocale, isActive: editActive });
                         toast.success(t("users.userUpdated"), {
                           message: editName.trim(),
                           details: changes.length > 0 ? changes : [{ label: t("users.status"), value: t("users.changeSaved") }],

@@ -31,6 +31,7 @@ import {
   Crosshair,
 } from "lucide-react";
 import { useDataStore } from "@/stores/dataStore";
+import { usePermissions } from "@/hooks/usePermissions";
 import PageHeader from "@/components/layout/PageHeader";
 import SlidingPanel from "@/components/shared/SlidingPanel";
 import ProjeDetail from "@/components/projeler/ProjeDetail";
@@ -331,13 +332,16 @@ function TAlignmentInner() {
   const sidebarTheme = useSidebarTheme();
   const accentColor = sidebarTheme.accentColor;
 
-  const projeler = useDataStore((s) => s.projeler);
-  const aksiyonlar = useDataStore((s) => s.aksiyonlar);
+  const allProjeler = useDataStore((s) => s.projeler);
+  const allAksiyonlar = useDataStore((s) => s.aksiyonlar);
+  const { filterProjeler, filterAksiyonlar } = usePermissions();
+  const projeler = useMemo(() => filterProjeler(allProjeler), [allProjeler, filterProjeler]);
+  const aksiyonlar = useMemo(() => filterAksiyonlar(allAksiyonlar), [allAksiyonlar, filterAksiyonlar]);
 
   const [direction, setDirection] = useState<Direction>("LR");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedProje, setSelectedHedef] = useState<Proje | null>(null);
+  const [selectedProje, setSelectedProje] = useState<Proje | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
 
   const { fitView, zoomIn, zoomOut } = useReactFlow();
@@ -381,7 +385,7 @@ function TAlignmentInner() {
     (_: React.MouseEvent, node: Node) => {
       const proje = projeler.find((h) => h.id === node.id);
       if (proje) {
-        setSelectedHedef(proje);
+        setSelectedProje(proje);
         setPanelOpen(true);
       }
     },
@@ -565,7 +569,7 @@ function TAlignmentInner() {
         isOpen={panelOpen}
         onClose={() => {
           setPanelOpen(false);
-          setSelectedHedef(null);
+          setSelectedProje(null);
         }}
         title={t("detail.objectiveDetail")}
         icon={<Crosshair size={18} />}
@@ -575,8 +579,8 @@ function TAlignmentInner() {
           <ProjeDetail
             proje={selectedProje}
             onEdit={() => {}}
-            onSelectHedef={(h) => {
-              setSelectedHedef(h);
+            onSelectProje={(h) => {
+              setSelectedProje(h);
             }}
           />
         )}
