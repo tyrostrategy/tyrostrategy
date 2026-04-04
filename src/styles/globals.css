@@ -304,6 +304,23 @@ table[aria-label] thead th {
   animation-delay: var(--delay, 0s);
 }
 
+/* ===== Aurora Background Animation (Login) ===== */
+@keyframes aurora {
+  from { background-position: 50% 50%, 50% 50%; }
+  to   { background-position: 350% 50%, 350% 50%; }
+}
+
+/* ===== Login Card Animated Border ===== */
+@property --login-border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes login-border-rotate {
+  from { --login-border-angle: 0deg; }
+  to   { --login-border-angle: 360deg; }
+}
+
 /* ===== Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
   *,

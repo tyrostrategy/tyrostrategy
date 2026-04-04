@@ -329,7 +329,7 @@
     "demoMode": "Demo modu aktif. Azure AD yapılandırıldığında kurumsal SSO ile giriş yapılacaktır.",
     "microsoftLogin": "Microsoft ile Giriş Yap",
     "ssoSubtitle": "Kurumsal Microsoft hesabınızla giriş yapın",
-    "ssoInfo": "Tiryaki veya Sunrise kurumsal Microsoft hesabınızla giriş yapın (@tiryaki.com.tr, @sunrisefoods.com, @sunrisefoods.ca, @danemgida.com.tr)"
+    "ssoInfo": "Kurumsal Microsoft hesabınızla güvenli giriş yapın"
   },
   "dashboard": {
     "title": "KPI Dashboard",
