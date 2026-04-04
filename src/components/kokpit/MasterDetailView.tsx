@@ -98,11 +98,17 @@ const MasterListCard = memo(function MasterListCard({
       }`}
       style={isSelected ? { "--status-color": statusColor } as React.CSSProperties : undefined}
     >
-      {/* Status bar left edge — only on selected card */}
+      {/* Status bar left edge — wraps around corners into moving border */}
       {isSelected && (
         <div
-          className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl"
-          style={{ backgroundColor: statusColor }}
+          className="absolute -left-[2.5px] -top-[2.5px] -bottom-[2.5px] z-10 pointer-events-none"
+          style={{
+            width: "14px",
+            background: `linear-gradient(to right, ${statusColor}, transparent)`,
+            borderRadius: "12px 0 0 12px",
+            maskImage: "linear-gradient(to right, black 40%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to right, black 40%, transparent 100%)",
+          }}
         />
       )}
 

@@ -20,7 +20,6 @@ export default function ProfilPage() {
   const { locale, setLocale } = useUIStore();
   const sidebarTheme = useSidebarTheme();
   const currentUser = useCurrentUser();
-  const updateUser = useDataStore((s) => s.updateUser);
   const users = useDataStore((s) => s.users);
   const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
@@ -35,10 +34,7 @@ export default function ProfilPage() {
 
   const handleLocaleChange = (newLocale: "tr" | "en") => {
     setLocale(newLocale);
-    if (dbUser) {
-      updateUser(dbUser.id, { locale: newLocale });
-      toast.success(t("profile.languageUpdated"), { message: newLocale === "en" ? "English" : t("profile.turkish") });
-    }
+    toast.success(t("profile.languageUpdated"), { message: newLocale === "en" ? "English" : t("profile.turkish") });
   };
 
   const initials = currentUser.name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);

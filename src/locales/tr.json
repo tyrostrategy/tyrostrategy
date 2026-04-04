@@ -21,7 +21,8 @@
     "tAlignment": "T-Align",
     "dataManagement": "Veri Yönetimi",
     "pinSidebar": "Sidebar'ı sabitle",
-    "unpinSidebar": "Sidebar'ı serbest bırak"
+    "unpinSidebar": "Sidebar'ı serbest bırak",
+    "help": "Yardım"
   },
   "sections": {
     "mainMenu": "Ana Menü",
@@ -873,5 +874,122 @@
     "ticaret": "Ticaret",
     "kalite": "Kalite",
     "turkiye-operasyonlari": "Türkiye Operasyonları"
+  },
+  "help": {
+    "title": "Yardım & Dokümantasyon",
+    "subtitle": "Uygulama rehberi, sıkça sorulan sorular ve kullanım kılavuzları",
+    "searchPlaceholder": "Yardım konularında ara...",
+    "noResults": "Aramanızla eşleşen sonuç bulunamadı.",
+    "gettingStarted": {
+      "title": "Başlarken",
+      "welcome": "tyrostrategy'ye Hoş Geldiniz",
+      "welcomeDesc": "tyrostrategy, kurumsal stratejik projelerinizi ve aksiyonlarınızı yönetmenizi sağlayan kapsamlı bir platformdur.",
+      "step1Title": "1. Giriş Yapın",
+      "step1Desc": "Kurumsal Microsoft hesabınızla SSO ile giriş yapın.",
+      "step2Title": "2. Ana Sayfayı Keşfedin",
+      "step2Desc": "Ana sayfa size atanmış projeleri, aksiyonları ve yaklaşan tarihleri gösterir.",
+      "step3Title": "3. Proje Oluşturun",
+      "step3Desc": "Kokpit sayfasından Proje Sihirbazı ile yeni proje ve aksiyonlar oluşturun.",
+      "step4Title": "4. İlerlemeyi Takip Edin",
+      "step4Desc": "KPI Dashboard ve Gantt görünümünden projelerinizin ilerlemesini izleyin."
+    },
+    "howTo": {
+      "title": "Nasıl Yapılır",
+      "projects": {
+        "title": "Proje Yönetimi",
+        "create": "Yeni proje oluşturmak için Kokpit sayfasında + butonuna tıklayın veya Proje Sihirbazı'nı kullanın.",
+        "edit": "Projeyi düzenlemek için proje kartına tıklayın ve düzenle butonunu seçin.",
+        "delete": "Proje silmek için önce bağlı tüm aksiyonları silmeniz gerekir.",
+        "hierarchy": "Projeler ana-alt proje hiyerarşisinde organize edilebilir."
+      },
+      "actions": {
+        "title": "Aksiyon Yönetimi",
+        "create": "Aksiyonlar bir projeye bağlı olarak oluşturulur. Proje detayından veya Aksiyonlar sayfasından ekleyebilirsiniz.",
+        "progress": "İlerleme yüzdesini güncellemek için aksiyonun ilerleme çubuğunu kullanın.",
+        "status": "İlerleme %0 ve %100 olduğunda durum otomatik belirlenir. Aradaki değerlerde tarih bazlı hesaplama yapılır."
+      },
+      "views": {
+        "title": "Görünümler",
+        "kokpit": "Kokpit: Master-detail görünümünde tüm projeleri ve aksiyonları yönetin.",
+        "kpi": "KPI Dashboard: Proje ve aksiyon metriklerini grafikler ile analiz edin.",
+        "gantt": "Gantt: Zaman çizelgesinde projeleri ve aksiyonları görüntüleyin.",
+        "tMap": "T-Map: Stratejik proje hiyerarşisini ağaç yapısında görselleştirin.",
+        "tAlign": "T-Align: Projeler arası ilişkileri ve bağımlılıkları görüntüleyin."
+      },
+      "reports": {
+        "title": "Raporlama",
+        "wizard": "Rapor Sihirbazı ile filtrelenmiş yönetim raporları oluşturabilirsiniz.",
+        "export": "Raporları PDF, Excel veya HTML formatında dışa aktarın.",
+        "filters": "Gelişmiş filtreler ile tarihe, duruma, departmana göre raporları özelleştirin.",
+        "templates": "Sık kullandığınız filtre kombinasyonlarını şablon olarak kaydedin."
+      }
+    },
+    "faq": {
+      "title": "Sıkça Sorulan Sorular",
+      "q1": "Alt aksiyonu olan bir projeyi neden silemiyorum?",
+      "a1": "Veri bütünlüğü için önce projeye bağlı tüm aksiyonları silmeniz gerekir.",
+      "q2": "Proje durumu otomatik mi güncelleniyor?",
+      "a2": "Aksiyon ilerleme yüzdesi %0 veya %100 olduğunda durum otomatik belirlenir. Aradaki değerlerde Ayarlar sayfasındaki eşik değerlerine göre hesaplanır.",
+      "q3": "Birden fazla etiket atayamıyorum, neden?",
+      "a3": "Çoklu etiket kuralı Ayarlar sayfasından aktif edilmelidir. Varsayılanda yalnızca tek etiket atanabilir.",
+      "q4": "Kontrol tarihi ne anlama geliyor?",
+      "a4": "Projenin bir sonraki gözden geçirme tarihini ifade eder. Geçmiş tarihli projeler Ana Sayfa'da uyarı ile vurgulanır.",
+      "q5": "Hangi roller hangi sayfalara erişebilir?",
+      "a5": "Güvenlik sayfasından her rolün sayfa erişim yetkileri yönetilebilir. Admin tüm sisteme erişebilir.",
+      "q6": "Dil tercihimi nasıl değiştirebilirim?",
+      "a6": "Profil sayfasından Türkçe veya İngilizce seçimi yapabilirsiniz. Tercihiniz veritabanında saklanır.",
+      "q7": "Verilerimi dışa aktarabilir miyim?",
+      "a7": "Veri Yönetimi sayfasından projeler, aksiyonlar ve diğer verileri JSON, CSV veya XLSX formatında dışa aktarabilirsiniz."
+    },
+    "glossary": {
+      "title": "Terimler Sözlüğü",
+      "project": "Proje",
+      "projectDef": "Organizasyonun stratejik hedeflerine ulaşmak için tanımlanan iş paketi. Başlangıç-bitiş tarihleri, sahip ve ilerleme yüzdesi ile takip edilir.",
+      "action": "Aksiyon",
+      "actionDef": "Bir projeye bağlı, spesifik ve ölçülebilir görev adımı. Her aksiyonun bir sahibi ve hedef tarihi vardır.",
+      "kpi": "KPI (Key Performance Indicator)",
+      "kpiDef": "Anahtar Performans Göstergesi. Stratejik hedeflere ne ölçüde ulaşıldığını ölçen metrik.",
+      "okr": "OKR (Objectives & Key Results)",
+      "okrDef": "Hedef ve Ana Sonuçlar. Hedeflerin ölçülebilir sonuçlarla tanımlandığı yönetim çerçevesi.",
+      "bsc": "BSC (Balanced Scorecard)",
+      "bscDef": "Dengeli Performans Karnesi. Finansal ve finansal olmayan metrikleri dengeleyen stratejik yönetim aracı.",
+      "gantt": "Gantt Şeması",
+      "ganttDef": "Projelerin ve aksiyonların zaman çizelgesi üzerinde görsel olarak planlandığı grafik.",
+      "wbs": "WBS (Work Breakdown Structure)",
+      "wbsDef": "İş Kırılım Yapısı. Projelerin alt bileşenlerine ayrıştırılmış hiyerarşik yapısı.",
+      "sso": "SSO (Single Sign-On)",
+      "ssoDef": "Tek Oturum Açma. Kurumsal Microsoft hesabıyla tek seferde giriş yapma yöntemi.",
+      "rbac": "RBAC (Role-Based Access Control)",
+      "rbacDef": "Rol Tabanlı Erişim Kontrolü. Kullanıcıların rollerine göre yetkilendirilmesi sistemi.",
+      "source": "Kaynak",
+      "sourceDef": "Projenin operasyonel kaynağı: Türkiye, Kurumsal veya International.",
+      "reviewDate": "Kontrol Tarihi",
+      "reviewDateDef": "Projenin bir sonraki gözden geçirme tarihi. Geçmişte kalan tarihler uyarı oluşturur.",
+      "tag": "Etiket",
+      "tagDef": "Projeleri kategorize etmek ve filtrelemek için kullanılan sınıflandırma etiketi."
+    },
+    "shortcuts": {
+      "title": "Klavye Kısayolları",
+      "search": "Komut Paleti / Arama",
+      "searchKey": "Ctrl + K",
+      "navigation": "Navigasyon",
+      "general": "Genel"
+    },
+    "whatsNew": {
+      "title": "Yenilikler",
+      "currentVersion": "Mevcut Sürüm",
+      "v1_0_0": "v1.0.0 — İlk Sürüm",
+      "v1_0_0_desc": "Proje ve aksiyon yönetimi, KPI Dashboard, Gantt, T-Map, T-Align görünümleri, rol tabanlı erişim kontrolü, çoklu dil desteği, Rapor Sihirbazı."
+    },
+    "contact": {
+      "title": "İletişim & Destek",
+      "description": "Teknik destek veya geri bildirim için aşağıdaki kanallardan ulaşabilirsiniz.",
+      "email": "E-posta",
+      "emailValue": "",
+      "developer": "Geliştirici",
+      "developerValue": "TTECH Business Solutions",
+      "organization": "Kuruluş",
+      "organizationValue": "Tiryaki Agro"
+    }
   }
 }

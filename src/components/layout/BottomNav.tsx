@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { HomeIcon } from "@/components/ui/HomeIcon";
-import { BarChart3, MoreHorizontal, Map, UserCircle2 } from "lucide-react";
+import { BarChart3, MoreHorizontal, Map, UserCircle2, LifeBuoy } from "lucide-react";
 import { AnimatePresence, motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -21,7 +21,9 @@ export default function BottomNav() {
     { id: "profil", label: t("nav.profile"), icon: UserCircle2, path: "/profil" },
   ];
 
-  const moreItems = [] as typeof mainItems;
+  const moreItems = [
+    { id: "yardim", label: t("nav.help"), icon: LifeBuoy, path: "/yardim" },
+  ] as typeof mainItems;
   const { canAccessPage } = usePermissions();
   const [moreOpen, setMoreOpen] = useState(false);
   const [pressing, setPressing] = useState<string | null>(null);

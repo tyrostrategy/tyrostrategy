@@ -23,6 +23,7 @@ const AyarlarPage = lazy(() => import("@/pages/AyarlarPage"));
 const VeriYonetimiPage = lazy(() => import("@/pages/VeriYonetimiPage"));
 const ProfilPage = lazy(() => import("@/pages/ProfilPage"));
 const GuvenlikPage = lazy(() => import("@/pages/GuvenlikPage"));
+const YardimPage = lazy(() => import("@/pages/YardimPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 function ProtectedRoute({ pageKey, children }: { pageKey: keyof RolePermissions["pages"]; children: ReactNode }) {
@@ -75,6 +76,7 @@ export default function App() {
             <Route path="/ayarlar" element={<ProtectedRoute pageKey="ayarlar"><PageSuspense><AyarlarPage /></PageSuspense></ProtectedRoute>} />
             <Route path="/guvenlik" element={<ProtectedRoute pageKey="guvenlik"><PageSuspense><GuvenlikPage /></PageSuspense></ProtectedRoute>} />
             <Route path="/profil" element={<PageSuspense><ProfilPage /></PageSuspense>} />
+            <Route path="/yardim" element={<PageSuspense><YardimPage /></PageSuspense>} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

@@ -35,14 +35,17 @@
 
 .moving-border {
   --status-color: #10b981;
-  border: 2px solid transparent;
+  border: 2.5px solid transparent;
   background:
     linear-gradient(var(--tyro-surface), var(--tyro-surface)) padding-box,
     conic-gradient(
-      from var(--border-angle),
-      transparent 25%,
-      var(--status-color) 50%,
-      transparent 75%
+      from calc(270deg + var(--border-angle)),
+      var(--status-color) 0%,
+      var(--status-color) 10%,
+      transparent 40%,
+      transparent 60%,
+      var(--status-color) 90%,
+      var(--status-color) 100%
     ) border-box;
   animation: moving-border 3s linear infinite;
 }
@@ -51,10 +54,13 @@
   background:
     linear-gradient(var(--tyro-surface), var(--tyro-surface)) padding-box,
     conic-gradient(
-      from var(--border-angle),
-      transparent 25%,
-      var(--status-color) 50%,
-      transparent 75%
+      from calc(270deg + var(--border-angle)),
+      var(--status-color) 0%,
+      var(--status-color) 10%,
+      transparent 40%,
+      transparent 60%,
+      var(--status-color) 90%,
+      var(--status-color) 100%
     ) border-box;
 }
 

@@ -52,7 +52,19 @@ function syncSetting(key: string, value: unknown) {
   }
 }
 
-export const useUIStore = create<UIState>((set) => ({
+/** Sync locale to users table (fire-and-forget) */
+function syncUserLocale(userName: string, locale: string) {
+  if (!isSupabaseMode) return;
+  import("@/stores/dataStore").then(({ useDataStore }) => {
+    const { users, updateUser } = useDataStore.getState();
+    const me = users.find((u) => u.displayName.toLowerCase().trim() === userName.toLowerCase().trim());
+    if (me) updateUser(me.id, { locale });
+  }).catch((err) => {
+    console.error("[Supabase] syncUserLocale failed:", err);
+  });
+}
+
+export const useUIStore = create<UIState>((set, get) => ({
   sidebarCollapsed: false,
   commandPaletteOpen: false,
   activePage: "dashboard",
@@ -124,6 +136,7 @@ export const useUIStore = create<UIState>((set) => ({
     localStorage.setItem("tyro-locale", locale);
     i18n.changeLanguage(locale);
     set({ locale });
+    syncUserLocale(get().mockUserName, locale);
   },
   workspaceRefreshFn: null,
   setWorkspaceRefreshFn: (fn) => set({ workspaceRefreshFn: fn }),
@@ -131,20 +144,34 @@ export const useUIStore = create<UIState>((set) => ({
 
 // Startup: load settings from Supabase (overrides localStorage defaults)
 if (isSupabaseMode) {
-  getSyncAdapter().then((adapter) =>
-    adapter.fetchAppSettings().then((settings) => {
-      const map = new Map(settings.map((s) => [s.key, s.value]));
-      const updates: Partial<UIState> = {};
-      if (map.has("company_name")) updates.companyName = map.get("company_name") as string;
-      if (map.has("allow_multiple_tags")) updates.allowMultipleTags = map.get("allow_multiple_tags") as boolean;
-      if (map.has("behind_threshold")) updates.behindThreshold = map.get("behind_threshold") as number;
-      if (map.has("atrisk_threshold")) updates.atRiskThreshold = map.get("atrisk_threshold") as number;
-      if (Object.keys(updates).length > 0) {
-        console.log("[Supabase] Loaded app_settings:", Object.keys(updates));
-        useUIStore.setState(updates);
+  getSyncAdapter().then(async (adapter) => {
+    // 1) Global app_settings
+    const settings = await adapter.fetchAppSettings();
+    const map = new Map(settings.map((s) => [s.key, s.value]));
+    const updates: Partial<UIState> = {};
+    if (map.has("company_name")) updates.companyName = map.get("company_name") as string;
+    if (map.has("allow_multiple_tags")) updates.allowMultipleTags = map.get("allow_multiple_tags") as boolean;
+    if (map.has("behind_threshold")) updates.behindThreshold = map.get("behind_threshold") as number;
+    if (map.has("atrisk_threshold")) updates.atRiskThreshold = map.get("atrisk_threshold") as number;
+    if (Object.keys(updates).length > 0) {
+      console.log("[Supabase] Loaded app_settings:", Object.keys(updates));
+      useUIStore.setState(updates);
+    }
+
+    // 2) Current user's locale from users table
+    const users = await adapter.fetchUsers();
+    const currentName = useUIStore.getState().mockUserName;
+    const me = users.find((u) => u.displayName.toLowerCase().trim() === currentName.toLowerCase().trim());
+    if (me?.locale) {
+      const dbLocale = me.locale as "tr" | "en";
+      if (dbLocale !== useUIStore.getState().locale) {
+        localStorage.setItem("tyro-locale", dbLocale);
+        i18n.changeLanguage(dbLocale);
+        useUIStore.setState({ locale: dbLocale });
+        console.log("[Supabase] Synced user locale:", dbLocale);
       }
-    })
-  ).catch((err) => {
+    }
+  }).catch((err) => {
     console.error("[Supabase] fetchAppSettings failed:", err);
     toast.error(i18n.t("toast.settingsLoadFailed"));
   });

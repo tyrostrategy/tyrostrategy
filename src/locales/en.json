@@ -21,7 +21,8 @@
     "tAlignment": "T-Align",
     "dataManagement": "Data Management",
     "pinSidebar": "Pin sidebar",
-    "unpinSidebar": "Unpin sidebar"
+    "unpinSidebar": "Unpin sidebar",
+    "help": "Help"
   },
   "sections": {
     "mainMenu": "Main Menu",
@@ -873,5 +874,122 @@
     "ticaret": "Trade",
     "kalite": "Quality",
     "turkiye-operasyonlari": "Turkey Operations"
+  },
+  "help": {
+    "title": "Help & Documentation",
+    "subtitle": "Application guide, frequently asked questions, and how-to guides",
+    "searchPlaceholder": "Search help topics...",
+    "noResults": "No results matching your search.",
+    "gettingStarted": {
+      "title": "Getting Started",
+      "welcome": "Welcome to tyrostrategy",
+      "welcomeDesc": "tyrostrategy is a comprehensive platform for managing your corporate strategic projects and actions.",
+      "step1Title": "1. Sign In",
+      "step1Desc": "Sign in with your corporate Microsoft account via SSO.",
+      "step2Title": "2. Explore the Home Page",
+      "step2Desc": "The home page shows your assigned projects, actions, and upcoming deadlines.",
+      "step3Title": "3. Create a Project",
+      "step3Desc": "Use the Project Wizard from the HQ page to create new projects and actions.",
+      "step4Title": "4. Track Progress",
+      "step4Desc": "Monitor your project progress from the KPI Dashboard and Gantt views."
+    },
+    "howTo": {
+      "title": "How-To Guides",
+      "projects": {
+        "title": "Project Management",
+        "create": "To create a new project, click the + button on the HQ page or use the Project Wizard.",
+        "edit": "To edit a project, click on the project card and select the edit button.",
+        "delete": "To delete a project, you must first delete all linked actions.",
+        "hierarchy": "Projects can be organized in a parent-child hierarchy."
+      },
+      "actions": {
+        "title": "Action Management",
+        "create": "Actions are created linked to a project. You can add them from the project detail or the Actions page.",
+        "progress": "Use the action's progress bar to update the completion percentage.",
+        "status": "Status is automatically determined when progress is 0% or 100%. For values in between, it is calculated based on timeline."
+      },
+      "views": {
+        "title": "Views",
+        "kokpit": "HQ: Manage all projects and actions in a master-detail view.",
+        "kpi": "KPI Dashboard: Analyze project and action metrics with charts.",
+        "gantt": "Gantt: View projects and actions on a timeline.",
+        "tMap": "T-Map: Visualize the strategic project hierarchy in a tree structure.",
+        "tAlign": "T-Align: View relationships and dependencies between projects."
+      },
+      "reports": {
+        "title": "Reporting",
+        "wizard": "Create filtered management reports using the Report Wizard.",
+        "export": "Export reports in PDF, Excel, or HTML format.",
+        "filters": "Customize reports by date, status, and department using advanced filters.",
+        "templates": "Save your frequently used filter combinations as templates."
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "Why can't I delete a project that has actions?",
+      "a1": "For data integrity, you must first delete all actions linked to the project.",
+      "q2": "Does the project status update automatically?",
+      "a2": "Action status is automatically determined when progress is 0% or 100%. For values in between, it is calculated based on threshold settings in the Settings page.",
+      "q3": "Why can't I assign multiple tags?",
+      "a3": "The multi-tag rule must be enabled from the Settings page. By default, only a single tag can be assigned.",
+      "q4": "What does the review date mean?",
+      "a4": "It indicates the next scheduled review date for the project. Overdue reviews are highlighted on the Home page.",
+      "q5": "Which roles can access which pages?",
+      "a5": "Page access permissions per role can be managed from the Security page. Admin has full system access.",
+      "q6": "How do I change my language preference?",
+      "a6": "You can select Turkish or English from the Profile page. Your preference is stored in the database.",
+      "q7": "Can I export my data?",
+      "a7": "You can export projects, actions, and other data in JSON, CSV, or XLSX format from the Data Management page."
+    },
+    "glossary": {
+      "title": "Glossary",
+      "project": "Project",
+      "projectDef": "A work package defined to achieve the organization's strategic objectives. Tracked with start-end dates, owner, and progress percentage.",
+      "action": "Action",
+      "actionDef": "A specific and measurable task step linked to a project. Each action has an owner and a target date.",
+      "kpi": "KPI (Key Performance Indicator)",
+      "kpiDef": "A metric that measures the extent to which strategic objectives are being achieved.",
+      "okr": "OKR (Objectives & Key Results)",
+      "okrDef": "A management framework where objectives are defined with measurable key results.",
+      "bsc": "BSC (Balanced Scorecard)",
+      "bscDef": "A strategic management tool that balances financial and non-financial metrics.",
+      "gantt": "Gantt Chart",
+      "ganttDef": "A chart that visually plans projects and actions on a timeline.",
+      "wbs": "WBS (Work Breakdown Structure)",
+      "wbsDef": "A hierarchical decomposition of projects into their sub-components.",
+      "sso": "SSO (Single Sign-On)",
+      "ssoDef": "A method of signing in once with a corporate Microsoft account.",
+      "rbac": "RBAC (Role-Based Access Control)",
+      "rbacDef": "A system where users are authorized based on their roles.",
+      "source": "Source",
+      "sourceDef": "The operational source of a project: Turkey, Corporate, or International.",
+      "reviewDate": "Review Date",
+      "reviewDateDef": "The next scheduled review date for a project. Overdue dates generate warnings.",
+      "tag": "Tag",
+      "tagDef": "A classification label used to categorize and filter projects."
+    },
+    "shortcuts": {
+      "title": "Keyboard Shortcuts",
+      "search": "Command Palette / Search",
+      "searchKey": "Ctrl + K",
+      "navigation": "Navigation",
+      "general": "General"
+    },
+    "whatsNew": {
+      "title": "What's New",
+      "currentVersion": "Current Version",
+      "v1_0_0": "v1.0.0 — Initial Release",
+      "v1_0_0_desc": "Project and action management, KPI Dashboard, Gantt, T-Map, T-Align views, role-based access control, multi-language support, Report Wizard."
+    },
+    "contact": {
+      "title": "Contact & Support",
+      "description": "For technical support or feedback, you can reach us through the following channels.",
+      "email": "Email",
+      "emailValue": "",
+      "developer": "Developer",
+      "developerValue": "TTECH Business Solutions",
+      "organization": "Organization",
+      "organizationValue": "Tiryaki Agro"
+    }
   }
 }
