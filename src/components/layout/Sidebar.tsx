@@ -307,27 +307,6 @@ function SidebarContent({ collapsed, onNavigate, pinned, onTogglePin }: { collap
                 boxShadow: theme.popoverShadow,
               }}
             >
-              {/* Yardım */}
-              <button
-                title={collapsed ? t("nav.help") : undefined}
-                onClick={() => { handleNav("/yardim"); setProfileOpen(false); }}
-                className={clsx(
-                  "w-full flex items-center gap-2.5 py-2.5 rounded-[10px] font-medium transition-colors cursor-pointer",
-                  collapsed ? "justify-center px-0" : "px-3 text-[13px]"
-                )}
-                style={{ color: "var(--sb-text-primary)" }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--sb-popover-hover-bg)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-              >
-                <LifeBuoy size={16} className="shrink-0" style={{ color: "var(--sb-active-text)" }} />
-                {!collapsed && t("nav.help")}
-              </button>
-
-              {/* Divider */}
-              {!collapsed && (
-                <div className="mx-2 my-0.5 h-px" style={{ backgroundColor: "var(--sb-popover-divider)" }} />
-              )}
-
               {/* Profil */}
               <button
                 title={collapsed ? t("nav.profile") : undefined}
@@ -342,6 +321,27 @@ function SidebarContent({ collapsed, onNavigate, pinned, onTogglePin }: { collap
               >
                 <User size={16} className="shrink-0" style={{ color: "var(--sb-active-text)" }} />
                 {!collapsed && t("nav.profile")}
+              </button>
+
+              {/* Divider */}
+              {!collapsed && (
+                <div className="mx-2 my-0.5 h-px" style={{ backgroundColor: "var(--sb-popover-divider)" }} />
+              )}
+
+              {/* Yardım */}
+              <button
+                title={collapsed ? t("nav.help") : undefined}
+                onClick={() => { handleNav("/yardim"); setProfileOpen(false); }}
+                className={clsx(
+                  "w-full flex items-center gap-2.5 py-2.5 rounded-[10px] font-medium transition-colors cursor-pointer",
+                  collapsed ? "justify-center px-0" : "px-3 text-[13px]"
+                )}
+                style={{ color: "var(--sb-text-primary)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--sb-popover-hover-bg)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+              >
+                <LifeBuoy size={16} className="shrink-0" style={{ color: "var(--sb-active-text)" }} />
+                {!collapsed && t("nav.help")}
               </button>
 
               {/* Divider */}
