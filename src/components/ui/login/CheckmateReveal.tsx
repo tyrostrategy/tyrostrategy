@@ -37,8 +37,9 @@ export default function CheckmateReveal({ phase, text }: Props) {
               y: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
             }}
             className="relative text-center"
+            style={{ minWidth: "280px", minHeight: "140px" }}
           >
-            {/* Gold radial halo behind text */}
+            {/* Gold radial halo — always visible (desktop + mobile) */}
             <div
               className="absolute inset-0 -z-10 pointer-events-none"
               style={{
@@ -50,43 +51,44 @@ export default function CheckmateReveal({ phase, text }: Props) {
               aria-hidden="true"
             />
 
-            {/* Main text */}
-            <h1
-              style={{
-                fontSize: "clamp(56px, 9vw, 140px)",
-                fontWeight: 900,
-                letterSpacing: "0.18em",
-                lineHeight: 1,
-                background:
-                  "linear-gradient(180deg, #ffffff 0%, #f5deb5 30%, #e0ad3e 55%, #c8922a 75%, #8b6420 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                color: "transparent",
-                textShadow: "0 0 60px rgba(200,146,42,0.4)",
-                filter: "drop-shadow(0 6px 24px rgba(200,146,42,0.35))",
-                margin: 0,
-              }}
-            >
-              {text}
-            </h1>
+            {/* Text + subtitle — desktop only (mobile keeps halo only) */}
+            <div className="hidden lg:block">
+              <h1
+                style={{
+                  fontSize: "clamp(56px, 9vw, 140px)",
+                  fontWeight: 900,
+                  letterSpacing: "0.18em",
+                  lineHeight: 1,
+                  background:
+                    "linear-gradient(180deg, #ffffff 0%, #f5deb5 30%, #e0ad3e 55%, #c8922a 75%, #8b6420 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  textShadow: "0 0 60px rgba(200,146,42,0.4)",
+                  filter: "drop-shadow(0 6px 24px rgba(200,146,42,0.35))",
+                  margin: 0,
+                }}
+              >
+                {text}
+              </h1>
 
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 0.7, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              style={{
-                marginTop: "16px",
-                fontSize: "clamp(11px, 1.1vw, 14px)",
-                letterSpacing: "0.45em",
-                color: "#c8daec",
-                fontWeight: 600,
-                textTransform: "uppercase",
-              }}
-            >
-              {t("login.checkmateSubtitle")}
-            </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 0.7, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                style={{
+                  marginTop: "16px",
+                  fontSize: "clamp(11px, 1.1vw, 14px)",
+                  letterSpacing: "0.45em",
+                  color: "#c8daec",
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                }}
+              >
+                {t("login.checkmateSubtitle")}
+              </motion.p>
+            </div>
           </motion.div>
         </motion.div>
       )}
