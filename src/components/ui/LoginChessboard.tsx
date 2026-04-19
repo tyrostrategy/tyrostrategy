@@ -206,14 +206,19 @@ function Scene({ t, phase, onPortalClick, onFeatureArchive }: Props) {
     }
   }, []);
 
-  // Frame loop — drive the ripple shader uniforms while a ripple is active
-  useFrame(() => {
+  // Frame loop — drive shader uniforms: breathing glow (always) + ripple (on move)
+  useFrame((s) => {
     const mat = boardMatRef.current;
     const ud = mat?.userData?.shader;
     if (!mat || !ud) return;
+
+    // Breathing glow — always active, slow ambient pulse
+    ud.uniforms.uTime.value = s.clock.elapsedTime;
+
+    // Ripple — only while a move is active
     const state = rippleStateRef.current;
     if (!state) {
-      if (ud.uniforms.uRippleTime.value < 1.1) ud.uniforms.uRippleTime.value = 1.1; // idle
+      if (ud.uniforms.uRippleTime.value < 1.1) ud.uniforms.uRippleTime.value = 1.1;
       return;
     }
     const t = (performance.now() - state.start) / RIPPLE_DURATION_MS;

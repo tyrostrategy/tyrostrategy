@@ -125,6 +125,16 @@ function applyRippleShader(material: THREE.MeshPhysicalMaterial) {
     shader.uniforms.uSqLight = { value: new THREE.Color("#1d3d64") }; // steel navy square
     shader.uniforms.uSqOff = { value: new THREE.Color("#162a48") };   // off-board fallback
 
+    // Breathing glow — ambient life without constant attention
+    shader.uniforms.uTime = { value: 0 };
+
+    // Rim ornamentation — repeating Seljuk star motifs with faux bas-relief
+    shader.uniforms.uRimInner = { value: 0.247 };
+    shader.uniforms.uRimOuter = { value: 0.283 };
+    shader.uniforms.uRimTile = { value: 26.0 };
+    shader.uniforms.uRimGold = { value: new THREE.Color("#c8922a") };
+    shader.uniforms.uRimShadow = { value: new THREE.Color("#0a1628") };
+
     // Expose the shader for per-frame uniform updates
     material.userData.shader = shader;
 
@@ -156,7 +166,36 @@ function applyRippleShader(material: THREE.MeshPhysicalMaterial) {
         uniform float uSqSize;
         uniform vec3 uSqDark;
         uniform vec3 uSqLight;
-        uniform vec3 uSqOff;`,
+        uniform vec3 uSqOff;
+        uniform float uTime;
+        uniform float uRimInner;
+        uniform float uRimOuter;
+        uniform float uRimTile;
+        uniform vec3 uRimGold;
+        uniform vec3 uRimShadow;
+
+        // Hash + noise + fbm for contour elevation
+        float cHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        float cNoise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          return mix(
+            mix(cHash(i), cHash(i + vec2(1.0, 0.0)), u.x),
+            mix(cHash(i + vec2(0.0, 1.0)), cHash(i + vec2(1.0, 1.0)), u.x),
+            u.y
+          );
+        }
+        float cFbm(vec2 p) {
+          float v = 0.0;
+          float a = 0.5;
+          for (int i = 0; i < 3; i++) {
+            v += a * cNoise(p);
+            p *= 2.0;
+            a *= 0.5;
+          }
+          return v;
+        }`,
       )
       .replace(
         "vec4 diffuseColor = vec4( diffuse, opacity );",
@@ -169,11 +208,20 @@ function applyRippleShader(material: THREE.MeshPhysicalMaterial) {
         bool onBoard = boardLocal.x >= 0.0 && boardLocal.x < 8.0 &&
                        boardLocal.y >= 0.0 && boardLocal.y < 8.0;
 
+        // zoneAlpha — rim is translucent glass, inner board is opaque
+        float zoneAlpha = 1.0;
         vec3 squareColor;
         if (onBoard) {
           vec2 sqIdx = floor(boardLocal);
           bool isDark = mod(sqIdx.x + sqIdx.y, 2.0) < 0.5;
           squareColor = isDark ? uSqDark : uSqLight;
+
+          // Breathing glow — opposing phase between dark/light squares
+          // 4s period, amplitude 0.05 (very subtle). Pieces and movement
+          // stay the focal point; board "breathes" in the background.
+          float phase = isDark ? 0.0 : 3.14159;
+          float breath = sin(uTime * 1.5708 + phase) * 0.05;
+          squareColor *= 1.0 + breath;
 
           // Per-square inner vignette — sinks edges for "pressed" depth
           vec2 sqUV = fract(boardLocal);
@@ -193,11 +241,13 @@ function applyRippleShader(material: THREE.MeshPhysicalMaterial) {
           // Faint micro-noise for surface grit (premium matte feel)
           float grain = fract(sin(dot(vRipplePosXZ * 180.0, vec2(12.9898, 78.233))) * 43758.5453) - 0.5;
           squareColor += grain * 0.012;
+
         } else {
+          // Off-board: solid navy, no ornament
           squareColor = uSqOff;
         }
 
-        vec4 diffuseColor = vec4(squareColor, opacity);
+        vec4 diffuseColor = vec4(squareColor, zoneAlpha * opacity);
 
         // ── Ripple overlay on top of squares ──
         if (uRippleTime >= 0.0 && uRippleTime <= 1.0) {
@@ -279,7 +329,7 @@ export default function PolyHavenChessSet({ onReady, ...groupProps }: Props) {
     return m;
   }, []);
 
-  /* ── Board — solid navy with piece-move ripple shader ── */
+  /* ── Board — solid navy marble ── */
   const boardMaterial = useMemo(() => {
     const m = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color("#1c3152"),
