@@ -40,7 +40,7 @@ describe("i18n setup", () => {
     it("status keys exist in English", () => {
       expect(i18n.t("status.onTrack", { lng: "en" })).toBe("On Track");
       expect(i18n.t("status.achieved", { lng: "en" })).toBe("Achieved");
-      expect(i18n.t("status.behind", { lng: "en" })).toBe("Behind");
+      expect(i18n.t("status.behind", { lng: "en" })).toBe("High Risk");
       expect(i18n.t("status.atRisk", { lng: "en" })).toBe("At Risk");
       expect(i18n.t("status.notStarted", { lng: "en" })).toBe("Not Started");
     });
@@ -79,7 +79,7 @@ describe("i18n setup", () => {
 
     it("'Behind' status translates correctly in both languages", () => {
       expect(i18n.t("status.behind", { lng: "tr" })).toBe("Yüksek Riskte");
-      expect(i18n.t("status.behind", { lng: "en" })).toBe("Behind");
+      expect(i18n.t("status.behind", { lng: "en" })).toBe("High Risk");
     });
 
     it("'At Risk' status translates correctly in both languages", () => {
