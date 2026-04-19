@@ -14,7 +14,7 @@ const statusConfig: Record<EntityStatus, { bg: string; text: string; dot: string
     text: "text-blue-600",
     dot: "bg-blue-500",
   },
-  Behind: {
+  "High Risk": {
     bg: "bg-red-50",
     text: "text-red-600",
     dot: "bg-red-500",
@@ -54,7 +54,7 @@ const statusTooltips: Record<EntityStatus, { tr: string; en: string }> = {
     tr: "İlerleme planın %10-20 gerisinde — dikkat gerekiyor",
     en: "Progress is 10-20% behind schedule — needs attention",
   },
-  Behind: {
+  "High Risk": {
     tr: "İlerleme planın %20'den fazla gerisinde — müdahale gerekli",
     en: "Progress is >20% behind schedule — intervention needed",
   },

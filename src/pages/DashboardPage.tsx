@@ -129,7 +129,7 @@ export default function DashboardPage() {
       trend: onTrackCount,
       trendLabel: t("dashboard.onTrackTrend"),
       contextText: t("dashboard.totalProjects", { count: projeler.length }),
-      onClick: () => navigate("/stratejik-kokpit?status=On Track,At Risk,Behind,On Hold"),
+      onClick: () => navigate("/stratejik-kokpit?status=On Track,At Risk,High Risk,On Hold"),
     },
     {
       label: t("dashboard.delayedRisky"),
@@ -139,7 +139,7 @@ export default function DashboardPage() {
       trend: behindCount,
       trendLabel: t("dashboard.behindTrend", { atRisk: atRiskCount }),
       contextText: t("dashboard.totalProjectsOf", { count: projeler.length }),
-      onClick: () => navigate("/stratejik-kokpit?status=Behind,At Risk"),
+      onClick: () => navigate("/stratejik-kokpit?status=High Risk,At Risk"),
     },
     {
       label: t("dashboard.avgProgress"),

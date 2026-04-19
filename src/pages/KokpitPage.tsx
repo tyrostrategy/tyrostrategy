@@ -69,7 +69,7 @@ const statusColumnColors: Record<EntityStatus, string> = {
   "Not Started": "bg-slate-400",
   "On Track": "bg-emerald-500",
   "At Risk": "bg-amber-500",
-  Behind: "bg-red-500",
+  "High Risk": "bg-red-500",
   Achieved: "bg-blue-500",
 };
 
@@ -1063,7 +1063,7 @@ function KanbanView({
       "Not Started": [],
       "On Track": [],
       "At Risk": [],
-      Behind: [],
+      "High Risk": [],
       Achieved: [],
     };
     filteredAksiyonlar.forEach((a) => {

@@ -51,7 +51,7 @@ const SOURCE_COLORS: Record<Source, { bg: string; border: string; text: string }
 const STATUS_DOT_HEX: Record<EntityStatus, string> = {
   "On Track": "#10b981",
   Achieved: "#3b82f6",
-  Behind: "#ef4444",
+  "High Risk": "#ef4444",
   "At Risk": "#f59e0b",
   "Not Started": "#94a3b8",
 };
