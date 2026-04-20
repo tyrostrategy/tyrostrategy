@@ -104,12 +104,29 @@ export default function WorkspacePage() {
       const isSupabase = import.meta.env.VITE_DATA_PROVIDER === "supabase";
       if (isSupabase) {
         const { supabaseAdapter } = await import("@/lib/data/supabaseAdapter");
-        const [projeler, aksiyonlar, tags] = await Promise.all([
+        const { useRoleStore } = await import("@/stores/roleStore");
+        const { reloadUISettingsFromDb } = await import("@/stores/uiStore");
+
+        // Parallel full refresh — data + audience + config together so
+        // the UI doesn't show a mix of fresh and stale rows.
+        const [projeler, aksiyonlar, tags, users] = await Promise.all([
           supabaseAdapter.fetchProjeler(),
           supabaseAdapter.fetchAksiyonlar(),
           supabaseAdapter.fetchTagDefinitions(),
+          supabaseAdapter.fetchUsers(),
+          useRoleStore.getState().reloadFromDb(),
+          reloadUISettingsFromDb(),
         ]);
-        useDataStore.setState({ projeler, aksiyonlar, tagDefinitions: tags });
+        useDataStore.setState({ projeler, aksiyonlar, tagDefinitions: tags, users });
+
+        const { toast } = await import("@/stores/toastStore");
+        toast.success(t("workspace.refreshSuccess"), {
+          message: t("workspace.refreshSuccessDetail", {
+            projeler: projeler.length,
+            aksiyonlar: aksiyonlar.length,
+            users: users.length,
+          }),
+        });
       } else {
         // Mock mode: reload from initial data
         const { getInitialData, getInitialTagDefinitions } = await import("@/lib/data/mock-adapter");
@@ -117,10 +134,12 @@ export default function WorkspacePage() {
       }
     } catch (err) {
       console.error("[Refresh] Failed:", err);
+      const { toast } = await import("@/stores/toastStore");
+      toast.error(t("workspace.refreshFailed"), { message: (err as Error).message });
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   // Register refresh function for MobileHeader
   useEffect(() => {
