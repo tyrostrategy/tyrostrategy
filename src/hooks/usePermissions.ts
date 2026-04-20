@@ -50,9 +50,17 @@ export function usePermissions() {
     return ids;
   }, [aksiyonlar, normalizedName, myProjeIds]);
 
-  // Strictly-owned aksiyons — member-tier (Kullanıcı) edit scope.
-  // A regular member on a shared project can see the project but can
-  // only edit aksiyons they personally own, even on that project.
+  // Strictly-owned proje IDs — used by editOnlyOwn checks. Role-agnostic:
+  // "own" always means "I'm the owner field", regardless of membership.
+  const myOwnedProjeIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const h of projeler) {
+      if (h.owner?.toLowerCase().trim() === normalizedName) ids.add(h.id);
+    }
+    return ids;
+  }, [projeler, normalizedName]);
+
+  // Strictly-owned aksiyons — same semantics as myOwnedProjeIds.
   const myOwnedAksiyonIds = useMemo(() => {
     const ids = new Set<string>();
     for (const a of aksiyonlar) {
@@ -92,7 +100,11 @@ export function usePermissions() {
   const canEditProje = (projeId: string) => {
     if (!perms.proje.edit) return false;
     if (!perms.editOnlyOwn) return true;
-    return myProjeIds.has(projeId);
+    // editOnlyOwn is a strict ownership check — role-agnostic. If an
+    // admin wants leaders to edit any project in their team, they flip
+    // that role's editOnlyOwn to false in Güvenlik. Membership alone
+    // never grants edit rights.
+    return myOwnedProjeIds.has(projeId);
   };
   const canDeleteProje = (projeId: string) => {
     if (!perms.proje.delete) return false;
@@ -112,11 +124,10 @@ export function usePermissions() {
   const canEditAksiyon = (aksiyonId: string) => {
     if (!perms.aksiyon.edit) return false;
     if (!perms.editOnlyOwn) return true;
-    // Kullanıcı role (member-tier): only edits aksiyons they personally
-    // own — project membership doesn't grant edit rights on teammates'
-    // aksiyons. Leader-tier roles edit any aksiyon on their projects.
-    if (user.role === "Kullanıcı") return myOwnedAksiyonIds.has(aksiyonId);
-    return myAksiyonIds.has(aksiyonId);
+    // Same rule as canEditProje — strict owner check, uniform across
+    // roles. Role determines whether the user has `aksiyon.edit` and
+    // `editOnlyOwn` at all; what counts as "own" is always owner-equals-me.
+    return myOwnedAksiyonIds.has(aksiyonId);
   };
   const canDeleteAksiyon = (_aksiyonId: string) => perms.aksiyon.delete;
 
