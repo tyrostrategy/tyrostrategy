@@ -283,7 +283,7 @@ export default function KokpitPage() {
             className="h-9 px-3 rounded-lg border border-tyro-border bg-tyro-surface flex items-center gap-1.5 cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0 relative"
           >
             <SlidersHorizontal size={14} className="text-tyro-text-secondary" />
-            <span className="text-[13px] font-medium text-tyro-text-secondary hidden sm:inline">{t("common.filter")}</span>
+            <span className="text-[13px] font-medium text-tyro-text-secondary hidden sm:inline">{t("dashboard.advancedFilter")}</span>
             {advFilterCount > 0 && (
               <span className="flex items-center justify-center w-4 h-4 rounded-full text-white text-[10px] font-bold" style={{ backgroundColor: brandColor }}>{advFilterCount}</span>
             )}
@@ -298,7 +298,9 @@ export default function KokpitPage() {
                 className="h-9 px-3 rounded-lg border border-tyro-border bg-tyro-surface flex items-center gap-1.5 cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0"
               >
                 <ArrowUpDown size={14} className="text-tyro-text-secondary" />
-                <span className="text-[13px] font-medium text-tyro-text-secondary">{SORT_LABELS[sortBy] ?? t("common.sort")}</span>
+                {/* Label stays fixed as "Sırala" — the active choice
+                    is visible only inside the dropdown via selectedKeys. */}
+                <span className="text-[13px] font-medium text-tyro-text-secondary">{t("common.sort")}</span>
                 <ChevronDown size={12} className="text-tyro-text-muted" />
               </button>
             </DropdownTrigger>
