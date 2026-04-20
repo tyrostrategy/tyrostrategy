@@ -99,9 +99,9 @@ function ProgressCard({ item, onClick, showParent }: {
       }}
       whileHover={{ y: -1, boxShadow: "0 4px 16px rgba(30,58,95,0.08)" }}
     >
-      {/* Progress ring — compact */}
-      <div className="relative w-9 h-9 shrink-0">
-        <svg viewBox="0 0 36 36" className="w-9 h-9 -rotate-90">
+      {/* Progress ring — enlarged so the "%NN" label fits inside. */}
+      <div className="relative w-11 h-11 shrink-0">
+        <svg viewBox="0 0 36 36" className="w-11 h-11 -rotate-90">
           <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" className="text-tyro-bg" strokeWidth="3.5" />
           <circle
             cx="18" cy="18" r="14" fill="none" stroke={pColor} strokeWidth="3.5"
@@ -109,8 +109,8 @@ function ProgressCard({ item, onClick, showParent }: {
             strokeLinecap="round"
           />
         </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold tabular-nums" style={{ color: pColor }}>
-          {item.progress}
+        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold tabular-nums" style={{ color: pColor }}>
+          %{item.progress}
         </span>
       </div>
 
