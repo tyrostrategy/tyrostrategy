@@ -74,6 +74,8 @@
     "participants": "Proje Üyeleri",
     "leader": "Lider",
     "participant": "Katılımcı",
+    "projectName": "Proje Adı",
+    "projectStatus": "Proje Durumu",
     "add": "Ekle",
     "create": "Oluştur",
     "list": "Liste",

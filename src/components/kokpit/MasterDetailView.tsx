@@ -321,6 +321,9 @@ function DetailPanel({
               {/* Title + ID */}
               <div>
                 <h2 className="text-[15px] font-bold text-tyro-text-primary leading-snug">
+                  <span className="font-normal text-tyro-text-muted text-[12px] mr-1">
+                    {t("common.projectName")}:
+                  </span>
                   {proje.name}
                 </h2>
                 <p className="text-[11px] text-tyro-text-muted mt-0.5">
@@ -329,6 +332,9 @@ function DetailPanel({
               </div>
               {/* Status + tags */}
               <div className="flex items-center flex-wrap gap-1.5">
+                <span className="text-[11px] text-tyro-text-muted">
+                  {t("common.projectStatus")}:
+                </span>
                 <StatusBadge status={proje.status} />
                 {proje.tags && proje.tags.length > 0 && proje.tags.map((tag) => (
                   <TagChip key={tag} name={tag} size="sm" />
@@ -348,6 +354,9 @@ function DetailPanel({
             <div className="hidden sm:flex items-start gap-4">
               <div className="flex-1 min-w-0">
                 <h2 className="text-[20px] font-bold text-tyro-text-primary leading-snug">
+                  <span className="font-normal text-tyro-text-muted text-[14px] mr-1.5">
+                    {t("common.projectName")}:
+                  </span>
                   {proje.name}
                 </h2>
                 <div className="flex items-center gap-3 mt-1 ml-1">
@@ -362,6 +371,9 @@ function DetailPanel({
                   )}
                 </div>
                 <div className="flex items-center flex-wrap gap-2 mt-1.5">
+                  <span className="text-[12px] text-tyro-text-muted">
+                    {t("common.projectStatus")}:
+                  </span>
                   <StatusBadge status={proje.status} />
                   {proje.tags && proje.tags.length > 0 && (
                     <>
