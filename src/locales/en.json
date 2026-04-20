@@ -398,7 +398,7 @@
     "behindTrend": "high risk, {{atRisk}} at risk",
     "totalProjectsOf": "{{count}} total projects",
     "avgProgress": "Average Progress",
-    "projectAverage": "{{count}} project average",
+    "projectAverage": "Active {{count}} project average",
     "reportWizard": "Report Configuration",
     "completedGoals": "Completed Goals",
     "noCompletedProjects": "No completed projects yet",

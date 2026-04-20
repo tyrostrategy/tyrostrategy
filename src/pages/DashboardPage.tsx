@@ -90,17 +90,27 @@ export default function DashboardPage() {
   const projeProgress =
     projeler.length > 0 ? Math.round((projeTamamlanan.length / projeler.length) * 100) : 0;
 
-  // Single-pass status counts + avg progress
-  const { statusCounts, avgProgress } = useMemo(() => {
+  // Single-pass status counts + avg progress.
+  // Avg intentionally excludes "On Hold" and "Cancelled" — an On Hold
+  // project's progress is frozen in limbo and a Cancelled one will
+  // never finish, so averaging them drags the KPI down in a way that
+  // hides how the ACTIVE portfolio is actually performing. The card's
+  // sub-label says "Devam eden N proje ortalaması" to reflect this.
+  const { statusCounts, avgProgress, activeCount } = useMemo(() => {
     const counts: Record<string, number> = {};
-    let totalProgress = 0;
+    let activeTotal = 0;
+    let activeN = 0;
     for (const h of projeler) {
       counts[h.status] = (counts[h.status] ?? 0) + 1;
-      totalProgress += h.progress;
+      if (h.status !== "On Hold" && h.status !== "Cancelled") {
+        activeTotal += h.progress;
+        activeN += 1;
+      }
     }
     return {
       statusCounts: counts,
-      avgProgress: projeler.length > 0 ? Math.round(totalProgress / projeler.length) : 0,
+      avgProgress: activeN > 0 ? Math.round(activeTotal / activeN) : 0,
+      activeCount: activeN,
     };
   }, [projeler]);
 
@@ -148,7 +158,7 @@ export default function DashboardPage() {
       icon: "BarChart3",
       color: "var(--tyro-info)",
       progress: avgProgress,
-      contextText: t("dashboard.projectAverage", { count: projeler.length }),
+      contextText: t("dashboard.projectAverage", { count: activeCount }),
       onClick: () => navigate("/stratejik-kokpit"),
     },
   ];

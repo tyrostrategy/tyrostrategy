@@ -398,7 +398,7 @@
     "behindTrend": "yüksek riskte, {{atRisk}} riskte",
     "totalProjectsOf": "{{count}} toplam projeden",
     "avgProgress": "Ortalama İlerleme",
-    "projectAverage": "{{count}} proje ortalaması",
+    "projectAverage": "Devam eden {{count}} proje ortalaması",
     "reportWizard": "Rapor Konfigürasyonu",
     "completedGoals": "Tamamlanan Hedefler",
     "noCompletedProjects": "Henüz tamamlanan proje yok",
