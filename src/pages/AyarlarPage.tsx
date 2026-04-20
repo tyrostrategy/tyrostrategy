@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Input, Select, SelectItem, Switch, Button, Popover, PopoverTrigger, PopoverContent, Tabs, Tab } from "@heroui/react";
 import { Plus, Trash2, Pencil, Check, X, Tag, Settings, Bell, Plug, Info } from "lucide-react";
-import { useUIStore } from "@/stores/uiStore";
+import { useUIStore, reloadUISettingsFromDb } from "@/stores/uiStore";
 import { useDataStore } from "@/stores/dataStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { hexToHSL } from "@/lib/colorUtils";
@@ -17,6 +17,13 @@ export default function AyarlarPage() {
   const { t } = useTranslation();
   const { companyName, setCompanyName, allowMultipleTags, setAllowMultipleTags, behindThreshold, setBehindThreshold, atRiskThreshold, setAtRiskThreshold } = useUIStore();
   const sidebarTheme = useSidebarTheme();
+
+  // Always refresh settings from DB on mount so this page is never showing
+  // a browser-local snapshot — what's in the database is what you see,
+  // wherever you open it from (same pattern as GuvenlikPage).
+  useEffect(() => {
+    void reloadUISettingsFromDb();
+  }, []);
   // Bildirimler kaldırıldı — fonksiyonel değildi
 
   // Tag management state

@@ -142,37 +142,65 @@ export const useUIStore = create<UIState>((set, get) => ({
   setWorkspaceRefreshFn: (fn) => set({ workspaceRefreshFn: fn }),
 }));
 
-// Startup: load settings from Supabase (overrides localStorage defaults)
-if (isSupabaseMode) {
-  getSyncAdapter().then(async (adapter) => {
-    // 1) Global app_settings
+// Deterministic defaults — used as the merge base so two browsers with
+// different localStorage histories converge on identical state once the
+// DB fetch lands. DB always wins; localStorage is a warm cache only.
+const DEFAULT_COMPANY_NAME = "Tiryaki Agro";
+const DEFAULT_ALLOW_MULTIPLE_TAGS = true;
+const DEFAULT_BEHIND_THRESHOLD = 20;
+const DEFAULT_ATRISK_THRESHOLD = 10;
+
+/**
+ * Force-refresh every DB-backed UI setting from Supabase, bypassing
+ * per-browser localStorage drift. Applied on startup and also exported
+ * so the Ayarlar page can call it on mount — same pattern as
+ * roleStore.reloadFromDb for the Güvenlik page.
+ */
+export async function reloadUISettingsFromDb(): Promise<void> {
+  if (!isSupabaseMode) return;
+  try {
+    const adapter = await getSyncAdapter();
+
+    // 1) Global app_settings — DB wins, defaults fill any missing keys
     const settings = await adapter.fetchAppSettings();
     const map = new Map(settings.map((s) => [s.key, s.value]));
-    const updates: Partial<UIState> = {};
-    if (map.has("company_name")) updates.companyName = map.get("company_name") as string;
-    if (map.has("allow_multiple_tags")) updates.allowMultipleTags = map.get("allow_multiple_tags") as boolean;
-    if (map.has("behind_threshold")) updates.behindThreshold = map.get("behind_threshold") as number;
-    if (map.has("atrisk_threshold")) updates.atRiskThreshold = map.get("atrisk_threshold") as number;
-    if (Object.keys(updates).length > 0) {
-      console.log("[Supabase] Loaded app_settings:", Object.keys(updates));
-      useUIStore.setState(updates);
-    }
+    const next = {
+      companyName: (map.get("company_name") as string | undefined) ?? DEFAULT_COMPANY_NAME,
+      allowMultipleTags:
+        (map.get("allow_multiple_tags") as boolean | undefined) ?? DEFAULT_ALLOW_MULTIPLE_TAGS,
+      behindThreshold:
+        (map.get("behind_threshold") as number | undefined) ?? DEFAULT_BEHIND_THRESHOLD,
+      atRiskThreshold:
+        (map.get("atrisk_threshold") as number | undefined) ?? DEFAULT_ATRISK_THRESHOLD,
+    };
+    // Write-through the canonical values so the warm cache matches DB
+    localStorage.setItem("tyro-company-name", next.companyName);
+    localStorage.setItem("tyro-allow-multiple-tags", String(next.allowMultipleTags));
+    localStorage.setItem("tyro-behind-threshold", String(next.behindThreshold));
+    localStorage.setItem("tyro-atrisk-threshold", String(next.atRiskThreshold));
+    useUIStore.setState(next);
 
-    // 2) Current user's locale from users table
+    // 2) Current user's locale from users table — DB wins here too
     const users = await adapter.fetchUsers();
     const currentName = useUIStore.getState().mockUserName;
-    const me = users.find((u) => u.displayName.toLowerCase().trim() === currentName.toLowerCase().trim());
+    const me = users.find(
+      (u) => u.displayName.toLowerCase().trim() === currentName.toLowerCase().trim(),
+    );
     if (me?.locale) {
       const dbLocale = me.locale as "tr" | "en";
       if (dbLocale !== useUIStore.getState().locale) {
         localStorage.setItem("tyro-locale", dbLocale);
         i18n.changeLanguage(dbLocale);
         useUIStore.setState({ locale: dbLocale });
-        console.log("[Supabase] Synced user locale:", dbLocale);
       }
     }
-  }).catch((err) => {
-    console.error("[Supabase] fetchAppSettings failed:", err);
+  } catch (err) {
+    console.error("[Supabase] reloadUISettingsFromDb failed:", err);
     toast.error(i18n.t("toast.settingsLoadFailed"));
-  });
+  }
+}
+
+// Startup: single deterministic reload from DB
+if (isSupabaseMode) {
+  void reloadUISettingsFromDb();
 }
