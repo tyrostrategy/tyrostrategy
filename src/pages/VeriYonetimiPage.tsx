@@ -11,8 +11,130 @@ import { useDataStore } from "@/stores/dataStore";
 import { useRoleStore } from "@/stores/roleStore";
 import { useUIStore } from "@/stores/uiStore";
 import GlassCard from "@/components/ui/GlassCard";
-import type { Proje, Aksiyon, TagDefinition } from "@/types";
+import type { Proje, Aksiyon, TagDefinition, EntityStatus } from "@/types";
 import * as XLSX from "xlsx";
+
+// ===== Header maps — internal field ↔ user-visible Turkish label =====
+// Used by the export flow (rewrite keys to pretty labels) and by the
+// import flow (accept either the internal name or the Turkish header
+// so files from any era/source round-trip cleanly). When the app gets
+// a new column, add it here — single source of truth for the Excel
+// template.
+const PROJELER_HEADER_MAP: Record<string, string> = {
+  id: "ID",
+  name: "Proje Adı",
+  description: "Açıklama",
+  source: "İş Kolu",
+  status: "Durum",
+  owner: "Proje Lideri",
+  participants: "Proje Üyeleri",
+  department: "Departman",
+  progress: "İlerleme (%)",
+  startDate: "Başlangıç Tarihi",
+  endDate: "Bitiş Tarihi",
+  reviewDate: "Kontrol Tarihi",
+  tags: "Etiketler",
+  parentObjectiveId: "Üst Proje ID",
+  createdBy: "Oluşturan",
+  createdAt: "Oluşturulma",
+  updatedBy: "Güncelleyen",
+  updatedAt: "Son Güncelleme",
+  completedAt: "Tamamlanma",
+};
+const AKSIYONLAR_HEADER_MAP: Record<string, string> = {
+  id: "ID",
+  projeId: "Proje ID",
+  name: "Aksiyon Adı",
+  description: "Açıklama",
+  owner: "Sorumlu",
+  status: "Durum",
+  progress: "İlerleme (%)",
+  startDate: "Başlangıç Tarihi",
+  endDate: "Bitiş Tarihi",
+  sortOrder: "Sıra",
+  createdBy: "Oluşturan",
+  createdAt: "Oluşturulma",
+  updatedBy: "Güncelleyen",
+  updatedAt: "Son Güncelleme",
+  completedAt: "Tamamlanma",
+};
+const ETIKETLER_HEADER_MAP: Record<string, string> = {
+  id: "ID",
+  name: "Etiket Adı",
+  color: "Renk",
+};
+const HEADER_MAPS: Record<string, Record<string, string>> = {
+  projeler: PROJELER_HEADER_MAP,
+  aksiyonlar: AKSIYONLAR_HEADER_MAP,
+  etiketler: ETIKETLER_HEADER_MAP,
+};
+
+/**
+ * Rewrite an exported row's keys from internal (startDate, …) to the
+ * Turkish label ("Başlangıç Tarihi", …) for the given table. Keys not
+ * in the map fall through unchanged so new fields stay visible instead
+ * of getting silently dropped.
+ */
+function applyExportLabels(tableId: string, data: Record<string, unknown>[]): Record<string, unknown>[] {
+  const map = HEADER_MAPS[tableId];
+  if (!map) return data;
+  return data.map((row) => {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(row)) out[map[k] ?? k] = v;
+    return out;
+  });
+}
+
+/**
+ * Inverse of applyExportLabels: take a row that may have come in with
+ * Turkish headers and rewrite back to the internal field names the app
+ * expects. Header match is case-insensitive and trim-tolerant; any key
+ * that already matches an internal name is passed through.
+ */
+function applyImportAliases(tableId: string, row: Record<string, unknown>): Record<string, unknown> {
+  const map = HEADER_MAPS[tableId];
+  if (!map) return row;
+  const reverseLookup = new Map<string, string>();
+  for (const [internal, label] of Object.entries(map)) {
+    reverseLookup.set(label.toLowerCase().trim(), internal);
+    reverseLookup.set(internal.toLowerCase(), internal);
+  }
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(row)) {
+    const internal = reverseLookup.get(k.toLowerCase().trim()) ?? k;
+    out[internal] = v;
+  }
+  return out;
+}
+
+/**
+ * Per-entity row normalizer — runs AFTER header aliasing. Handles:
+ *   • projeler / aksiyonlar: legacy status "Behind" → "High Risk"
+ *     (renamed in migration 010; old templates still carry it).
+ *   • projeler: participants + tags are exported as "A; B; C" strings,
+ *     split back to arrays so junction rows get re-linked on save.
+ *   • progress cast to Number (Excel sometimes reads as string).
+ */
+function normalizeImportRow(tableId: string, row: Record<string, unknown>): Record<string, unknown> {
+  const r = { ...row };
+  const parseArr = (v: unknown): string[] => {
+    if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean);
+    if (typeof v === "string" && v.trim()) return v.split(/[;,]/).map((s) => s.trim()).filter(Boolean);
+    return [];
+  };
+  if (tableId === "projeler" || tableId === "aksiyonlar") {
+    if (r.status === "Behind") r.status = "High Risk" as EntityStatus;
+    if (r.progress !== undefined && typeof r.progress !== "number") {
+      const n = Number(r.progress);
+      if (!Number.isNaN(n)) r.progress = n;
+    }
+  }
+  if (tableId === "projeler") {
+    r.participants = parseArr(r.participants);
+    r.tags = parseArr(r.tags);
+  }
+  return r;
+}
 
 // ===== Data table definitions =====
 interface DataTable {
@@ -199,13 +321,16 @@ export default function VeriYonetimiPage() {
       const fileName = `tyrostrategy_${toExport.length === 1 ? toExport[0].id : "tum_veriler"}_${new Date().toISOString().slice(0, 10)}`;
 
       if (exportFormat === "json") {
+        // JSON keeps the raw internal shape — it's the app↔app wire
+        // format, not for humans to edit in spreadsheet tools.
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
         downloadBlob(blob, `${fileName}.json`);
       } else if (exportFormat === "csv") {
-        // For CSV, export each table as separate file or first table
         for (const [key, data] of Object.entries(exportData)) {
           if (data.length === 0) continue;
-          const csv = arrayToCSV(data as Record<string, unknown>[]);
+          const flat = flattenObjects(data as Record<string, unknown>[]);
+          const labeled = applyExportLabels(key, flat);
+          const csv = arrayToCSV(labeled);
           const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }); // BOM for Turkish chars
           downloadBlob(blob, `${fileName}_${key}.csv`);
         }
@@ -213,7 +338,9 @@ export default function VeriYonetimiPage() {
         const wb = XLSX.utils.book_new();
         for (const [key, data] of Object.entries(exportData)) {
           if (data.length === 0) continue;
-          const ws = XLSX.utils.json_to_sheet(flattenObjects(data as Record<string, unknown>[]));
+          const flat = flattenObjects(data as Record<string, unknown>[]);
+          const labeled = applyExportLabels(key, flat);
+          const ws = XLSX.utils.json_to_sheet(labeled);
           XLSX.utils.book_append_sheet(wb, ws, key.slice(0, 31)); // Sheet name max 31 chars
         }
         XLSX.writeFile(wb, `${fileName}.xlsx`);
@@ -283,7 +410,15 @@ export default function VeriYonetimiPage() {
         return;
       }
 
-      // Validate required fields
+      // Rewrite incoming rows: Turkish headers → internal field names,
+      // then normalize values (legacy status, array split, etc.) so
+      // downstream validation + store writes see a canonical shape.
+      data = (data as Record<string, unknown>[]).map((row) =>
+        normalizeImportRow(tableId, applyImportAliases(tableId, row)),
+      );
+
+      // Validate required fields (operates on internal field names
+      // after the alias + normalize pass above).
       const requiredFields: Record<string, string[]> = {
         projeler: ["name", "status", "startDate", "endDate"],
         aksiyonlar: ["name", "projeId", "status", "startDate", "endDate"],
@@ -299,6 +434,20 @@ export default function VeriYonetimiPage() {
           }
         });
       });
+
+      // Enum sanity — flag unknown status values so the user gets a
+      // helpful hint instead of a CHECK-constraint error downstream.
+      const validStatuses = new Set<string>([
+        "On Track", "Achieved", "High Risk", "At Risk", "Not Started", "Cancelled", "On Hold",
+      ]);
+      if (tableId === "projeler" || tableId === "aksiyonlar") {
+        data.forEach((row, i) => {
+          const s = (row as Record<string, unknown>).status;
+          if (typeof s === "string" && !validStatuses.has(s)) {
+            errors.push(t("dataManagement.requiredField", { row: i + 1, field: `status=${s}` }));
+          }
+        });
+      }
 
       if (errors.length > 10) {
         addLog({
