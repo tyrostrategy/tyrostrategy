@@ -20,7 +20,11 @@ import type { IntroPhase } from "./introPhases";
  * gold king takes the hero spotlight.
  */
 
-const HERO_URL = `${import.meta.env.BASE_URL}models/king_hero/scene.gltf`;
+// Slim GLTF variant — texture refs stripped because KingHero overrides
+// the material entirely with a per-team MeshPhysicalMaterial below. Saves
+// ~5.8 MB of unused PNG/JPEG downloads on every first load.
+// Original preserved as scene.gltf for reference; scene.bin is shared.
+const HERO_URL = `${import.meta.env.BASE_URL}models/king_hero/scene.notex.gltf`;
 
 // Post Sketchfab internal matrix, model is ~0.3 tall (upright). These
 // scales are the multiplier ON TOP of the internal 0.000757 scale.

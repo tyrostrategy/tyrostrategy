@@ -33,6 +33,30 @@ type Props = {
   onFeatureArchive?: (card: ActiveFeatureCard) => void;
 };
 
+// Scene accepts an extra internal callback that bubbles up when the
+// chess set finishes loading — LoginChessboard uses it to gate the
+// post-processing pipeline so heavy shader compile doesn't overlap
+// with GLTF parse/upload.
+type SceneProps = Props & { onSceneReady?: () => void };
+
+/* ═══════════════════════════════════════════════════════════════════
+ * SUSPENSE FALLBACK — low-fi placeholder while the chess set streams.
+ * Replaces the previous `fallback={null}` which gave users an empty
+ * canvas during the first ~1-2s of load.
+ * ═══════════════════════════════════════════════════════════════════ */
+function SceneFallback() {
+  return (
+    <>
+      <ambientLight intensity={0.35} />
+      <hemisphereLight args={["#fff5e0", "#0a1628", 0.32]} />
+      <mesh rotation-x={-Math.PI / 2} position={[0.14, 0, 0]} receiveShadow>
+        <planeGeometry args={[0.42, 0.42]} />
+        <meshStandardMaterial color="#14253f" roughness={0.85} metalness={0.15} />
+      </mesh>
+    </>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════════
  * FEATURE ICONS (used by move feature cards)
  * ═══════════════════════════════════════════════════════════════════ */
@@ -167,7 +191,7 @@ function CameraController() {
 /* ═══════════════════════════════════════════════════════════════════
  * SCENE
  * ═══════════════════════════════════════════════════════════════════ */
-function Scene({ t, phase, onPortalClick, onFeatureArchive }: Props) {
+function Scene({ t, phase, onPortalClick, onFeatureArchive, onSceneReady }: SceneProps) {
   const { scene } = useThree();
   const [pieces, setPieces] = useState<PieceRefMap>({});
   const [portalVisible, setPortalVisible] = useState(false);
@@ -207,7 +231,10 @@ function Scene({ t, phase, onPortalClick, onFeatureArchive }: Props) {
     if (board && (board as THREE.Mesh).material) {
       boardMatRef.current = (board as THREE.Mesh).material as THREE.MeshPhysicalMaterial;
     }
-  }, []);
+    // Signal upward so the post-processing pipeline can now mount
+    // without stealing shader-compile time from first GLTF paint.
+    onSceneReady?.();
+  }, [onSceneReady]);
 
   const handleGridReady = useCallback((mat: THREE.ShaderMaterial) => {
     gridMatRef.current = mat;
@@ -326,19 +353,17 @@ function Scene({ t, phase, onPortalClick, onFeatureArchive }: Props) {
       <pointLight position={[0, 0.5, 0.3]} intensity={0.65} color="#c8922a" distance={1} />
       <pointLight position={[0.1, 0.35, -0.3]} intensity={0.4} color="#3b6ba5" distance={0.8} />
 
-      {/* Chess set — offset right to leave room for left brand overlays */}
-      <Suspense fallback={null}>
-        <PolyHavenChessSet position={[0.14, 0, 0]} onReady={handlePiecesReady} />
-      </Suspense>
+      {/* Chess set + hero kings — share the single outer Suspense
+          boundary (in LoginChessboard) so the scene reveals atomically
+          instead of piece-by-piece as each sub-resource resolves. */}
+      <PolyHavenChessSet position={[0.14, 0, 0]} onReady={handlePiecesReady} />
 
       {/* Detailed hero kings — one per team. Replace PH kings during
           match, charge to center at checkmate, gold takes hero shot at
           p5+ while navy recedes. Mounted at world root; positions driven
           in useFrame via getWorldPosition of the PH king pieces. */}
-      <Suspense fallback={null}>
-        <KingHero team="white" pieces={pieces} phase={phase} />
-        <KingHero team="black" pieces={pieces} phase={phase} />
-      </Suspense>
+      <KingHero team="white" pieces={pieces} phase={phase} />
+      <KingHero team="black" pieces={pieces} phase={phase} />
 
       {/* Piece scatter — at p4 (king arrives center) all non-king pieces
           explode outward with gravity + tumble as a shockwave */}
@@ -394,6 +419,12 @@ function Scene({ t, phase, onPortalClick, onFeatureArchive }: Props) {
  * EXPORT
  * ═══════════════════════════════════════════════════════════════════ */
 export default function LoginChessboard({ t, phase, onPortalClick, onFeatureArchive }: Props) {
+  // Defer the post-processing pipeline (N8AO + Bloom + Vignette) until
+  // the chess set has parsed and uploaded its textures. Shader compile
+  // for those effects is expensive; overlapping it with the first GLTF
+  // paint is what made the scene appear "in pieces" on cold load.
+  const [sceneReady, setSceneReady] = useState(false);
+
   return (
     <Canvas
       camera={{ position: [0.28, 0.34, 0.52], fov: 42 }}
@@ -402,14 +433,22 @@ export default function LoginChessboard({ t, phase, onPortalClick, onFeatureArch
       shadows
       style={{ width: "100%", height: "100%" }}
     >
-      <Suspense fallback={null}>
-        <Scene t={t} phase={phase} onPortalClick={onPortalClick} onFeatureArchive={onFeatureArchive} />
+      <Suspense fallback={<SceneFallback />}>
+        <Scene
+          t={t}
+          phase={phase}
+          onPortalClick={onPortalClick}
+          onFeatureArchive={onFeatureArchive}
+          onSceneReady={() => setSceneReady(true)}
+        />
+      </Suspense>
+      {sceneReady && (
         <EffectComposer multisampling={4}>
           <N8AO aoRadius={0.08} intensity={1.5} distanceFalloff={0.2} />
           <Bloom mipmapBlur intensity={0.32} luminanceThreshold={0.82} luminanceSmoothing={0.3} />
           <Vignette offset={0.3} darkness={0.55} />
         </EffectComposer>
-      </Suspense>
+      )}
     </Canvas>
   );
 }

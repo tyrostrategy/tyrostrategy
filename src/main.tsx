@@ -1,5 +1,9 @@
 import "@/lib/i18n";
 import { StrictMode, type ReactNode } from "react";
+
+// Build fingerprint injected by vite.config.ts define — appended to the
+// service worker registration URL so each deploy gets its own cache.
+declare const __BUILD_HASH__: string;
 import { createRoot } from "react-dom/client";
 import { PublicClientApplication, EventType } from "@azure/msal-browser";
 import type { AuthenticationResult } from "@azure/msal-browser";
@@ -71,10 +75,12 @@ function LocaleAwareHeroUI({ children }: { children: ReactNode }) {
   return <HeroUIProvider locale={locale === "tr" ? "tr-TR" : "en-US"}>{children}</HeroUIProvider>;
 }
 
-// Register service worker for PWA
+// Register service worker for PWA. Version query ensures a new build
+// installs a new SW (different registration URL → forced re-install
+// → activate event evicts the previous cache).
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
+    navigator.serviceWorker.register(`/sw.js?v=${__BUILD_HASH__}`).catch(() => {});
   });
 }
 

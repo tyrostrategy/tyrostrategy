@@ -1,5 +1,10 @@
 // TYRO Strategy — service worker with offline fallback
-const CACHE_NAME = "tyro-v1";
+//
+// Cache version is derived from the `?v=<build-hash>` query string that
+// main.tsx attaches at registration time. Each deploy gets a distinct
+// bucket, so old bundles (3D assets, chunks) are evicted on activate.
+const VERSION = new URL(self.location.href).searchParams.get("v") || "dev";
+const CACHE_NAME = `tyro-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
 // Pre-cache offline page on install
