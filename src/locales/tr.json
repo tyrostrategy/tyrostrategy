@@ -696,6 +696,8 @@
     "projectsDesc": "Stratejik proje kayıtları",
     "actions": "Aksiyonlar",
     "actionsDesc": "Hedeflere bağlı aksiyon maddeleri",
+    "users": "Kullanıcılar",
+    "usersDesc": "Sistem kullanıcıları ve profil bilgileri",
     "tagDefinitions": "Etiket Tanımları",
     "tagDefinitionsDesc": "Parametrik etiket tanımları ve renkleri",
     "rolePermissions": "Rol Yetkileri",

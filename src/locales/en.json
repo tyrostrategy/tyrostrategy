@@ -696,6 +696,8 @@
     "projectsDesc": "Strategic project records",
     "actions": "Actions",
     "actionsDesc": "Action items linked to objectives",
+    "users": "Users",
+    "usersDesc": "System users and profile data",
     "tagDefinitions": "Tag Definitions",
     "tagDefinitionsDesc": "Parametric tag definitions and colors",
     "rolePermissions": "Role Permissions",

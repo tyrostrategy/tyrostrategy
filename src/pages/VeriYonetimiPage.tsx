@@ -4,14 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Database, Download, Upload, FileJson, FileSpreadsheet, FileText,
   CheckCircle, XCircle, AlertTriangle, Trash2, RefreshCw, ChevronDown,
-  Shield, Tag, Target, CircleCheckBig, Settings, Clock
+  Shield, Tag, Target, CircleCheckBig, Settings, Clock, Users,
 } from "lucide-react";
 import { Button, Tooltip } from "@heroui/react";
 import { useDataStore } from "@/stores/dataStore";
 import { useRoleStore } from "@/stores/roleStore";
 import { useUIStore } from "@/stores/uiStore";
 import GlassCard from "@/components/ui/GlassCard";
-import type { Proje, Aksiyon, TagDefinition, EntityStatus } from "@/types";
+import type { Proje, Aksiyon, TagDefinition, EntityStatus, AppUser, UserRole } from "@/types";
 import * as XLSX from "xlsx";
 
 // ===== Header maps — internal field ↔ user-visible Turkish label =====
@@ -63,11 +63,28 @@ const ETIKETLER_HEADER_MAP: Record<string, string> = {
   name: "Etiket Adı",
   color: "Renk",
 };
+const KULLANICILAR_HEADER_MAP: Record<string, string> = {
+  id: "ID",
+  email: "E-posta",
+  displayName: "Ad Soyad",
+  department: "Departman",
+  role: "Rol",
+  locale: "Dil",
+  title: "Ünvan",
+  isActive: "Aktif",
+  createdAt: "Oluşturulma",
+  updatedAt: "Son Güncelleme",
+};
 const HEADER_MAPS: Record<string, Record<string, string>> = {
   projeler: PROJELER_HEADER_MAP,
   aksiyonlar: AKSIYONLAR_HEADER_MAP,
   etiketler: ETIKETLER_HEADER_MAP,
+  kullanicilar: KULLANICILAR_HEADER_MAP,
 };
+
+const VALID_ROLES: ReadonlySet<UserRole> = new Set<UserRole>([
+  "Admin", "Proje Lideri", "Kullanıcı", "Management",
+]);
 
 /**
  * Rewrite an exported row's keys from internal (startDate, …) to the
@@ -133,6 +150,18 @@ function normalizeImportRow(tableId: string, row: Record<string, unknown>): Reco
     r.participants = parseArr(r.participants);
     r.tags = parseArr(r.tags);
   }
+  if (tableId === "kullanicilar") {
+    // Locale comes in as "tr" / "en" or "Türkçe"/"English" — normalize to code.
+    if (typeof r.locale === "string") {
+      const l = r.locale.toLowerCase().trim();
+      r.locale = l.startsWith("en") || l.startsWith("ing") ? "en" : "tr";
+    }
+    // isActive: Excel often gives "TRUE"/"Evet"/"1" — coerce to boolean.
+    if (r.isActive !== undefined && typeof r.isActive !== "boolean") {
+      const v = String(r.isActive).toLowerCase().trim();
+      r.isActive = v === "true" || v === "1" || v === "evet" || v === "yes" || v === "aktif";
+    }
+  }
   return r;
 }
 
@@ -169,6 +198,7 @@ export default function VeriYonetimiPage() {
   const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const tagDefinitions = useDataStore((s) => s.tagDefinitions);
+  const users = useDataStore((s) => s.users);
   const rolePermissions = useRoleStore((s) => s.permissions);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -209,6 +239,26 @@ export default function VeriYonetimiPage() {
         (data as Aksiyon[]).forEach((a) => store.addAksiyon(a));
       },
       description: t("dataManagement.actionsDesc"),
+    },
+    {
+      id: "kullanicilar",
+      label: t("dataManagement.users"),
+      icon: Users,
+      color: "#0ea5e9",
+      getCount: () => users.length,
+      getData: () => users,
+      setData: (data) => {
+        const store = useDataStore.getState();
+        // Replace the user list: delete existing, add incoming. Supabase
+        // sync is fire-and-forget per op, so failures log but don't block
+        // the UI — same pattern as projeler/aksiyonlar setData above.
+        store.users.forEach((u) => store.deleteUser(u.id));
+        (data as AppUser[]).forEach((u) => {
+          const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = u;
+          store.addUser(rest as Omit<AppUser, "id" | "createdAt" | "updatedAt">);
+        });
+      },
+      description: t("dataManagement.usersDesc"),
     },
     {
       id: "etiketler",
@@ -423,6 +473,7 @@ export default function VeriYonetimiPage() {
         projeler: ["name", "status", "startDate", "endDate"],
         aksiyonlar: ["name", "projeId", "status", "startDate", "endDate"],
         etiketler: ["name", "color"],
+        kullanicilar: ["email", "displayName", "role"],
       };
 
       const required = requiredFields[tableId] ?? [];
@@ -445,6 +496,17 @@ export default function VeriYonetimiPage() {
           const s = (row as Record<string, unknown>).status;
           if (typeof s === "string" && !validStatuses.has(s)) {
             errors.push(t("dataManagement.requiredField", { row: i + 1, field: `status=${s}` }));
+          }
+        });
+      }
+      // Role sanity check for users — the DB's users.role CHECK constraint
+      // rejects anything outside the allowlist. Flagging here gives the
+      // user a row number instead of a generic Postgres error later.
+      if (tableId === "kullanicilar") {
+        data.forEach((row, i) => {
+          const r = (row as Record<string, unknown>).role;
+          if (typeof r === "string" && !VALID_ROLES.has(r as UserRole)) {
+            errors.push(t("dataManagement.requiredField", { row: i + 1, field: `role=${r}` }));
           }
         });
       }
