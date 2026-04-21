@@ -37,10 +37,7 @@ function formatDate(dateStr: string): string {
 
 const INITIAL_VISIBLE = new Set(["name", "owner", "proje", "progress", "status", "startDate", "endDate", "actions"]);
 
-import { useDbRefresh } from "@/hooks/useDbRefresh";
-
 export default function AksiyonlarPage() {
-  useDbRefresh();
   const { t } = useTranslation();
 
   const columns = [

@@ -83,10 +83,7 @@ function SummaryPills({ items }: { items: { text: string; color?: string }[] }) 
   );
 }
 
-import { useDbRefresh } from "@/hooks/useDbRefresh";
-
 export default function WorkspacePage() {
-  useDbRefresh();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { name, department, title, initials } = useCurrentUser();

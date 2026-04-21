@@ -60,10 +60,7 @@ const fadeUp = {
   },
 };
 
-import { useDbRefresh } from "@/hooks/useDbRefresh";
-
 export default function DashboardPage() {
-  useDbRefresh();
   const { t } = useTranslation();
   const sidebarTheme = useSidebarTheme();
   const navigate = useNavigate();
