@@ -236,11 +236,11 @@ export default function WorkspacePage() {
               type="button"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="h-10 w-10 rounded-xl border border-tyro-border bg-tyro-surface flex items-center justify-center cursor-pointer hover:bg-tyro-bg transition-colors shrink-0 disabled:opacity-50"
+              className="btn-expandable border border-tyro-border bg-tyro-surface text-tyro-text-secondary text-[13px] font-medium hover:bg-tyro-bg hover:border-tyro-navy/20 shrink-0 disabled:opacity-50 cursor-pointer"
               whileTap={{ scale: 0.93 }}
-              title={t("workspace.refreshData")}
             >
-              <RefreshCw size={16} className={`text-tyro-text-secondary ${refreshing ? "animate-spin" : ""}`} />
+              <RefreshCw size={14} className={`shrink-0 ${refreshing ? "animate-spin" : ""}`} />
+              <span>{t("workspace.refreshData")}</span>
             </motion.button>
 
             <motion.button
