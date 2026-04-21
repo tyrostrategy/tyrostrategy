@@ -3,6 +3,7 @@ import { Suspense, lazy, type ReactNode } from "react";
 import { AuthGuard } from "@/lib/auth/AuthGuard";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { RolePermissions } from "@/types";
+import { getFirstAccessiblePath } from "@/lib/navOrder";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import OfflineBanner from "@/components/shared/OfflineBanner";
 
@@ -29,13 +30,23 @@ const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 function ProtectedRoute({ pageKey, children }: { pageKey: keyof RolePermissions["pages"]; children: ReactNode }) {
   const { canAccessPage } = usePermissions();
   if (!canAccessPage(pageKey)) {
-    // Fallback is /workspace, but /workspace itself is now gated by
-    // `anasayfa` — if that's what was denied, fall through to /profil
-    // (always accessible) to avoid a redirect loop.
-    if (pageKey === "anasayfa") return <Navigate to="/profil" replace />;
-    return <Navigate to="/workspace" replace />;
+    // Redirect to the first Sidebar-ordered page this role CAN reach.
+    // Avoids sending a Management user who lacks /workspace access
+    // to a wrong page; Sidebar's order is the single source of truth
+    // (see src/lib/navOrder.ts).
+    return <Navigate to={getFirstAccessiblePath(canAccessPage)} replace />;
   }
   return <>{children}</>;
+}
+
+/**
+ * Root "/" handler — picks the first Sidebar path the current user
+ * has permission to open. Sits inside AuthGuard so canAccessPage has
+ * a loaded permissions set.
+ */
+function HomeRedirect() {
+  const { canAccessPage } = usePermissions();
+  return <Navigate to={getFirstAccessiblePath(canAccessPage)} replace />;
 }
 
 function Loading() {
@@ -57,7 +68,6 @@ export default function App() {
     <HashRouter>
       <Suspense fallback={<Loading />}>
         <Routes>
-          <Route path="/" element={<Navigate to="/workspace" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route
             element={
@@ -66,6 +76,10 @@ export default function App() {
               </AuthGuard>
             }
           >
+            {/* Root "/" — inside AuthGuard so permissions are loaded.
+                HomeRedirect walks Sidebar order and lands on the first
+                page this role can actually open. */}
+            <Route path="/" element={<HomeRedirect />} />
             <Route path="/workspace" element={<ProtectedRoute pageKey="anasayfa"><PageSuspense><WorkspacePage /></PageSuspense></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute pageKey="kpi"><PageSuspense><DashboardPage /></PageSuspense></ProtectedRoute>} />
             <Route path="/projeler" element={<ProtectedRoute pageKey="projeler"><PageSuspense><ProjelerPage /></PageSuspense></ProtectedRoute>} />

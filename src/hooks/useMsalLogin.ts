@@ -100,7 +100,10 @@ export function useMsalLogin() {
       }
 
       applyUser(user);
-      navigate("/workspace");
+      // Land on "/" — HomeRedirect picks the first Sidebar-ordered page
+      // the role can open (Yönetim rolü sadece Görünümler'e yetkili ise
+      // /dashboard'a düşer gibi). See src/lib/navOrder.ts.
+      navigate("/");
     } catch (err: unknown) {
       const msalErr = err as { errorCode?: string; name?: string; message?: string };
       // Ignore user-cancelled interactions

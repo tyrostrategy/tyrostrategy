@@ -86,7 +86,10 @@ type ZoomLevel = "quarter" | "year" | "all";
 const LABEL_COL_W = 240;
 
 // ─── Main Component ──────────────────────────────────────────
+import { useDbRefresh } from "@/hooks/useDbRefresh";
+
 export default function KokpitPage() {
+  useDbRefresh();
   const { t } = useTranslation();
   const SORT_LABELS: Record<string, string> = {
     id: t("kokpit.sort.id"),
