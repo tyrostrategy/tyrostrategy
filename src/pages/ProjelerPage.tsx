@@ -39,10 +39,7 @@ function formatDate(dateStr: string): string {
 
 const INITIAL_VISIBLE = new Set(["name", "owner", "source", "tags", "status", "startDate", "endDate", "reviewDate", "aksiyonCount", "actions"]);
 
-import { useDbRefresh } from "@/hooks/useDbRefresh";
-
 export default function ProjelerPage() {
-  useDbRefresh();                         // pull fresh data from Supabase on mount
   const { t } = useTranslation();
   const sidebarTheme = useSidebarTheme();
 
