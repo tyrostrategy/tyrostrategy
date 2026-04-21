@@ -154,11 +154,18 @@ function recalcProjeProgress(
   });
 }
 
+// In Supabase mode the DB is the source of truth — start EMPTY so the
+// user never sees mock seeds leak through while the initial fetch is
+// in flight (or if it fails). Mock mode keeps its seed data so the
+// developer loop still renders something useful offline.
+const INITIAL_DATA = isSupabaseMode
+  ? { projeler: [], aksiyonlar: [], tagDefinitions: [] }
+  : { ...getInitialData(), tagDefinitions: getInitialTagDefinitions() };
+
 export const useDataStore = create<DataState>()(
   persist(
     (set, get) => ({
-      ...getInitialData(),
-      tagDefinitions: getInitialTagDefinitions(),
+      ...INITIAL_DATA,
       users: [],
 
       // Users CRUD
@@ -454,7 +461,12 @@ export const useDataStore = create<DataState>()(
       },
     }),
     {
-      name: "tyro-data-store-v7",
+      // v8 — version bump on purpose. Prior v7 stores on users' browsers
+      // carry mock-seeded projeler/aksiyonlar from a time when the app
+      // started with `getInitialData()`. Renaming the key makes Zustand
+      // ignore the old cache so nobody sees stale mock rows anymore;
+      // the Supabase fetch on startup fills the empty store.
+      name: "tyro-data-store-v8",
       skipHydration: true,
       partialize: (state) => ({
         projeler: state.projeler,

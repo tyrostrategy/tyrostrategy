@@ -13,19 +13,30 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   const mockLoggedIn = useUIStore((s) => s.mockLoggedIn);
   const users = useDataStore((s) => s.users);
 
-  // Auto-resolve user after page refresh.
-  // MSAL account persists in localStorage but app state resets.
+  // Re-apply the logged-in user from the FRESH users list on every
+  // meaningful change:
+  //   • page refresh (MSAL account persists, app state resets)
+  //   • Supabase fetch completes after login and delivers newer rows
+  //   • an admin changes this user's role in another browser and we
+  //     refresh the data (role, display name, department, locale).
+  //
+  // Previously this effect early-returned when `mockLoggedIn` was true,
+  // which meant once the app booted from a localStorage-cached session,
+  // any DB-side change (role flip, etc.) was invisible until a full
+  // logout + login — now applyUser re-runs idempotently whenever the
+  // users array updates, so every refresh of the data propagates.
   useEffect(() => {
-    if (!isAuthenticated || mockLoggedIn || accounts.length === 0) return;
+    if (!isAuthenticated || accounts.length === 0) return;
     if (inProgress !== InteractionStatus.None) return;
     if (users.length === 0) return; // Wait for DB users to load
     const email = accounts[0].username.toLowerCase().trim();
     const user = users.find((u) => u.email.toLowerCase() === email);
     if (user) {
-      // applyUser also sets the Supabase session context (RLS) for us
+      // applyUser also sets the Supabase session context (RLS) for us.
+      // Safe to re-call — writes the same values if nothing changed.
       applyUser(user);
     }
-  }, [isAuthenticated, mockLoggedIn, accounts, users, inProgress]);
+  }, [isAuthenticated, accounts, users, inProgress]);
 
   // Wait for MSAL to finish initializing
   if (inProgress !== InteractionStatus.None) {

@@ -30,19 +30,25 @@ export default function GuvenlikPage() {
     Management: t("security.managementReadOnly"),
   };
 
+  // Order mirrors Sidebar's getNavSections (Ana Menü → Görünümler → Sistem).
+  // raporKonfigurasyonu is a Dashboard sub-tab rather than its own sidebar
+  // entry, so it slots right after kpi (Dashboard) in the Görünümler band.
   const PAGE_LABELS: Record<keyof PagePermissions, string> = {
+    // — Ana Menü —
     anasayfa: t("nav.home"),
-    kpi: t("nav.kpi"),
-    raporKonfigurasyonu: t("dashboard.reportWizard"),
+    stratejikKokpit: t("nav.stratejikKokpit"),
     projeler: t("nav.objectives"),
     aksiyonlar: t("nav.actions"),
-    gantt: t("nav.gantt"),
-    stratejikKokpit: t("nav.stratejikKokpit"),
+    // — Görünümler —
+    kpi: t("nav.kpi"),
+    raporKonfigurasyonu: t("dashboard.reportWizard"),
     tMap: "T-Map",
     tAlignment: "T-Align",
+    gantt: t("nav.gantt"),
+    // — Sistem —
     kullanicilar: t("nav.users"),
-    ayarlar: t("nav.settings"),
     guvenlik: t("nav.security"),
+    ayarlar: t("nav.settings"),
   };
 
   const CRUD_LABELS: Record<keyof CrudPermission, string> = {

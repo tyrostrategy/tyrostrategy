@@ -52,7 +52,10 @@ const COLUMN_UIDS = ["name", "role", "status", "email", "department", "locale", 
 
 const INITIAL_VISIBLE = new Set(["name", "role", "status", "email", "department", "locale", "projeCount", "actions"]);
 
+import { useDbRefresh } from "@/hooks/useDbRefresh";
+
 export default function KullanicilarPage() {
+  useDbRefresh();
   const { t } = useTranslation();
 
   const columns = useMemo(() => [
