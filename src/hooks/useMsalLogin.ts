@@ -32,14 +32,20 @@ export function resolveUser(email: string, users: { email: string; displayName: 
 
 export function applyUser(user: { email?: string; displayName: string; role: string; locale?: string }) {
   const ui = useUIStore.getState();
-  ui.setMockUserName(user.displayName);
-  ui.setMockUserRole(user.role);
-  if (user.locale) ui.setLocale(user.locale as "tr" | "en");
-  ui.setMockLoggedIn(true);
-  // Tell Supabase who we are — the fetch wrapper will attach an
-  // X-User-Email header on every subsequent request. RLS policies
-  // (migration 006 + 008) resolve role from this header.
+  // Guard every setter with a "did it actually change?" check.
+  // Without this, AuthGuard's users-array effect could loop: users
+  // change → applyUser → setLocale → syncUserLocale → dataStore.updateUser
+  // → users array new reference → AuthGuard re-fires → applyUser → …
+  // The equality-check turns each setter into a no-op when the values
+  // are already correct, breaking the cycle.
+  if (ui.mockUserName !== user.displayName) ui.setMockUserName(user.displayName);
+  if (ui.mockUserRole !== user.role) ui.setMockUserRole(user.role);
+  if (user.locale && ui.locale !== user.locale) ui.setLocale(user.locale as "tr" | "en");
+  if (!ui.mockLoggedIn) ui.setMockLoggedIn(true);
   if (user.email) {
+    // Tell Supabase who we are — the fetch wrapper will attach an
+    // X-User-Email header on every subsequent request. RLS policies
+    // (migration 006 + 008) resolve role from this header.
     setSupabaseUserContext(user.email);
   }
 }
