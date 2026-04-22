@@ -34,12 +34,23 @@ export const NAV_ORDER: { path: string; pageKey: PageKey }[] = [
  * protected route blocks navigation (e.g. user tried to open /workspace
  * but has no `anasayfa` permission).
  *
- * /profil is always reachable (no permission gate), so it's the last
- * resort for roles with no list-page access at all.
+ * Routing öncelik sırası (user kararı 2026-04-23):
+ *   1. Anasayfa (`/workspace`) — yetki varsa buraya in
+ *   2. Raporlar (`/dashboard`) — Anasayfa yoksa buraya in
+ *   3. Sidebar sırasındaki ilk erişilebilir sayfa — diğerleri de yoksa
+ *   4. /profil — hiçbir list sayfasına yetki yoksa son çare
+ *
+ * /profil her zaman erişilebilir (permission gate yok).
  */
 export function getFirstAccessiblePath(canAccess: (key: PageKey) => boolean): string {
+  // 1. Anasayfa öncelikli
+  if (canAccess("anasayfa")) return "/workspace";
+  // 2. Raporlar ikinci öncelik
+  if (canAccess("kpi")) return "/dashboard";
+  // 3. Sidebar sırasında diğer erişilebilir sayfa
   for (const { path, pageKey } of NAV_ORDER) {
     if (canAccess(pageKey)) return path;
   }
+  // 4. Son çare
   return "/profil";
 }
