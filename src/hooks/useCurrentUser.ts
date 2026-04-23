@@ -39,10 +39,11 @@ export function useCurrentUser(): CurrentUser {
   const name = mockUserName;
   const initials = getInitials(name);
 
-  const validRoles: UserRole[] = ["Admin", "Proje Lideri", "Kullanıcı", "Management"];
+  const validRoles: UserRole[] = ["Admin", "Proje Lideri", "Management"];
   // localStorage-cached role — used ONLY as a fallback when the DB
   // row can't be resolved yet (cold boot before Supabase fetch lands).
-  const cachedRole: UserRole = validRoles.includes(mockUserRole) ? mockUserRole : "Kullanıcı";
+  // Fallback "Proje Lideri" — en az ayrıcalıklı, viewOnlyOwn=true rol.
+  const cachedRole: UserRole = validRoles.includes(mockUserRole) ? mockUserRole : "Proje Lideri";
 
   // DB is the single source of truth. If the admin changes this user's
   // role in one browser, the Supabase fetch on this browser will land

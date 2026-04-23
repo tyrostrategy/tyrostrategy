@@ -6,7 +6,9 @@ export type ProjectStatus = "active" | "planned" | "completed" | "delayed";
 export type Priority = "critical" | "high" | "medium" | "low";
 
 // ===== RBAC =====
-export type UserRole = "Admin" | "Proje Lideri" | "Kullanıcı" | "Management";
+// "Kullanıcı" rolü 2026-04-24'te kaldırıldı (migration 019).
+// 3 rol yeterli: Admin, Proje Lideri, Management.
+export type UserRole = "Admin" | "Proje Lideri" | "Management";
 
 export interface CrudPermission {
   create: boolean;

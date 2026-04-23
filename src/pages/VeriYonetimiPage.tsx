@@ -83,7 +83,7 @@ const HEADER_MAPS: Record<string, Record<string, string>> = {
 };
 
 const VALID_ROLES: ReadonlySet<UserRole> = new Set<UserRole>([
-  "Admin", "Proje Lideri", "Kullanıcı", "Management",
+  "Admin", "Proje Lideri", "Management",
 ]);
 
 /**

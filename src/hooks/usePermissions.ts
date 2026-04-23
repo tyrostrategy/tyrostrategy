@@ -80,18 +80,14 @@ export function usePermissions() {
 
   const filterAksiyonlar = useCallback((list: Aksiyon[]): Aksiyon[] => {
     if (!perms.viewOnlyOwn) return list;
-    // Project membership ≠ project leadership.
-    //   * Proje Lideri / Management (leader-tier roles): see every aksiyon
-    //     on a project they own or participate in — team-lead context.
-    //   * Kullanıcı (member-tier role): only their own aksiyons, even on
-    //     projects where they're a member. They still SEE the project
-    //     itself (via filterProjeler + projeCount), but the aksiyon list
-    //     stays personal.
-    if (user.role === "Kullanıcı") {
-      return list.filter((a) => a.owner?.toLowerCase().trim() === normalizedName);
-    }
+    // Migration 018 sonrası: aksiyon erişimi = proje erişimine bağlı.
+    // RLS zaten server tarafında filtreleme yapıyor — burası defensive
+    // kalıyor. Eskiden Kullanıcı rolü için "sadece kendi owner'ı olduğu
+    // aksiyon" ayrımı vardı ama user kararıyla kaldırıldı (2026-04-24):
+    // "Projede lider ve üyeler var, hepsi aksiyonun ownerıdır."
+    // Yani proje görünüyorsa tüm aksiyonları görünür.
     return list.filter((a) => myAksiyonIds.has(a.id));
-  }, [perms.viewOnlyOwn, user.role, normalizedName, myAksiyonIds]);
+  }, [perms.viewOnlyOwn, myAksiyonIds]);
 
   // ===== CRUD izinleri =====
 

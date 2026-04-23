@@ -9,6 +9,7 @@ import {
 } from "@/lib/data/mock-adapter";
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 import { supabaseAdapter } from "@/lib/data/supabaseAdapter";
+import { setSupabaseUserContext } from "@/lib/supabase";
 import { toast } from "@/stores/toastStore";
 import i18n from "@/lib/i18n";
 import { departments } from "@/config/departments";
@@ -510,24 +511,96 @@ function buildMockUsers(): AppUser[] {
   );
 }
 
+/** Triggers the full Supabase refetch and syncs store. Exposed so the
+ *  login flow can call it after authenticating (instead of relying on
+ *  the module-level fire-on-boot pattern, which wastes ~600 KB egress
+ *  on every bouncer visit to /login). Idempotent — safe to call multiple
+ *  times; last-write-wins setState. */
+export async function fetchAllFromSupabase(): Promise<void> {
+  if (!isSupabaseMode) return;
+  try {
+    const [projeler, aksiyonlar, tagDefinitions, users] = await Promise.all([
+      supabaseAdapter.fetchProjeler(),
+      supabaseAdapter.fetchAksiyonlar(),
+      supabaseAdapter.fetchTagDefinitions(),
+      supabaseAdapter.fetchUsers(),
+    ]);
+    console.log(`[Supabase] Loaded ${projeler.length} projeler, ${aksiyonlar.length} aksiyonlar, ${tagDefinitions.length} tags, ${users.length} users`);
+    useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users });
+  } catch (err) {
+    const e = err as { message?: string; code?: string };
+    console.error("[Supabase] fetchAllFromSupabase failed:", e?.message || e?.code || JSON.stringify(err));
+  }
+}
+
 // Manual hydrate — prevents infinite loop with useSyncExternalStore
 if (typeof window !== "undefined") {
   useDataStore.persist.rehydrate();
 
   if (isSupabaseMode) {
-    // Supabase mode: fetch fresh data from DB on startup
-    Promise.all([
-      supabaseAdapter.fetchProjeler(),
-      supabaseAdapter.fetchAksiyonlar(),
-      supabaseAdapter.fetchTagDefinitions(),
-      supabaseAdapter.fetchUsers(),
-    ]).then(([projeler, aksiyonlar, tagDefinitions, users]) => {
-      console.log(`[Supabase] Loaded ${projeler.length} projeler, ${aksiyonlar.length} aksiyonlar, ${tagDefinitions.length} tags, ${users.length} users`);
+    // Auth-aware boot fetch: module-level fetch'i sadece daha önce giriş
+    // yapmış kullanıcılar için tetikle. Bouncer'lar (ilk kez gelen, giriş
+    // yapmayan veya MSAL oturumu olmayan) 600 KB egress yemesin.
+    //
+    // Signal'lar:
+    //   • URL /login → kesin bouncer, fetch atla
+    //   • MSAL sessionStorage'da account anahtarı yok → cold bouncer, atla
+    //   • localStorage'da `tyro-mock-user` yok (DEV dışında hiç yok zaten) → atla
+    //
+    // Login başarılı olunca useMsalLogin.login() fetchAllFromSupabase'i
+    // doğrudan çağırıyor. F5 / direct link senaryolarında MSAL session'ı
+    // varsa AuthGuard zaten users array'inin dolmasını bekliyor, fetch
+    // fire olmalı.
+    const hash = window.location.hash || "";
+    const path = window.location.pathname || "";
+    const isLoginRoute = hash.startsWith("#/login") || path === "/login";
+    // MSAL hesabı sessionStorage'da saklanır (msalConfig sessionStorage mode).
+    // `.account.` substring'i sadece authenticated state'te oluşur; `msal.version`
+    // gibi jenerik key'ler değil.
+    const hasMsalAccount = Object.keys(sessionStorage).some(
+      (k) => k.startsWith("msal.") && k.includes(".account."),
+    );
+    // Mock auth (DEV) için localStorage signal
+    const hasMockAuth = !!localStorage.getItem("tyro-mock-user");
 
-      useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users });
-    }).catch((err) => {
-      console.error("[Supabase] Initial fetch failed, using cached data:", err?.message || err?.code || JSON.stringify(err));
-    });
+    if (!isLoginRoute && (hasMsalAccount || hasMockAuth)) {
+      // ÖNCE X-User-Email header'ını set et — migration 018 RLS policy'leri
+      // app.current_email() null ise 0 satır döndürüyor. F5 senaryosunda
+      // AuthGuard applyUser'ı çağırmaz (users array boş → early return),
+      // dolayısıyla setSupabaseUserContext orada tetiklenmez. Burada persist
+      // edilmiş email'i kendimiz bulup set ediyoruz.
+      let bootEmail: string | null = null;
+      // MSAL accounts: sessionStorage'daki `msal.*.account.*` key'inin value
+      // alanı JSON ve `username` (email) içeriyor.
+      for (const k of Object.keys(sessionStorage)) {
+        if (k.startsWith("msal.") && k.includes(".account.")) {
+          try {
+            const obj = JSON.parse(sessionStorage.getItem(k) || "{}");
+            if (typeof obj?.username === "string" && obj.username.includes("@")) {
+              bootEmail = obj.username.toLowerCase().trim();
+              break;
+            }
+          } catch { /* corrupt JSON → skip */ }
+        }
+      }
+      // DEV mock fallback: mockUserName → lookup email in DB is not possible
+      // yet (fetch henüz yapılmadı), o yüzden localStorage'a yeni bir key
+      // ekleyeceğiz (aşağıda). Şimdilik mockEmail'i okuyoruz.
+      if (!bootEmail) {
+        bootEmail = localStorage.getItem("tyro-mock-email");
+      }
+      if (bootEmail) {
+        void setSupabaseUserContext(bootEmail);
+        console.log(`[Supabase] Boot email: ${bootEmail}`);
+      } else {
+        console.warn("[Supabase] Auth signal var ama email bulunamadı — fetch boş dönecek");
+      }
+      void fetchAllFromSupabase();
+    } else {
+      console.log(
+        `[Supabase] Skipping boot fetch (isLogin=${isLoginRoute} hasMsal=${hasMsalAccount} hasMock=${hasMockAuth})`,
+      );
+    }
   } else {
     // Mock mode: populate users from departments config so KullanicilarPage works
     useDataStore.setState({ users: buildMockUsers() });
