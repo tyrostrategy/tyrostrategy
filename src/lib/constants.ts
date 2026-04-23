@@ -5,7 +5,7 @@ import type { EntityStatus, Source, UserRole } from "@/types";
 const ROLE_I18N_KEY: Record<UserRole, string> = {
   Admin: "roles.admin",
   "Proje Lideri": "roles.projectLeader",
-  Kullanıcı: "roles.user",
+  Management: "roles.management",
 };
 
 /** Get a translated role label */

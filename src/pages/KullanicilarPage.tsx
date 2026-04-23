@@ -17,7 +17,7 @@ import SlidingPanel from "@/components/shared/SlidingPanel";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Mail, Building2, Shield, Briefcase, ListChecks, Check } from "lucide-react";
 
-type YetkiRol = "Admin" | "Proje Lideri" | "Kullanıcı" | "Management";
+type YetkiRol = "Admin" | "Proje Lideri" | "Management";
 
 interface UserRow {
   id: string;
@@ -36,8 +36,7 @@ interface UserRow {
 
 function assignRole(projeCount: number): YetkiRol {
   if (projeCount >= 5) return "Admin";
-  if (projeCount >= 1) return "Proje Lideri";
-  return "Kullan\u0131c\u0131";
+  return "Proje Lideri";
 }
 
 function nameToEmail(name: string): string {
@@ -87,14 +86,14 @@ export default function KullanicilarPage() {
   const [newEmail, setNewEmail] = useState("");
   const [newDept, setNewDept] = useState("");
   const [newTitle, setNewTitle] = useState("");
-  const [newRole, setNewRole] = useState<YetkiRol>("Kullanıcı");
+  const [newRole, setNewRole] = useState<YetkiRol>("Proje Lideri");
   const [newLocale, setNewLocale] = useState<"tr" | "en">("tr");
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editDept, setEditDept] = useState("");
   const [editTitle, setEditTitle] = useState("");
-  const [editRole, setEditRole] = useState<YetkiRol>("Kullanıcı");
+  const [editRole, setEditRole] = useState<YetkiRol>("Proje Lideri");
   const [editLocale, setEditLocale] = useState<"tr" | "en">("tr");
   const [editActive, setEditActive] = useState(true);
 
@@ -226,7 +225,6 @@ export default function KullanicilarPage() {
         const roleConfig: Record<YetkiRol, { color?: string; style?: React.CSSProperties; icon: typeof Crown }> = {
           Admin: { style: { color: sidebarTheme.accentColor }, icon: Crown },
           "Proje Lideri": { color: "text-tyro-gold", icon: Star },
-          "Kullanıcı": { color: "text-tyro-text-muted", icon: UserIcon },
           Management: { color: "text-violet-600", icon: Crown },
         };
         const rc = roleConfig[user.role];
@@ -505,7 +503,6 @@ export default function KullanicilarPage() {
             <Select selectedKeys={[newRole]} onSelectionChange={(keys) => setNewRole(Array.from(keys)[0] as YetkiRol)} variant="bordered" size="sm" placeholder={t("users.selectRole")} classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}>
               <SelectItem key="Admin">{t("roles.admin")}</SelectItem>
               <SelectItem key="Proje Lideri">{t("roles.projectLeader")}</SelectItem>
-              <SelectItem key="Kullanıcı">{t("users.user")}</SelectItem>
               <SelectItem key="Management">{t("roles.management")}</SelectItem>
             </Select>
           </div>
@@ -529,7 +526,7 @@ export default function KullanicilarPage() {
                     { label: t("users.department"), value: newDept.trim() || "—" },
                   ],
                 });
-                setNewName(""); setNewEmail(""); setNewDept(""); setNewTitle(""); setNewRole("Kullanıcı"); setNewLocale("tr");
+                setNewName(""); setNewEmail(""); setNewDept(""); setNewTitle(""); setNewRole("Proje Lideri"); setNewLocale("tr");
                 setShowNewForm(false);
               }}>
               {t("common.save")}
@@ -563,7 +560,6 @@ export default function KullanicilarPage() {
                     const rc: Record<YetkiRol, { color?: string; style?: React.CSSProperties; icon: typeof Crown }> = {
                       Admin: { style: { color: sidebarTheme.accentColor }, icon: Crown },
                       "Proje Lideri": { color: "text-tyro-gold", icon: Star },
-                      "Kullanıcı": { color: "text-tyro-text-muted", icon: UserIcon },
                       Management: { color: "text-violet-600", icon: Crown },
                     };
                     const c = rc[selectedUser.role];
@@ -635,8 +631,7 @@ export default function KullanicilarPage() {
                   <Select selectedKeys={[editRole]} onSelectionChange={(keys) => setEditRole(Array.from(keys)[0] as YetkiRol)} variant="bordered" size="sm" placeholder={t("users.selectRole")}>
                     <SelectItem key="Admin">{t("roles.admin")}</SelectItem>
                     <SelectItem key="Proje Lideri">{t("roles.projectLeader")}</SelectItem>
-                    <SelectItem key="Kullanıcı">{t("users.user")}</SelectItem>
-                    <SelectItem key="Management">{t("roles.management")}</SelectItem>
+                          <SelectItem key="Management">{t("roles.management")}</SelectItem>
                   </Select>
                 </div>
                 <div>

@@ -48,26 +48,8 @@ const PROJE_LIDERI_DEFAULTS: RolePermissions = {
   viewOnlyOwn: true,
 };
 
-const KULLANICI_DEFAULTS: RolePermissions = {
-  pages: {
-    anasayfa: true,
-    kpi: false,
-    raporKonfigurasyonu: false,
-    projeler: true,
-    aksiyonlar: true,
-    gantt: true,
-    stratejikKokpit: false,
-    tMap: false,
-    tAlignment: false,
-    kullanicilar: false,
-    ayarlar: false,
-    guvenlik: false,
-  },
-  proje: { create: false, edit: false, delete: false },
-  aksiyon: { create: true, edit: true, delete: false },
-  editOnlyOwn: true,
-  viewOnlyOwn: true,
-};
+// "Kullanıcı" rolü kaldırıldı (2026-04-24, migration 019). Proje Lideri
+// rolü onun yerine genel amaçlı kısıtlı rol olarak kullanılıyor.
 
 const SUB_MANAGEMENT_DEFAULTS: RolePermissions = {
   pages: {
@@ -93,7 +75,6 @@ const SUB_MANAGEMENT_DEFAULTS: RolePermissions = {
 export const DEFAULT_PERMISSIONS: Record<UserRole, RolePermissions> = {
   Admin: ADMIN_DEFAULTS,
   "Proje Lideri": PROJE_LIDERI_DEFAULTS,
-  Kullanıcı: KULLANICI_DEFAULTS,
   "Management": SUB_MANAGEMENT_DEFAULTS,
 };
 
@@ -152,7 +133,6 @@ function loadFromStorage(): Record<UserRole, RolePermissions> {
       return {
         Admin: mergePerms(ADMIN_DEFAULTS, parsed.Admin),
         "Proje Lideri": mergePerms(PROJE_LIDERI_DEFAULTS, parsed["Proje Lideri"]),
-        Kullanıcı: mergePerms(KULLANICI_DEFAULTS, parsed["Kullanıcı"]),
         "Management": mergePerms(SUB_MANAGEMENT_DEFAULTS, parsed["Management"]),
       };
     }

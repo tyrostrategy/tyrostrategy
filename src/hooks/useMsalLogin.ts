@@ -4,7 +4,7 @@ import { InteractionRequiredAuthError } from "@azure/msal-browser";
 import { useNavigate } from "react-router-dom";
 import { loginRequest } from "@/lib/auth/msalConfig";
 import { useUIStore } from "@/stores/uiStore";
-import { useDataStore } from "@/stores/dataStore";
+import { useDataStore, fetchAllFromSupabase } from "@/stores/dataStore";
 import { setSupabaseUserContext } from "@/lib/supabase";
 
 /** Detect mobile / tablet browsers where popups are unreliable */
@@ -47,6 +47,11 @@ export function applyUser(user: { email?: string; displayName: string; role: str
     // X-User-Email header on every subsequent request. RLS policies
     // (migration 006 + 008) resolve role from this header.
     setSupabaseUserContext(user.email);
+    // Persist email — module-level boot code (dataStore.ts) F5'te bu
+    // key'i okuyup context'i hemen set ediyor, user array'i beklemeden.
+    // Migration 018 RLS policy'leri current_email NULL ise hiç satır
+    // döndürmediği için bu şart.
+    localStorage.setItem("tyro-mock-email", user.email);
   }
 }
 
@@ -89,8 +94,16 @@ export function useMsalLogin() {
         email = (result.account.username || "").toLowerCase().trim();
       }
 
-      // 3. Wait for users to load from Supabase (may still be loading)
-      const users = await waitForUsers();
+      // 3. Users verisi yükle — dataStore module-level fetch /login'de
+      // atlandığı için store boş olabilir. Eğer zaten doluysa (F5 + tekrar
+      // login gibi edge case) waitForUsers anında resolve eder, extra fetch
+      // olmaz. Boşsa fetchAllFromSupabase'i çağırıp hepsini tek seferde
+      // tazeliyoruz — bu hem users'ı (resolveUser için şart) hem de login
+      // sonrası home ekranında lazım olan projeler/aksiyonlar/tag'leri yükler.
+      if (useDataStore.getState().users.length === 0) {
+        await fetchAllFromSupabase();
+      }
+      const users = await waitForUsers(); // Safety net — ya store'dan ya fetch'ten dolu döner
       const user = resolveUser(email, users);
 
       if (!user) {
