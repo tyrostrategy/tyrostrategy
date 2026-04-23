@@ -94,7 +94,14 @@ export function useMsalLogin() {
         email = (result.account.username || "").toLowerCase().trim();
       }
 
-      // 3. Users verisi yükle — dataStore module-level fetch /login'de
+      // 3. X-User-Email header'ını ÖNCE set et — migration 018 RLS policy'leri
+      // current_email NULL ise 0 satır döndürüyor. Aşağıdaki fetchAllFromSupabase
+      // resolveUser için users array'ini doldurmak zorunda; header olmadan 0
+      // dönerdi ve "Bu hesap sisteme tanımlanmamış" hatasına düşerdik.
+      // applyUser ilerleyen satırlarda bunu tekrar çağırıyor — idempotent.
+      setSupabaseUserContext(email);
+
+      // 4. Users verisi yükle — dataStore module-level fetch /login'de
       // atlandığı için store boş olabilir. Eğer zaten doluysa (F5 + tekrar
       // login gibi edge case) waitForUsers anında resolve eder, extra fetch
       // olmaz. Boşsa fetchAllFromSupabase'i çağırıp hepsini tek seferde
@@ -108,6 +115,8 @@ export function useMsalLogin() {
 
       if (!user) {
         setError(`Bu hesap sisteme tanımlanmamış: ${email}`);
+        // Context'i temizle — gelecek isteklerde yanlış email kullanılmasın
+        setSupabaseUserContext(null);
         // Clear MSAL session — use redirect on mobile
         if (isMobile()) {
           await instance.logoutRedirect({ onRedirectNavigate: () => false }).catch(() => {});
