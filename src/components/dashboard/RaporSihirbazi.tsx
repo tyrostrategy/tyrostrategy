@@ -484,6 +484,16 @@ export default function RaporSihirbazi() {
 <style>
 :root { ${cssVars.join(" ")} }
 ${allCSS}
+/* HTML export — tutarlı görünüm için:
+   * Yalnızca-print olarak işaretli action blokları (hidden print:block) görünür olsun.
+     Bu, UI'daki collapse state (expandedIds) veya "sections.actions" filtresinden
+     bağımsız olarak static HTML dosyasında aksiyon listesini PDF ile aynı şekilde
+     sunar. Filtre kapalıysa (sections.actions=false), wrapper hiç render edilmez
+     → HTML'de de görünmez. Açıksa → görünür. PDF ile eşleşir.
+   * Ekran collapse toggle butonları (print:hidden) HTML export'ta gizlensin —
+     static dosyada tıklanamayacağı için gereksiz. */
+.hidden.print\\:block { display: block !important; }
+.print\\:hidden { display: none !important; }
 /* Override for standalone */
 body { max-width: 900px; margin: 0 auto; padding: 2rem; background: #fff; }
 @media print { @page { margin: 1.5cm; size: A4 portrait; } body { padding: 0; } }
