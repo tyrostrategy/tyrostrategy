@@ -84,6 +84,8 @@ export default function RaporSihirbazi() {
     { id: "Türkiye", label: "Türkiye", color: "#c8922a" },
     { id: "International", label: "International", color: "#10b981" },
     { id: "Kurumsal", label: "Kurumsal", color: "#3b82f6" },
+    { id: "LALE", label: "LALE", color: "#ec4899" },
+    { id: "Organik", label: "Organik", color: "#84cc16" },
   ];
 
   const REPORT_SECTIONS = [
@@ -1180,15 +1182,16 @@ ${clone.outerHTML}
               (h) => h.status === "High Risk" || h.status === "At Risk",
             );
 
-            const insights: { Icon: typeof Check; color: string; text: string; type: "success" | "warning" | "info" }[] = [];
+            // Insights: her madde başlık (count ile) + isim listesi (bullet).
+            // Önceden tek satırda comma-join olduğu için uzun listeler
+            // okunaksızdı; şimdi başlık üstte, proje isimleri alt alta bullet.
+            const insights: { Icon: typeof Check; color: string; title: string; items: string[]; type: "success" | "warning" | "info" }[] = [];
             if (openedThisMonth.length > 0) {
               insights.push({
                 Icon: TrendingUp,
                 color: "#10b981",
-                text: t("dashboard.insightOpenedThisMonth", {
-                  count: openedThisMonth.length,
-                  names: openedThisMonth.map((h) => h.name).join(", "),
-                }),
+                title: t("dashboard.insightOpenedThisMonth", { count: openedThisMonth.length }),
+                items: openedThisMonth.map((h) => h.name),
                 type: "info",
               });
             }
@@ -1196,10 +1199,8 @@ ${clone.outerHTML}
               insights.push({
                 Icon: Trophy,
                 color: "#c8922a",
-                text: t("dashboard.insightClosedThisMonth", {
-                  count: closedThisMonth.length,
-                  names: closedThisMonth.map((h) => h.name).join(", "),
-                }),
+                title: t("dashboard.insightClosedThisMonth", { count: closedThisMonth.length }),
+                items: closedThisMonth.map((h) => h.name),
                 type: "success",
               });
             }
@@ -1207,12 +1208,8 @@ ${clone.outerHTML}
               insights.push({
                 Icon: AlertTriangle,
                 color: "#ef4444",
-                text: t("dashboard.insightAttentionProjects", {
-                  count: attentionProjeler.length,
-                  names: attentionProjeler
-                    .map((h) => `${h.name} (${STATUS_TR[h.status]})`)
-                    .join(", "),
-                }),
+                title: t("dashboard.insightAttentionProjects", { count: attentionProjeler.length }),
+                items: attentionProjeler.map((h) => `${h.name} (${STATUS_TR[h.status]})`),
                 type: "warning",
               });
             }
@@ -1222,16 +1219,32 @@ ${clone.outerHTML}
 
             return (
               <Section num={1} title={t("dashboard.executiveSummary")}>
-                {/* AI Insights */}
+                {/* AI Insights — başlık + bullet list yapısı.
+                    Önceden tek satırda comma-join isim akışı okunaksızdı,
+                    şimdi başlık üstte (ikonlu), proje isimleri alt alta
+                    bullet olarak listeleniyor. */}
                 <div className="glass-card rounded-xl p-4 mb-4">
-                  <p className="text-[11px] font-bold text-tyro-text-muted uppercase tracking-wider mb-2">{t("dashboard.aiInsights")}</p>
-                  <div className="space-y-2">
+                  <p className="text-[11px] font-bold text-tyro-text-muted uppercase tracking-wider mb-3">{t("dashboard.aiInsights")}</p>
+                  <div className="space-y-3">
                     {insights.map((ins, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <ins.Icon size={15} style={{ color: ins.color }} className="shrink-0" />
-                        <p className={`text-[12px] leading-relaxed ${ins.type === "warning" ? "text-amber-700 dark:text-amber-400" : ins.type === "success" ? "text-emerald-700 dark:text-emerald-400" : "text-tyro-text-primary"}`}>
-                          {ins.text}
-                        </p>
+                      <div key={i} className="flex items-start gap-2">
+                        <ins.Icon size={15} style={{ color: ins.color }} className="shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-[12px] font-semibold leading-snug mb-1 ${ins.type === "warning" ? "text-amber-700 dark:text-amber-400" : ins.type === "success" ? "text-emerald-700 dark:text-emerald-400" : "text-tyro-text-primary"}`}>
+                            {ins.title}
+                          </p>
+                          <ul className="space-y-0.5 pl-3">
+                            {ins.items.map((item, j) => (
+                              <li
+                                key={j}
+                                className="text-[12px] leading-relaxed text-tyro-text-secondary relative pl-3 before:content-['•'] before:absolute before:left-0 before:top-0"
+                                style={{ color: ins.type === "warning" ? undefined : undefined }}
+                              >
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
                     ))}
                   </div>
