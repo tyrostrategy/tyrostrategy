@@ -281,16 +281,32 @@ export const supabaseAdapter: DataService = {
       projeTagsMap.set(link.proje_id, arr);
     }
 
-    // Fetch participants (defensive — may have different column names)
+    // Fetch participants — user_email kolonundan email geliyor, client tarafında
+    // display_name bazlı filtre yapıldığı için (usePermissions.myProjeIds,
+    // vs. user.name == display_name) email → display_name çevirisi yapıyoruz.
+    // Böylece Proje.participants her zaman display_name array'i kalıyor; adapter
+    // DB'ye yazarken display_name → email, okurken email → display_name çevirir.
     const projeParticipantsMap = new Map<string, string[]>();
     try {
-      const { data: partLinks } = await supabase.from("proje_participants").select("*");
+      const [{ data: partLinks }, { data: userRows }] = await Promise.all([
+        supabase.from("proje_participants").select("*"),
+        supabase.from("users").select("email, display_name"),
+      ]);
+      const emailToName = new Map<string, string>();
+      for (const u of userRows ?? []) {
+        if (u.email) emailToName.set(u.email.toLowerCase().trim(), u.display_name ?? u.email);
+      }
       for (const link of partLinks ?? []) {
         const projeId = link.proje_id;
-        const userName = link.user_email || link.user_name || link.display_name || "";
-        if (projeId && userName) {
+        const rawValue = link.user_email || link.user_name || link.display_name || "";
+        // Eğer email formatındaysa display_name'e çevir, değilse (legacy data)
+        // olduğu gibi bırak.
+        const resolved = rawValue.includes("@")
+          ? (emailToName.get(rawValue.toLowerCase().trim()) ?? rawValue)
+          : rawValue;
+        if (projeId && resolved) {
           const arr = projeParticipantsMap.get(projeId) ?? [];
-          arr.push(userName);
+          arr.push(resolved);
           projeParticipantsMap.set(projeId, arr);
         }
       }
