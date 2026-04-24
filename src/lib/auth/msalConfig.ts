@@ -11,12 +11,18 @@ export const msalConfig: Configuration = {
     navigateToLoginRequestUrl: false,
   },
   cache: {
-    // sessionStorage (per-tab): tokens evaporate when the tab closes, so an
-    // XSS window is bounded and the token never lingers on disk. Users get a
-    // one-click silent SSO re-login when re-opening the tab (Microsoft's
-    // session cookie is still on login.microsoftonline.com).
-    // Trade-off accepted for defense-in-depth on an enterprise internal app.
-    cacheLocation: "sessionStorage",
+    // localStorage: PWA'da ("ana ekrana ekle" Safari / Android Chrome) ve
+    // normal tarayıcı tab'larında auth state kalıcı. Kullanıcı tekrar email
+    // yazmadan sadece Microsoft Authenticator onayı ile giriyor.
+    //
+    // sessionStorage mode (önceki) PWA'da her kapanışta wipe oluyordu —
+    // kullanıcıya "böyle değildi" dedirten UX regresyonu. XSS saldırı vektörü
+    // bu iç kurumsal app için düşük (MSAL redirect flow + Azure AD + no
+    // user-generated HTML = XSS yüzey alanı yok), o yüzden localStorage
+    // kalıcılığı daha değerli.
+    //
+    // Referans commit: 0771e73 sessionStorage'a geçiş, 2026-04-24 geri dönüş.
+    cacheLocation: "localStorage",
     // Fallback cookie still helps IE/legacy edge cases during the redirect
     // handshake — harmless on modern browsers.
     storeAuthStateInCookie: true,

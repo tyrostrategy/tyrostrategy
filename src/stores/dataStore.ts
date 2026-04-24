@@ -554,10 +554,11 @@ if (typeof window !== "undefined") {
     const hash = window.location.hash || "";
     const path = window.location.pathname || "";
     const isLoginRoute = hash.startsWith("#/login") || path === "/login";
-    // MSAL hesabı sessionStorage'da saklanır (msalConfig sessionStorage mode).
-    // `.account.` substring'i sadece authenticated state'te oluşur; `msal.version`
-    // gibi jenerik key'ler değil.
-    const hasMsalAccount = Object.keys(sessionStorage).some(
+    // MSAL hesabı 2026-04-24 itibarıyla localStorage'da saklanıyor (PWA
+    // desteği için msalConfig sessionStorage → localStorage değişikliği).
+    // `.account.` substring'i sadece authenticated state'te oluşur;
+    // `msal.version` gibi jenerik key'ler değil.
+    const hasMsalAccount = Object.keys(localStorage).some(
       (k) => k.startsWith("msal.") && k.includes(".account."),
     );
     // Mock auth (DEV) için localStorage signal
@@ -570,12 +571,12 @@ if (typeof window !== "undefined") {
       // dolayısıyla setSupabaseUserContext orada tetiklenmez. Burada persist
       // edilmiş email'i kendimiz bulup set ediyoruz.
       let bootEmail: string | null = null;
-      // MSAL accounts: sessionStorage'daki `msal.*.account.*` key'inin value
+      // MSAL accounts: localStorage'daki `msal.*.account.*` key'inin value
       // alanı JSON ve `username` (email) içeriyor.
-      for (const k of Object.keys(sessionStorage)) {
+      for (const k of Object.keys(localStorage)) {
         if (k.startsWith("msal.") && k.includes(".account.")) {
           try {
-            const obj = JSON.parse(sessionStorage.getItem(k) || "{}");
+            const obj = JSON.parse(localStorage.getItem(k) || "{}");
             if (typeof obj?.username === "string" && obj.username.includes("@")) {
               bootEmail = obj.username.toLowerCase().trim();
               break;
