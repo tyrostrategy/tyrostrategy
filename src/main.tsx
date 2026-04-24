@@ -46,17 +46,44 @@ if (hasRealAuth) {
     }
   });
 
-  msalInstance.initialize().then(() => {
-    msalInstance
-      .handleRedirectPromise()
-      .then((response) => {
-        if (response?.account) {
-          msalInstance.setActiveAccount(response.account);
+  msalInstance.initialize().then(async () => {
+    try {
+      const response = await msalInstance.handleRedirectPromise();
+      if (response?.account) {
+        msalInstance.setActiveAccount(response.account);
+      }
+    } catch (err) {
+      console.error("[MSAL] handleRedirectPromise failed:", err);
+    }
+
+    // Mobile loginRedirect sonrası (veya desktop F5 on /login with MSAL cache):
+    // `dataStore` module-level fetch /login route'unda SKIP ediyor (bouncer
+    // koruması) — bu yüzden MSAL auth biten ama store hâlâ boş kaldığı
+    // durumda AuthGuard users.length=0 → "Giriş yapılıyor..." sonsuza kadar.
+    // Burada redirect döndükten sonra, MSAL account varsa fetch'i elden
+    // tetikliyoruz. Module zaten fetch ettiyse (non-login route F5) bu ikinci
+    // çağrı idempotent — aynı veriyi tekrar yazar, loop yok.
+    const accounts = msalInstance.getAllAccounts();
+    const hash = window.location.hash || "";
+    const path = window.location.pathname || "";
+    const isLoginRoute = hash.startsWith("#/login") || path === "/login";
+
+    if (accounts.length > 0 && isLoginRoute) {
+      const email = (accounts[0].username || "").toLowerCase().trim();
+      if (email) {
+        try {
+          const [{ setSupabaseUserContext }, { fetchAllFromSupabase }] = await Promise.all([
+            import("@/lib/supabase"),
+            import("@/stores/dataStore"),
+          ]);
+          setSupabaseUserContext(email);
+          await fetchAllFromSupabase();
+          console.log(`[MSAL] Post-redirect bootstrap complete for ${email}`);
+        } catch (bootErr) {
+          console.error("[MSAL] Post-redirect fetch failed:", bootErr);
         }
-      })
-      .catch((err) => {
-        console.error("[MSAL] handleRedirectPromise failed:", err);
-      });
+      }
+    }
   });
 }
 
