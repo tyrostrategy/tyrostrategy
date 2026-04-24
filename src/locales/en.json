@@ -489,6 +489,8 @@
     "statusDistributionTitle": "Status Distribution",
     "printPdf": "Print / PDF",
     "browserPrint": "Browser print",
+    "singlePagePdf": "Single Page PDF",
+    "singlePagePdfDesc": "One continuous page",
     "excelXlsx": "Excel (.xlsx)",
     "dataTable": "Data table",
     "htmlExport": "HTML",

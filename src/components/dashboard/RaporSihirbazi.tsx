@@ -447,6 +447,68 @@ export default function RaporSihirbazi() {
     }
   };
 
+  // Tek uzun sayfa olarak PDF — kullanıcı isteği (2026-04-24). Raporun tüm
+  // bölümlerini A4 yüksekliğine bölmeden, tek sürekli sayfa halinde dışa
+  // aktarır. Örnek referansı: Cascade Durum Raporu (932×3616 pt). Ziyaretçi
+  // aşağı scroll ile okur, ayrım veya sayfa arası kesim olmaz. İdeal "pdf
+  // boyutu = canvas aspect-ratio × A4 genişlik" formülü.
+  const handleExportSinglePagePDF = async () => {
+    if (!reportRef.current) return;
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+      const el = reportRef.current;
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        onclone: (doc) => {
+          // oklab/oklch renkleri transparent'a düşür (handleExportPDF ile aynı
+          // defensive çalışma — Tailwind v4 modern renk space'leri html2canvas
+          // ile uyumsuz).
+          doc.querySelectorAll("*").forEach((node) => {
+            const e = node as HTMLElement;
+            const cs = getComputedStyle(e);
+            ["color", "backgroundColor", "borderColor", "borderLeftColor", "borderRightColor", "borderTopColor", "borderBottomColor"].forEach((prop) => {
+              const val = cs.getPropertyValue(prop.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`));
+              if (val && (val.includes("oklab") || val.includes("oklch") || val.includes("color("))) {
+                (e.style as unknown as Record<string, string>)[prop] = "transparent";
+              }
+            });
+          });
+        },
+      });
+
+      // Sayfa geometri hesabı:
+      //   imgW (mm)  — A4 genişliği (210) eksi 2 × 10mm kenar = 190mm
+      //   imgH (mm)  — canvas oranına göre orantılı yükseklik
+      //   pageH (mm) — imgH + 2 × 10mm top/bottom kenar
+      const imgW = 190;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      const pageH = imgH + 20;
+
+      // jsPDF 14400 pt (~5080mm) max sayfa boyutu destekler. Çok uzun
+      // raporlarda (50+ proje) teorik olarak sınır zorlanabilir; o noktada
+      // normal çok-sayfa PDF tercih edilmeli. Defansif bir cap koyalım
+      // — 5000mm üzerine çıkarsa normal handleExportPDF fallback'i.
+      if (pageH > 5000) {
+        console.warn("[Report] Single-page PDF too tall (" + pageH.toFixed(0) + "mm); falling back to paginated PDF");
+        return handleExportPDF();
+      }
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: [210, pageH],
+      });
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 10, 10, imgW, imgH);
+      pdf.save(getFileName("pdf").replace(/\.pdf$/, "-tek-sayfa.pdf"));
+    } catch (err) {
+      console.warn("Single-page PDF export failed, falling back to paginated PDF:", err);
+      return handleExportPDF();
+    }
+  };
+
   const handleExportHTML = () => {
     if (!reportRef.current) return;
     // Extract ALL CSS from page stylesheets — this is the key to pixel-perfect export
@@ -1036,6 +1098,7 @@ ${clone.outerHTML}
                   >
                     {[
                       { label: t("dashboard.printPdf"), icon: Printer, desc: t("dashboard.browserPrint"), handler: handlePrint, color: "#64748b" },
+                      { label: t("dashboard.singlePagePdf"), icon: FileText, desc: t("dashboard.singlePagePdfDesc"), handler: handleExportSinglePagePDF, color: "#ef4444" },
                       { label: t("dashboard.excelXlsx"), icon: FileSpreadsheet, desc: t("dashboard.dataTable"), handler: handleExportExcel, color: "#10b981" },
                       { label: t("dashboard.htmlExport"), icon: FileCode, desc: t("dashboard.webPage"), handler: handleExportHTML, color: "#8b5cf6" },
                     ].map((item) => (
