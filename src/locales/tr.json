@@ -533,9 +533,9 @@
     "insightCompletionRate": "Proje tamamlanma oranı %{{rate}}. {{count}} proje başarıyla tamamlanmış.",
     "insightWorstDept": "{{dept}} departmanı %{{progress}} ortalama ilerleme ile en düşük performansı sergiliyor.",
     "insightBestDept": "{{dept}} departmanı %{{progress}} ile en yüksek performansı gösteriyor.",
-    "insightOpenedThisMonth": "Bu ay {{count}} proje açıldı: {{names}}",
-    "insightClosedThisMonth": "Bu ay {{count}} proje tamamlandı: {{names}}",
-    "insightAttentionProjects": "Dikkat gerektiren {{count}} proje var: {{names}}"
+    "insightOpenedThisMonth": "Bu ay {{count}} proje açıldı",
+    "insightClosedThisMonth": "Bu ay {{count}} proje tamamlandı",
+    "insightAttentionProjects": "Dikkat gerektiren {{count}} proje var"
   },
   "security": {
     "pageAccess": "Sayfa Erişimi",

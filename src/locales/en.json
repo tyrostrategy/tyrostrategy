@@ -533,9 +533,9 @@
     "insightCompletionRate": "Project completion rate is {{rate}}%. {{count}} projects successfully completed.",
     "insightWorstDept": "{{dept}} department shows lowest performance at {{progress}}% average progress.",
     "insightBestDept": "{{dept}} department leads with {{progress}}% highest performance.",
-    "insightOpenedThisMonth": "{{count}} projects opened this month: {{names}}",
-    "insightClosedThisMonth": "{{count}} projects completed this month: {{names}}",
-    "insightAttentionProjects": "{{count}} projects need attention: {{names}}"
+    "insightOpenedThisMonth": "{{count}} projects opened this month",
+    "insightClosedThisMonth": "{{count}} projects completed this month",
+    "insightAttentionProjects": "{{count}} projects need attention"
   },
   "security": {
     "pageAccess": "Page Access",
