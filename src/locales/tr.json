@@ -489,6 +489,8 @@
     "statusDistributionTitle": "Durum Dağılımı",
     "printPdf": "Yazdır / PDF",
     "browserPrint": "Tarayıcı yazdırma",
+    "singlePagePdf": "Tek Sayfa PDF",
+    "singlePagePdfDesc": "Sürekli tek sayfa",
     "excelXlsx": "Excel (.xlsx)",
     "dataTable": "Veri tablosu",
     "htmlExport": "HTML",
