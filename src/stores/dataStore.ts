@@ -142,7 +142,19 @@ function suggestStatusFromProgress(progress: number, startDate: string, endDate:
   return "On Track";
 }
 
-/** Recalculate a Proje's progress + status from its aksiyonlar */
+/** Recalculate a Proje's progress + status from its aksiyonlar.
+ *
+ * Lifecycle status'leri (On Hold, Cancelled) progress'ten türetilemez —
+ * bunlar admin tarafından manuel olarak set edilen "kullanım dışı" sinyalleri.
+ * Aksiyon update'i bu state'e dokunmamalı; aksiyon düzenleyen biri "askıdaki
+ * projeyi otomatik aktif" hale getiremez. Sadece kullanıcı manuel olarak
+ * statüyü başka bir şeye değiştirirse askı/iptal'den çıkar.
+ *
+ * Auto-recalc kuralları:
+ *   - status = On Hold veya Cancelled → DOKUNMA (sadece progress güncelle)
+ *   - tüm aksiyonlar Achieved → status = Achieved
+ *   - diğer durumlarda → suggestStatusFromProgress (progress + tarih)
+ */
 function recalcProjeProgress(
   projeler: Proje[],
   aksiyonlar: Aksiyon[],
@@ -157,6 +169,10 @@ function recalcProjeProgress(
   return projeler.map((h) => {
     if (h.id !== projeId) return h;
     const updated: Partial<Proje> = { progress: avg };
+    // Lifecycle status'leri otomatik recalc'tan koru — manuel kararlar.
+    if (h.status === "On Hold" || h.status === "Cancelled") {
+      return { ...h, ...updated };
+    }
     if (allAchieved) {
       updated.status = "Achieved";
       if (h.status !== "Achieved") updated.completedAt = new Date().toISOString();
