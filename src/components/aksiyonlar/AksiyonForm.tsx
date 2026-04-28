@@ -49,6 +49,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const addAksiyon = useDataStore((s) => s.addAksiyon);
   const updateAksiyon = useDataStore((s) => s.updateAksiyon);
+  const updateProje = useDataStore((s) => s.updateProje);
   const [isLoading, setIsLoading] = useState(false);
   const [projeCardOpen, setProjeCardOpen] = useState(false);
   const sidebarTheme = useSidebarTheme();
@@ -138,22 +139,36 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
   const isStatusLocked = watchProgress === 0 || watchProgress >= 100;
 
   const onSubmit = (data: AksiyonFormData) => {
-    // Aksiyon tarih aralığı kontrolü — proje tarih aralığının dışına çıkamaz
+    // Tarih kuralları (kullanıcı kararı 2026-04-24, sürtünmesiz iş akışı):
+    //   1) Aksiyon bitiş tarihi, aksiyon başlangıcından önce olamaz (hard error).
+    //   2) Aksiyon bitiş tarihi, proje başlangıcından önce olamaz (hard error).
+    //   3) Aksiyon bitiş tarihi proje bitişini aşıyorsa → proje bitişini
+    //      AKSIYONA UYACAK ŞEKİLDE GENİŞLET, info toast ile bilgilendir.
+    //      Eskiden bu hard-error idi → kullanıcıya engel oluyordu.
+    //   4) Aksiyon başlangıç tarihinin proje aralığı ile ilişkisi serbest —
+    //      ekiplerin "ön çalışma" tarzı early-start aksiyonlarına izin ver.
     const parentProje = proje ?? projeler.find((p) => p.id === data.projeId);
+    let projeEndExtended: { fromDate: string; toDate: string } | null = null;
+
     if (parentProje) {
-      if (data.startDate && parentProje.startDate && data.startDate < parentProje.startDate) {
+      // 1) end < start
+      if (data.startDate && data.endDate && data.endDate < data.startDate) {
         toast.error(t("toast.dateRangeError"), {
-          message: `Aksiyon başlangıç tarihi (${formatDate(data.startDate)}) projenin başlangıç tarihinden (${formatDate(parentProje.startDate)}) önce olamaz.`,
+          message: `Aksiyon bitiş tarihi (${formatDate(data.endDate)}) aksiyon başlangıç tarihinden (${formatDate(data.startDate)}) önce olamaz.`,
+        });
+        return;
+      }
+      // 2) end < proje.start
+      if (data.endDate && parentProje.startDate && data.endDate < parentProje.startDate) {
+        toast.error(t("toast.dateRangeError"), {
+          message: `Aksiyon bitiş tarihi (${formatDate(data.endDate)}) projenin başlangıç tarihinden (${formatDate(parentProje.startDate)}) önce olamaz.`,
           field: parentProje.name,
         });
         return;
       }
+      // 3) end > proje.end → genişlet, sonra dataStore.updateProje aşağıda
       if (data.endDate && parentProje.endDate && data.endDate > parentProje.endDate) {
-        toast.error(t("toast.dateRangeError"), {
-          message: `Aksiyon bitiş tarihi (${formatDate(data.endDate)}) projenin bitiş tarihinden (${formatDate(parentProje.endDate)}) sonra olamaz.`,
-          field: parentProje.name,
-        });
-        return;
+        projeEndExtended = { fromDate: parentProje.endDate, toDate: data.endDate };
       }
     }
 
@@ -172,6 +187,21 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
 
     setIsLoading(true);
     try {
+      // Eğer aksiyon proje bitişini aşıyorsa proje endDate'ini önce güncelle.
+      // dataStore.updateProje status'ü kendi içinde recalc eder (progress +
+      // yeni dates üzerinden suggestStatusFromProgress). Aksiyon kaydedilmeden
+      // ÖNCE yapıyoruz ki UI'da projeye dönen kullanıcı tutarlı veriyi görsün.
+      if (projeEndExtended && parentProje) {
+        updateProje(parentProje.id, { endDate: projeEndExtended.toDate });
+        toast.info(t("toast.projeEndExtendedTitle"), {
+          message: t("toast.projeEndExtendedMsg", {
+            from: formatDate(projeEndExtended.fromDate),
+            to: formatDate(projeEndExtended.toDate),
+            proje: parentProje.name,
+          }),
+        });
+      }
+
       if (aksiyon) {
         // Detect changed fields for structured toast
         const details: { label: string; value: string }[] = [];

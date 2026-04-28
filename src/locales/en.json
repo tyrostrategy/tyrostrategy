@@ -256,6 +256,8 @@
     "permissionsSaved": "Permission settings saved",
     "resetToDefaults": "Reset to default settings",
     "dateRangeError": "Date Range Error",
+    "projeEndExtendedTitle": "Project end date extended",
+    "projeEndExtendedMsg": "Project \"{{proje}}\" end date extended {{from}} → {{to}} (to fit the new action's end date).",
     "changeSaved": "Change saved",
     "singleTagRule": "Single tag rule active",
     "singleTagRuleDesc": "Enable 'Allow multiple tags per project' rule from Settings.",

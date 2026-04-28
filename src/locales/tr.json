@@ -256,6 +256,8 @@
     "permissionsSaved": "Yetki ayarları kaydedildi",
     "resetToDefaults": "Varsayılan ayarlara geri dönüldü",
     "dateRangeError": "Tarih Aralığı Hatası",
+    "projeEndExtendedTitle": "Proje bitiş tarihi güncellendi",
+    "projeEndExtendedMsg": "{{proje}} projesinin bitiş tarihi {{from}} → {{to}} olarak genişletildi (yeni aksiyon bitişine uyacak şekilde).",
     "changeSaved": "Değişiklik kaydedildi",
     "singleTagRule": "Tek etiket kuralı aktif",
     "singleTagRuleDesc": "Ayarlar sayfasından 'Projede birden fazla etiket seçebilme' kuralını aktif edin.",
