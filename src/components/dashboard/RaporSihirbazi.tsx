@@ -388,6 +388,33 @@ export default function RaporSihirbazi() {
     setTimeout(() => { document.title = originalTitle; }, 1000);
   };
 
+  // html2canvas Tailwind v4'ün oklch/oklab/color() renk fonksiyonlarını
+  // anlamıyor — eski fix transparent yapıyordu ama bu metinleri tamamen
+  // görünmez yapıyordu (kapak sayfasında "tyro" prefix, GİZLİ-KURUMSAL
+  // KULLANIM, Türkiye, Nisan 2026, PROJE/DEPARTMAN label'ları kayboldu).
+  //
+  // Doğru çözüm: oklch/color() değerini gerçek RGB'ye DÖNÜŞTÜR. Browser'ın
+  // canvas 2D context'i bu fonksiyonları rasterleştirip RGB pikseli oluşturur.
+  // 1×1 piksel canvas'a oklch ile fill et, geri RGB'yi oku → rgba(...) string.
+  const _rgbCache = new Map<string, string>();
+  function _toRgb(value: string): string {
+    if (_rgbCache.has(value)) return _rgbCache.get(value)!;
+    try {
+      const c = document.createElement("canvas");
+      c.width = 1; c.height = 1;
+      const ctx = c.getContext("2d");
+      if (!ctx) return "rgb(0,0,0)";
+      ctx.fillStyle = value;
+      ctx.fillRect(0, 0, 1, 1);
+      const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
+      const out = a === 255 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${(a/255).toFixed(3)})`;
+      _rgbCache.set(value, out);
+      return out;
+    } catch {
+      return "rgb(0,0,0)";
+    }
+  }
+
   const handleExportPDF = async () => {
     if (!reportRef.current) return;
     try {
@@ -408,7 +435,7 @@ export default function RaporSihirbazi() {
           ["color", "backgroundColor", "borderColor", "borderLeftColor", "borderRightColor", "borderTopColor", "borderBottomColor"].forEach((prop) => {
             const val = cs.getPropertyValue(prop.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`));
             if (val && (val.includes("oklab") || val.includes("oklch") || val.includes("color("))) {
-              (el.style as unknown as Record<string, string>)[prop] = "transparent";
+              (el.style as unknown as Record<string, string>)[prop] = _toRgb(val);
             }
           });
         });
@@ -482,7 +509,7 @@ export default function RaporSihirbazi() {
             ["color", "backgroundColor", "borderColor", "borderLeftColor", "borderRightColor", "borderTopColor", "borderBottomColor"].forEach((prop) => {
               const val = cs.getPropertyValue(prop.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`));
               if (val && (val.includes("oklab") || val.includes("oklch") || val.includes("color("))) {
-                (e.style as unknown as Record<string, string>)[prop] = "transparent";
+                (e.style as unknown as Record<string, string>)[prop] = _toRgb(val);
               }
             });
           });
