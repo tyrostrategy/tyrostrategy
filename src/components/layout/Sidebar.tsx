@@ -542,11 +542,35 @@ function SidebarContent({ collapsed, onNavigate, pinned, onTogglePin }: { collap
   );
 }
 
+// Sidebar pin durumu — varsayılan AÇIK (yeni kullanıcı açtığında menü
+// hemen okunaklı olsun). Pin kaldırılırsa karar localStorage'da yaşar,
+// bir sonraki ziyaret aynı tercihi getirir. Anahtar yok ise → varsayılan
+// (true) uygulanır; tarayıcı reset eden / private mode kullanan
+// kullanıcı her seferinde açık başlar.
+const SIDEBAR_PIN_KEY = "tyro-sidebar-pinned";
+
+function readPinFromStorage(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const stored = localStorage.getItem(SIDEBAR_PIN_KEY);
+    return stored === null ? true : stored === "true";
+  } catch {
+    return true;
+  }
+}
+
 export default function Sidebar() {
   const mobileDrawerOpen = useUIStore((s) => s.mobileDrawerOpen);
   const closeMobileDrawer = useUIStore((s) => s.closeMobileDrawer);
   const [hovered, setHovered] = useState(false);
-  const [pinned, setPinned] = useState(false);
+  const [pinned, setPinned] = useState<boolean>(readPinFromStorage);
+  const togglePin = () => {
+    setPinned((prev) => {
+      const next = !prev;
+      try { localStorage.setItem(SIDEBAR_PIN_KEY, String(next)); } catch { /* quota / private mode */ }
+      return next;
+    });
+  };
   const collapsed = !hovered && !pinned;
   const theme = useSidebarTheme();
   const vars = sidebarCSSVars(theme);
@@ -586,7 +610,7 @@ export default function Sidebar() {
             }}
           />
         )}
-        <SidebarContent collapsed={collapsed} pinned={pinned} onTogglePin={() => setPinned(!pinned)} />
+        <SidebarContent collapsed={collapsed} pinned={pinned} onTogglePin={togglePin} />
       </div>
 
       {/* Mobile drawer */}
