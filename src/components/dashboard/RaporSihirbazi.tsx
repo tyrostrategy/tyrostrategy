@@ -588,34 +588,29 @@ export default function RaporSihirbazi() {
             e.style.lineHeight = "1.4";
             e.classList.remove("truncate");
           });
-          // Pill metninin dikey merkezleme sorunu — TABLE-CELL centering.
-          // line-height ve flex yaklaşımları html2canvas'ta tutarsız
-          // (yazı pill'in üst kenarına yapışıyor). table-cell layout
-          // her zaman güvenilir — CSS spec garantili, html2canvas
-          // tablolarda iyi çalışıyor.
-          //
-          // Outer span → inline-table + sabit height (font-size + padding-y)
-          // Inner span → table-cell + vertical-align: middle  (yazıyı dikey ortalar)
+          // Tek-sayfa PDF kararı (kullanıcı isteği 2026-05-04): pill alignment
+          // çabasını bıraktık. html2canvas'ın baseline rendering'i 3 farklı
+          // yaklaşımla (flex / line-height / table-cell) tatmin edici sonuç
+          // vermedi. Çözüm: pill arka planlarını tamamen sıyır. Geriye sadece
+          // renkli ikon + renkli yazı kalır — statü/etiket bilgisi ikonlardan
+          // ve renkten okunur, pill'e gerek yok. Renkler ve ikonlar (Clock /
+          // Check / AlertTriangle / PauseCircle vs.) zaten yeterince ayırt
+          // edici. Normal (paginated) PDF table-cell fix'iyle pill'leri
+          // koruyor — sadece tek-sayfa PDF bu temizliği uyguluyor.
           doc.querySelectorAll('span[class*="rounded-full"]').forEach((node) => {
             const e = node as HTMLElement;
-            const cs = getComputedStyle(e);
-            const pt = parseFloat(cs.paddingTop) || 0;
-            const pb = parseFloat(cs.paddingBottom) || 0;
-            const fs = parseFloat(cs.fontSize) || 11;
-            const h = Math.round(fs + pt + pb);
-            const inner = doc.createElement("span");
-            while (e.firstChild) inner.appendChild(e.firstChild);
-            inner.style.display = "table-cell";
-            inner.style.verticalAlign = "middle";
-            inner.style.lineHeight = "1";
-            e.appendChild(inner);
-            e.style.display = "inline-table";
-            e.style.verticalAlign = "middle";
-            e.style.height = `${h}px`;
+            e.style.backgroundColor = "transparent";
+            e.style.border = "none";
+            e.style.borderRadius = "0";
             e.style.paddingTop = "0";
             e.style.paddingBottom = "0";
-            e.style.lineHeight = "1";
-            e.style.boxSizing = "border-box";
+            e.style.paddingLeft = "0";
+            e.style.paddingRight = "0";
+            e.style.minWidth = "0";
+            // İçerideki ikon + text inline-flex ile gap'li gözüksün
+            e.style.display = "inline-flex";
+            e.style.alignItems = "center";
+            e.style.gap = "4px";
           });
         },
       });
@@ -1592,6 +1587,10 @@ ${clone.outerHTML}
                   const ha = aksiyonlar.filter((a) => a.projeId === h.id);
                   const p = calcProjeProgress(h, aksiyonlar);
                   const isExp = expandedIds.has(h.id);
+                  // Statü-spesifik ikon — Clock/Check/AlertTriangle/PauseCircle
+                  // gibi ifadeyi temsil eden Lucide icon. Eski "▸" yerine
+                  // bu kullanılıyor; aksiyon statüleri ile tutarlı.
+                  const HIcon = STATUS_DOT[h.status];
 
                   return (
                     <div key={h.id} className="glass-card rounded-xl overflow-hidden print:break-inside-avoid" style={{ borderLeft: `3px solid ${STATUS_COLOR[h.status]}` }}>
@@ -1606,10 +1605,11 @@ ${clone.outerHTML}
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-[20px] font-extrabold tabular-nums" style={{ color: STATUS_COLOR[h.status] }}>{p}%</span>
                           <span
-                            className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
                             style={{ backgroundColor: `${STATUS_COLOR[h.status]}12`, color: STATUS_COLOR[h.status] }}
                           >
-                            ▸ {STATUS_TR[h.status]}
+                            <HIcon size={11} className="shrink-0" />
+                            {STATUS_TR[h.status]}
                           </span>
                         </div>
                       </div>
@@ -1690,7 +1690,8 @@ ${clone.outerHTML}
                                             ("Yüksek Riskte") rahat sığacak min-width. */}
                                         <div className="flex items-center gap-2 shrink-0">
                                           <span className="w-10 text-left text-[12px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
-                                          <span className="inline-block min-w-[110px] text-center text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${STATUS_COLOR[a.status]}12`, color: STATUS_COLOR[a.status] }}>
+                                          <span className="inline-flex items-center justify-center gap-1 min-w-[110px] text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${STATUS_COLOR[a.status]}12`, color: STATUS_COLOR[a.status] }}>
+                                            <AIcon size={10} className="shrink-0" />
                                             {STATUS_TR[a.status]}
                                           </span>
                                         </div>
@@ -1722,7 +1723,10 @@ ${clone.outerHTML}
                                       en uzun "Yüksek Riskte" için min-width benzer. */}
                                   <div className="flex items-center gap-2 shrink-0 mt-0.5">
                                     <span className="w-9 text-left text-[11px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
-                                    <span className="inline-block min-w-[90px] text-center text-[9px] font-semibold whitespace-nowrap" style={{ color: STATUS_COLOR[a.status] }}>{STATUS_TR[a.status]}</span>
+                                    <span className="inline-flex items-center justify-center gap-1 min-w-[90px] text-[9px] font-semibold whitespace-nowrap" style={{ color: STATUS_COLOR[a.status] }}>
+                                      <AIcon size={9} className="shrink-0" />
+                                      {STATUS_TR[a.status]}
+                                    </span>
                                   </div>
                                 </div>
                               );
