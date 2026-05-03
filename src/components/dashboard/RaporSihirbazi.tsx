@@ -694,15 +694,11 @@ export default function RaporSihirbazi() {
 <style>
 :root { ${cssVars.join(" ")} }
 ${allCSS}
-/* HTML export — tutarlı görünüm için:
-   * Yalnızca-print olarak işaretli action blokları (hidden print:block) görünür olsun.
-     Bu, UI'daki collapse state (expandedIds) veya "sections.actions" filtresinden
-     bağımsız olarak static HTML dosyasında aksiyon listesini PDF ile aynı şekilde
-     sunar. Filtre kapalıysa (sections.actions=false), wrapper hiç render edilmez
-     → HTML'de de görünmez. Açıksa → görünür. PDF ile eşleşir.
-   * Ekran collapse toggle butonları (print:hidden) HTML export'ta gizlensin —
-     static dosyada tıklanamayacağı için gereksiz. */
-.hidden.print\\:block { display: block !important; }
+/* HTML export — rapor görünümünün AYNISI olmalı.
+   Eski duplicate aksiyon listesi (hidden + print:block) kaldırıldığı
+   için tek kaynak: ekrandaki expand list (pill'li, hizalı, statü
+   renkli). Burada sadece ekran toggle butonlarını gizliyoruz —
+   static dosyada tıklanamayacağı için gereksiz. */
 .print\\:hidden { display: none !important; }
 /* Override for standalone */
 body { max-width: 900px; margin: 0 auto; padding: 2rem; background: #fff; }
@@ -1718,32 +1714,11 @@ ${clone.outerHTML}
                               </motion.div>
                             )}
                           </AnimatePresence>
-                          {/* Print — show actions unless hidden.
-                              `items-start` + leading-snug + `break-words`:
-                              uzun aksiyon adları ekran kapasitesini aşarsa
-                              tek satırda kesilmek yerine birden fazla satıra
-                              sarılsın. truncate descender'ları (ş, ç, p, y)
-                              html2canvas'ta yarım kesiyordu. */}
-                          <div className={`hidden ${hideActionsInExport ? "" : "print:block"} px-4 pb-3 space-y-0.5`}>
-                            <p className="text-[11px] font-bold uppercase text-tyro-text-muted tracking-wider mb-1">{t("dashboard.actionsLabel")} ({ha.length})</p>
-                            {ha.map((a) => (
-                              <div key={a.id} className="flex items-start justify-between gap-3 py-1.5 border-b border-tyro-border/8 last:border-0">
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[12px] font-medium text-tyro-text-primary leading-snug break-words">{a.name}</p>
-                                </div>
-                                {/* Print/HTML — sabit-genişlik kolonlar, expand list ile
-                                    aynı hizalama mantığı. Statü burada pill değil renkli
-                                    text; ikon yok (html2canvas'ta SVG ikonlar dikey
-                                    kayıyordu — kullanıcı isteğiyle çıkarıldı). */}
-                                <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                                  <span className="w-9 text-left text-[11px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
-                                  <span className="inline-block min-w-[90px] text-center text-[9px] font-semibold whitespace-nowrap" style={{ color: STATUS_COLOR[a.status] }}>
-                                    {STATUS_TR[a.status]}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                          {/* Eski "print:block" duplicate aksiyon listesi kaldırıldı.
+                              HTML çıktısı + Yazdır + ekran görünümü artık tek
+                              kaynaktan (yukarıdaki AnimatePresence+motion.div) okuyor.
+                              Tek-sayfa PDF onclone'da kendi pill-strip dönüşümünü
+                              uyguluyor, bu durum etkilenmiyor. */}
                         </>
                       )}
                     </div>
