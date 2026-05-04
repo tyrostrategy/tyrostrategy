@@ -18,28 +18,68 @@ import { isSupabaseMode } from "@/lib/supabaseMode";
 /**
  * Fire-and-forget Supabase sync — doesn't block UI.
  *
- * Exponential backoff with jitter on failure:
- *   - initial call fails → retry 1 after ~2s
- *   - retry 1 fails → retry 2 after ~8s
- *   - retry 2 fails → retry 3 after ~32s
- *   - retry 3 fails → give up, show toast
+ * Faster backoff (kullanıcı geri bildirimi 2026-05-04: 42s çok uzun,
+ * kullanıcı ekrandan çıkmadan önce hata mesajını görmeli):
+ *   - initial call fails → retry 1 after ~1s
+ *   - retry 1 fails → retry 2 after ~3s
+ *   - retry 2 fails → give up, show toast
+ *   Toplam max ~11s (önceden 42s'di).
  *
- * Each delay has ±30% random jitter so 50 concurrent users' retries don't
- * synchronize on the same wall-clock second (thundering herd). Critical for
- * surviving short Supabase outages without saturating the free-tier quota.
+ * Permanent error fast-path: 42501 (RLS denial), 23xxx (constraint violations),
+ * 22xxx (data exceptions) RETRY YAPILMIYOR — bunlar tekrar denemekle çözülmez,
+ * hemen toast. Sadece geçici (network / timeout) hatalar retry'a giriyor.
+ *
+ * Context-aware error mesajı: caller bir SyncContext geçerse toast hangi
+ * kayıtta hangi işlemin başarısız olduğunu söyler ("Büşra Kaplan rolü
+ * güncellenemedi"). Context yoksa generic mesaja düşer.
  */
-function syncToSupabase(fn: () => Promise<unknown>, attempt = 0): void {
+export interface SyncContext {
+  /** Türkçe entity adı: "Kullanıcı", "Proje", "Aksiyon", "Etiket", "Ayar" */
+  entity: string;
+  /** Türkçe fiil: "oluşturma", "güncelleme", "silme" */
+  action: string;
+  /** Opsiyonel: özel etiket (örn. "Büşra Kaplan rolü") — entity'nin önüne gelir */
+  label?: string;
+}
+
+interface PgError {
+  code?: string;
+  message?: string;
+}
+
+function isPermanentError(err: unknown): boolean {
+  const e = err as PgError;
+  if (!e?.code) return false;
+  // 42501 = insufficient_privilege (RLS), 23xxx = constraint violations,
+  // 22xxx = data exceptions, 42xxx = syntax / access errors
+  return e.code === "42501"
+    || e.code.startsWith("23")
+    || e.code.startsWith("22")
+    || e.code === "42P01"   // undefined_table
+    || e.code === "42P17";  // recursion (shouldn't happen but defense)
+}
+
+function buildErrorToast(err: unknown, ctx: SyncContext | undefined): string {
+  const e = err as PgError;
+  const reason = e?.code === "42501" ? "yetkiniz yok" : (e?.message || "bilinmeyen hata");
+  if (!ctx) return i18n.t("toast.syncFailed");
+  const subject = ctx.label || ctx.entity;
+  return `${subject} ${ctx.action} başarısız: ${reason}. Tekrar deneyin.`;
+}
+
+function syncToSupabase(fn: () => Promise<unknown>, ctx?: SyncContext, attempt = 0): void {
   if (!isSupabaseMode) return;
   fn().catch((err) => {
-    if (attempt >= 3) {
-      console.error("[Supabase Sync] Failed after 3 retries:", err);
-      toast.error(i18n.t("toast.syncFailed"));
+    const permanent = isPermanentError(err);
+    if (permanent || attempt >= 2) {
+      console.error(`[Supabase Sync] ${permanent ? "Permanent" : "Failed after 2 retries"}:`, err);
+      toast.error(buildErrorToast(err, ctx));
       return;
     }
-    // 2s, 8s, 32s base + ±30% jitter
-    const base = 2000 * Math.pow(4, attempt);
+    // 1s, 3s base + ±30% jitter — 50 kullanıcı thundering herd'ünü dağıtır
+    const base = 1000 * Math.pow(3, attempt);
     const delay = base * (0.7 + Math.random() * 0.6);
-    setTimeout(() => syncToSupabase(fn, attempt + 1), delay);
+    setTimeout(() => syncToSupabase(fn, ctx, attempt + 1), delay);
   });
 }
 
@@ -203,21 +243,40 @@ export const useDataStore = create<DataState>()(
       addUser: (u) =>
         set((s) => {
           const newUser = { ...u, id: uid(), createdAt: now() } as AppUser;
-          // Sync the enriched newUser so the DB row mirrors the local
-          // one (same createdAt instead of the DB's own server-time
-          // default, which would drift across browsers).
-          syncToSupabase(() => supabaseAdapter.createUser(newUser));
+          syncToSupabase(
+            () => supabaseAdapter.createUser(newUser),
+            { entity: "Kullanıcı", action: "oluşturma", label: newUser.displayName }
+          );
           return { users: [...s.users, newUser] };
         }),
       updateUser: (id, data) => {
-        syncToSupabase(() => supabaseAdapter.updateUser(id, data));
+        const target = get().users.find((u) => u.id === id);
+        // Hangi alanın güncellendiğini mesaja yansıt — "Büşra Kaplan rolü"
+        // gibi spesifik mesaj. Birden fazla alan değişiyorsa generic.
+        const fieldKey = Object.keys(data)[0];
+        const fieldLabel: Record<string, string> = {
+          role: "rolü", department: "departmanı", displayName: "adı",
+          title: "ünvanı", email: "e-postası", isActive: "aktiflik durumu",
+          locale: "dil tercihi",
+        };
+        const labelSuffix = Object.keys(data).length === 1 && fieldLabel[fieldKey]
+          ? ` ${fieldLabel[fieldKey]}`
+          : "";
+        syncToSupabase(
+          () => supabaseAdapter.updateUser(id, data),
+          { entity: "Kullanıcı", action: "güncelleme", label: `${target?.displayName ?? "Kullanıcı"}${labelSuffix}` }
+        );
         set((s) => ({
           users: s.users.map((u) => (u.id === id ? { ...u, ...data, updatedAt: now() } : u)),
         }));
       },
       deleteUser: (id) =>
         set((s) => {
-          syncToSupabase(() => supabaseAdapter.deleteUser(id));
+          const target = s.users.find((u) => u.id === id);
+          syncToSupabase(
+            () => supabaseAdapter.deleteUser(id),
+            { entity: "Kullanıcı", action: "silme", label: target?.displayName }
+          );
           return { users: s.users.filter((u) => u.id !== id) };
         }),
       getUserByName: (name) => get().users.find((u) => u.displayName === name),
@@ -227,7 +286,10 @@ export const useDataStore = create<DataState>()(
         set((s) => {
           const id = generateSystematicId("P", h.startDate, s.projeler.map((x) => x.id));
           const newProje = { ...h, id, createdBy: h.createdBy ?? getCurrentUser(), createdAt: h.createdAt ?? now() };
-          syncToSupabase(() => supabaseAdapter.createProje({ ...newProje }));
+          syncToSupabase(
+            () => supabaseAdapter.createProje({ ...newProje }),
+            { entity: "Proje", action: "oluşturma", label: newProje.name }
+          );
           return { projeler: [...s.projeler, newProje] };
         }),
       updateProje: (id, data) =>
@@ -258,14 +320,22 @@ export const useDataStore = create<DataState>()(
             if (h.id !== id) return h;
             return { ...h, ...syncData };
           });
-          syncToSupabase(() => supabaseAdapter.updateProje(id, syncData));
+          const projeName = before?.name ?? "Proje";
+          syncToSupabase(
+            () => supabaseAdapter.updateProje(id, syncData),
+            { entity: "Proje", action: "güncelleme", label: projeName }
+          );
           return { projeler };
         }),
       deleteProje: (id) => {
         const state = get();
         if (state.aksiyonlar.some((a) => a.projeId === id)) return false;
+        const target = state.projeler.find((p) => p.id === id);
         set((s) => ({ projeler: s.projeler.filter((h) => h.id !== id) }));
-        syncToSupabase(() => supabaseAdapter.deleteProje(id));
+        syncToSupabase(
+          () => supabaseAdapter.deleteProje(id),
+          { entity: "Proje", action: "silme", label: target?.name }
+        );
         return true;
       },
 
@@ -276,9 +346,14 @@ export const useDataStore = create<DataState>()(
           const newAksiyon: Aksiyon = { ...a, id, createdBy: a.createdBy ?? getCurrentUser(), createdAt: a.createdAt ?? now() };
           const aksiyonlar = [...s.aksiyonlar, newAksiyon];
           const projeler = recalcProjeProgress(s.projeler, aksiyonlar, newAksiyon.projeId);
-          syncToSupabase(() => supabaseAdapter.createAksiyon({ ...newAksiyon }));
+          syncToSupabase(
+            () => supabaseAdapter.createAksiyon({ ...newAksiyon }),
+            { entity: "Aksiyon", action: "oluşturma", label: newAksiyon.name }
+          );
           // Also sync parent proje progress + completedAt drift (recalc
-          // may set/clear completedAt on the parent row).
+          // may set/clear completedAt on the parent row). Bu otomatik
+          // arka-plan işlemi — kullanıcı doğrudan tetiklemediği için
+          // context vermiyoruz; fail olursa generic mesaj yeterli.
           const updatedProje = projeler.find((p) => p.id === newAksiyon.projeId);
           const prevProje = s.projeler.find((p) => p.id === newAksiyon.projeId);
           if (updatedProje) {
@@ -315,7 +390,10 @@ export const useDataStore = create<DataState>()(
           const projeler = aksiyon
             ? recalcProjeProgress(s.projeler, aksiyonlar, aksiyon.projeId)
             : s.projeler;
-          syncToSupabase(() => supabaseAdapter.updateAksiyon(id, syncData));
+          syncToSupabase(
+            () => supabaseAdapter.updateAksiyon(id, syncData),
+            { entity: "Aksiyon", action: "güncelleme", label: before?.name ?? "Aksiyon" }
+          );
           // Also sync parent proje progress + completedAt if parent auto-flipped
           if (aksiyon) {
             const updatedProje = projeler.find((p) => p.id === aksiyon.projeId);
@@ -341,7 +419,10 @@ export const useDataStore = create<DataState>()(
           ? recalcProjeProgress(state.projeler, aksiyonlar, aksiyon.projeId)
           : state.projeler;
         set({ aksiyonlar, projeler });
-        syncToSupabase(() => supabaseAdapter.deleteAksiyon(id));
+        syncToSupabase(
+          () => supabaseAdapter.deleteAksiyon(id),
+          { entity: "Aksiyon", action: "silme", label: aksiyon?.name }
+        );
         if (aksiyon) {
           const updatedProje = projeler.find((p) => p.id === aksiyon.projeId);
           const prevProje = state.projeler.find((p) => p.id === aksiyon.projeId);
@@ -360,26 +441,37 @@ export const useDataStore = create<DataState>()(
       addTagDefinition: (tag) => {
         const newTag: TagDefinition = { ...tag, id: uid() };
         set((s) => ({ tagDefinitions: [...s.tagDefinitions, newTag] }));
-        syncToSupabase(async () => {
-          const created = await supabaseAdapter.createTagDefinition(tag);
-          // Update local ID with Supabase-generated UUID
-          set((s) => ({ tagDefinitions: s.tagDefinitions.map((t) => t.id === newTag.id ? { ...t, id: created.id } : t) }));
-        });
+        syncToSupabase(
+          async () => {
+            const created = await supabaseAdapter.createTagDefinition(tag);
+            // Update local ID with Supabase-generated UUID
+            set((s) => ({ tagDefinitions: s.tagDefinitions.map((t) => t.id === newTag.id ? { ...t, id: created.id } : t) }));
+          },
+          { entity: "Etiket", action: "oluşturma", label: tag.name }
+        );
         return newTag;
       },
       updateTagDefinition: (id, data) => {
+        const target = get().tagDefinitions.find((t) => t.id === id);
         set((s) => ({
           tagDefinitions: s.tagDefinitions.map((t) =>
             t.id === id ? { ...t, ...data } : t
           ),
         }));
-        syncToSupabase(() => supabaseAdapter.updateTagDefinition(id, data));
+        syncToSupabase(
+          () => supabaseAdapter.updateTagDefinition(id, data),
+          { entity: "Etiket", action: "güncelleme", label: target?.name }
+        );
       },
       deleteTagDefinition: (id) => {
+        const target = get().tagDefinitions.find((t) => t.id === id);
         set((s) => ({
           tagDefinitions: s.tagDefinitions.filter((t) => t.id !== id),
         }));
-        syncToSupabase(() => supabaseAdapter.deleteTagDefinition(id));
+        syncToSupabase(
+          () => supabaseAdapter.deleteTagDefinition(id),
+          { entity: "Etiket", action: "silme", label: target?.name }
+        );
       },
       renameTag: (oldName, newName) => {
         const state = get();
